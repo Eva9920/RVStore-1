@@ -32,8 +32,7 @@ $top_games = $conn->query("
     ORDER BY transaction_count DESC 
     LIMIT 5
 ");
-
-// Get sales data for chart
+//aaaaaaaaaaaaaaaaaaaaaaaa
 $sales_data = $conn->query("
     SELECT 
         DATE_FORMAT(transaction_time, '%Y-%m') as month,
