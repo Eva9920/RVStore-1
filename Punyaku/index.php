@@ -36,314 +36,449 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>RVS - Authentication</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #6c5ce7;
-            --dark-color: #2d3436;
-            --light-color: #f7f7f7;
-            --gradient: linear-gradient(135deg, #6c5ce7 0%, #4834d4 100%);
+        /* Base styles */
+        * {
+            font-family:  sans-serif;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #12022F 0%, #A439FF 40%, #FF4FE0 70%, #57C2FF 100%);
+        /* Container styles */
+        .auth-container {
             min-height: 100vh;
+            background: linear-gradient(135deg, #12022F 0%, #A439FF 40%, #FF4FE0 70%, #57C2FF 100%);
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             padding: 20px;
         }
-
-        .auth-container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 40px;
-            width: 100%;
-            max-width: 450px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .auth-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            transition: 0.5s;
-        }
-
-        .auth-container:hover::before {
-            left: 100%;
-        }
-
-        .logo {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .logo img {
-            height: 60px;
-            margin-bottom: 15px;
-        }
-
-        .logo h1 {
-            color: white;
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .logo p {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 14px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: white;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .input-field {
-            width: 100%;
-            padding: 12px 15px;
+        /* Form elements */
+        .input-style {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
             color: white;
-            font-size: 14px;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            border-radius: 8px;
+            min-width: 240px;
+            width: 100%;
+            padding: 8px 40px 8px 16px;
+            height: 42px;
         }
 
-        .input-field:focus {
-            outline: none;
-            border-color: rgba(255, 255, 255, 0.6);
+        .input-style:focus {
             background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.5);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
         }
 
-        .input-field::placeholder {
+        .input-style::placeholder {
             color: rgba(255, 255, 255, 0.6);
+            line-height: normal;
         }
 
+        /* Button styles */
+        .auth-btn {
+            background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            transition: all 0.3s ease;
+            border: none;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
+        .auth-btn:hover {
+            background: linear-gradient(135deg, #357ABD 0%, #4A90E2 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+        }
+
+        .social-btn {
+            background: rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
+        .social-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        /* Form containers */
+        .form-container {
+            animation: slideUp 0.6s ease forwards;
+            max-width: 400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .register-width {
+            max-width: 600px !important;
+            width: 100% !important;
+            margin: 0 auto;
+            padding: 1.75rem !important;
+        }
+
+        /* Password field */
         .password-container {
             position: relative;
+            width: 100%;
         }
 
         .password-toggle {
             position: absolute;
-            right: 15px;
+            right: 12px;
             top: 50%;
             transform: translateY(-50%);
-            color: rgba(255, 255, 255, 0.6);
             cursor: pointer;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: none;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
+            color: rgba(255, 255, 255, 0.7);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            height: 42px;
+            padding-right: 4px;
         }
 
-        .btn-primary {
-            background: var(--gradient);
-            color: white;
-            margin-top: 10px;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
-        }
-
-        .btn-google {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .btn-google:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-
+        /* Divider */
         .divider {
             display: flex;
             align-items: center;
+            text-align: center;
             margin: 20px 0;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 14px;
         }
 
         .divider::before,
         .divider::after {
             content: '';
             flex: 1;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .divider span {
             padding: 0 10px;
-        }
-
-        .switch-form {
-            text-align: center;
-            margin-top: 20px;
-            color: rgba(255, 255, 255, 0.7);
+            color: white;
             font-size: 14px;
         }
 
-        .switch-form a {
-            color: white;
-            font-weight: 600;
-            text-decoration: none;
+        /* Animations */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .switch-form a:hover {
-            text-decoration: underline;
+        /* Register form specific */
+        #registerForm .input-style {
+            min-width: 240px;
+            width: 100%;
+            padding: 8px 40px 8px 16px;
+            height: 42px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
         }
 
-        .error-message {
-            background: rgba(231, 76, 60, 0.2);
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            border-left: 4px solid #e74c3c;
+        
+        /* Tab buttons */
+        .tab-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            position: relative;
+        }
+        
+        .tab-btn.active {
+            opacity: 1 !important;
+        }
+        
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: white;
+            border-radius: 2px;
         }
 
-        .checkbox-container {
+        /* Logo and title */
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .logo-placeholder {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
             display: flex;
             align-items: center;
-            margin-bottom: 20px;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        
+        .logo-placeholder svg {
+            width: 40px;
+            height: 40px;
+            fill: rgba(255, 255, 255, 0.7);
         }
 
-        .checkbox-container input {
-            margin-right: 8px;
-            accent-color: var(--primary-color);
+        /* Responsive design */
+        @media (max-width: 640px) {
+            .register-width {
+                width: 100% !important;
+                min-width: 280px !important;
+                padding: 1.25rem !important;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .glass-effect {
+                padding: 1.5rem;
+            }
         }
 
-        .checkbox-container label {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 14px;
-            cursor: pointer;
+        @media (min-width: 641px) and (max-width: 1024px) {
+            .register-width {
+                width: 90% !important;
+                min-width: 520px !important;
+            }
         }
 
-        .forgot-password {
-            text-align: right;
-            margin-bottom: 20px;
+        @media (min-width: 1025px) {
+            .register-width {
+                width: 90% !important;
+                min-width: 580px !important;
+            }
         }
-
-        .forgot-password a {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 13px;
-            text-decoration: none;
+        
+        /* Terms checkbox */
+        .terms-container {
+            display: flex;
+            align-items: flex-start;
+            margin-top: 1rem;
         }
-
-        .forgot-password a:hover {
-            text-decoration: underline;
+        
+        .terms-container input {
+            margin-top: 3px;
         }
     </style>
 </head>
 <body>
     <div class="auth-container">
-        <div class="logo">
-            <img src="logohet.jpg" alt="RVStore Logo">
-            <h1>Welcome to RVStore</h1>
-            <p>Sign in to continue to your dashboard</p>
-        </div>
-
-        <?php if (isset($error)): ?>
-            <div class="error-message">
-                <i class="fas fa-exclamation-circle"></i> <?php echo htmlspecialchars($error); ?>
-            </div>
-        <?php endif; ?>
-
-        <form method="POST" action="">
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" class="input-field" placeholder="Enter your username" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="password">Password</label>
-                <div class="password-container">
-                    <input type="password" id="password" name="password" class="input-field" placeholder="Enter your password" required>
-                    <span class="password-toggle" onclick="togglePassword('password')">
-                        <i class="fas fa-eye"></i>
-                    </span>
+        <div id="authContainer" class="glass-effect max-w-xs w-full space-y-4 p-6 rounded-2xl">
+            <!-- Logo dan Judul -->
+            <div class="logo-container">
+                <div class="logo-placeholder">
+                    <svg viewBox="RVS_LOGO" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                    </svg>
+                </div>
+                <div class="space-y-1 text-center">
+                    <h1 class="text-white text-2xl font-bold">Reli Vault Store</h1>
                 </div>
             </div>
 
-            <div class="forgot-password">
-                <a href="#">Forgot password?</a>
+            <!-- Auth Tabs -->
+            <div class="flex justify-center space-x-4 mb-6 border-b border-white/20 pb-2">
+                <button onclick="showLogin()" class="tab-btn px-6 py-2 text-white opacity-60 hover:opacity-100 transition-opacity active" id="loginTab">Login</button>
+                <button onclick="showRegister()" class="tab-btn px-6 py-2 text-white opacity-60 hover:opacity-100 transition-opacity" id="registerTab">Register</button>
             </div>
 
-            <button type="submit" name="login" class="btn btn-primary">
-                <i class="fas fa-sign-in-alt"></i> Sign In
-            </button>
-        </form>
+            <!-- Login Form -->
+            <div id="loginForm" class="form-container space-y-4">
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">Name</label>
+                    <input type="text" class="input-style w-full" placeholder="Masukkan nama anda">
+                </div>
+                <div>
+                    <label class="block text-white text-sm font-medium mb-2">Email</label>
+                    <input type="email" class="input-style w-full" placeholder="Masukkan email anda">
+                </div>
+                <div class="relative">
+                    <label class="block text-white text-sm font-medium mb-2">Password</label>
+                    <div class="password-container">
+                        <input type="password" id="loginPassword" class="input-style w-full" placeholder="Masukkan kata sandi">
+                        <span class="password-toggle" onclick="togglePassword('loginPassword')">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input type="checkbox" class="h-4 w-4 bg-transparent border-white/30 rounded">
+                        <label class="ml-2 block text-sm text-white">Ingat saya</label>
+                    </div>
+                </div>
+                <button class="auth-btn w-full py-3 text-white font-medium">
+                    Masuk
+                </button>
+                
+                <div class="divider">
+                    <span>atau lanjutkan dengan</span>
+                </div>
+                
+                <button class="social-btn w-full flex justify-center items-center gap-2 py-2.5">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="h-5 w-5">
+                    <span class="text-white">Lanjutkan dengan Google</span>
+                </button>
+            </div>
 
-        <div class="divider">
-            <span>OR</span>
-        </div>
+            <!-- Register Form -->
+            <div id="registerForm" class="form-container hidden space-y-4">
+                <div class="form-grid">
+                    <div>
+                        <label class="block text-white text-sm font-medium mb-2">Nama Lengkap</label>
+                        <input type="text" class="input-style" placeholder="Masukkan nama lengkap">
+                    </div>
+                    <div>
+                        <label class="block text-white text-sm font-medium mb-2">Email</label>
+                        <input type="email" class="input-style" placeholder="Masukkan email">
+                    </div>
+                    <div>
+                        <label class="block text-white text-sm font-medium mb-2">Password</label>
+                        <div class="password-container">
+                            <input type="password" id="registerPassword" class="input-style" placeholder="Buat kata sandi">
+                            <span class="password-toggle" onclick="togglePassword('registerPassword')">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-white text-sm font-medium mb-2">Konfirmasi Password</label>
+                        <div class="password-container">
+                            <input type="password" id="confirmPassword" class="input-style" placeholder="Konfirmasi kata sandi">
+                            <span class="password-toggle" onclick="togglePassword('confirmPassword')">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                </div>
 
-        <button class="btn btn-google">
-            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" width="18">
-            Continue with Google
-        </button>
-
-        <div class="switch-form">
-            Don't have an account? <a href="register.php">Sign up</a>
+                <div class="terms-container">
+                    <input type="checkbox" class="h-4 w-4 bg-transparent border-white/30 rounded mt-1">
+                    <label class="ml-2 block text-sm text-white">Saya setuju dengan <a href="#" class="text-indigo-200 hover:underline">Syarat dan Ketentuan</a></label>
+                </div>
+                
+                <button class="auth-btn w-full py-3 text-white font-medium">
+                    Daftar
+                </button>
+                
+                <div class="divider">
+                    <span>atau daftar dengan</span>
+                </div>
+                
+                <button class="social-btn w-full flex justify-center items-center gap-2 py-2.5">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="h-5 w-5">
+                    <span class="text-white">Daftar dengan Google</span>
+                </button>
+            </div>
         </div>
     </div>
 
     <script>
+        function showLogin() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('registerForm').classList.add('hidden');
+            document.getElementById('loginTab').classList.add('active');
+            document.getElementById('loginTab').classList.remove('opacity-60');
+            document.getElementById('registerTab').classList.remove('active');
+            document.getElementById('registerTab').classList.add('opacity-60');
+            document.getElementById('authContainer').classList.remove('register-width');
+            // Update URL without reloading
+            window.history.pushState({}, '', '?form=login');
+        }
+
+        function showRegister() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+            document.getElementById('registerTab').classList.add('active');
+            document.getElementById('registerTab').classList.remove('opacity-60');
+            document.getElementById('loginTab').classList.remove('active');
+            document.getElementById('loginTab').classList.add('opacity-60');
+            document.getElementById('authContainer').classList.add('register-width');
+            // Update URL without reloading
+            window.history.pushState({}, '', '?form=register');
+        }
+
+        // Tambahkan script untuk toggle password
         function togglePassword(inputId) {
             const input = document.getElementById(inputId);
-            const icon = input.nextElementSibling.querySelector('i');
+            const icon = input.nextElementSibling.querySelector('svg');
             
             if (input.type === "password") {
                 input.type = "text";
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
+                icon.setAttribute('data-state', 'visible');
             } else {
                 input.type = "password";
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
+                icon.setAttribute('data-state', 'hidden');
             }
         }
     </script>
+
+    <script>
+        // Function to get URL parameters
+        function getUrlParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // Check URL parameter and show appropriate form immediately on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const formType = getUrlParam('form');
+            
+            if (formType === 'register') {
+                showRegister();
+            } else {
+                showLogin();
+            }
+            
+            // Initialize animations
+            if (typeof AOS !== 'undefined') {
+                AOS.init({
+                    duration: 1000,
+                    once: true
+                });
+            }
+        });
+    </script>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 </body>
 </html>

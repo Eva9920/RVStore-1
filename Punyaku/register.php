@@ -1,39 +1,4 @@
-<?php
-session_start();
-require_once 'config.php';
-
-// Redirect if already logged in
-if (isset($_SESSION['user_id'])) {
-    header('Location: dashboard.php');
-    exit;
-}
-
-$error = '';
-$success = '';
-
-// Handle registration
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
-    $first_name = trim($_POST['first_name']);
-    $last_name = trim($_POST['last_name']);
-    $username = trim($_POST['username']);
-    $email = trim($_POST['email']);
-    $password = trim($_POST['password']);
-    $confirm_password = trim($_POST['confirm_password']);
-    
-    // Validation
-    if (empty($first_name) || empty($last_name) || empty($username) || empty($email) || empty($password)) {
-        $error = "All fields are required";
-    } elseif ($password !== $confirm_password) {
-        $error = "Passwords do not match";
-    } elseif (strlen($password) < 6) {
-        $error = "Password must be at least 6 characters long";
-    } else {
-        // Check if username or email already exists
-        $stmt = $conn->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
-        $stmt->bind_param("ss", $username, $email);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
+//
         if ($result->num_rows > 0) {
             $error = "Username or email already exists";
         } else {
@@ -50,60 +15,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                 $error = "Registration failed. Please try again.";
             }
         }
-    }
-}
-?>
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RVS - Authentication</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet">
-    <style>
-        /* Base styles */
-        * {
-            font-family:  sans-serif;
-        }
-
-        /* Container styles */
-        .auth-container {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #12022F 0%, #A439FF 40%, #FF4FE0 70%, #57C2FF 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        /* Form elements */
-        .input-style {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            transition: all 0.3s ease;
-            font-size: 1rem;
-            border-radius: 8px;
-            min-width: 240px;
-            width: 100%;
-            padding: 8px 40px 8px 16px;
-            height: 42px;
-        }
-
-        .input-style:focus {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.5);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
-        }
-
-        .input-style::placeholder {
-            color: rgba(255, 255, 255, 0.6);
-            line-height: normal;
-        }
+  //
 
         /* Button styles */
-        .auth-btn {
+        /* .auth-btn {
             background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
             transition: all 0.3s ease;
             border: none;
@@ -117,45 +32,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             background: linear-gradient(135deg, #357ABD 0%, #4A90E2 100%);
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
-        }
+        } */
 
-        .social-btn {
+        /* .social-btn {
             background: rgba(255, 255, 255, 0.08);
             transition: all 0.3s ease;
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
             font-weight: 500;
             cursor: pointer;
-            border-radius: 8px;
-        }
+            border-radius: 8px; */
+        /* }
 
         .social-btn:hover {
             background: rgba(255, 255, 255, 0.15);
             transform: translateY(-2px);
-        }
+        } */
 
         /* Form containers */
-        .form-container {
+        /* .form-container {
             animation: slideUp 0.6s ease forwards;
             max-width: 400px;
             margin: 0 auto;
             width: 100%;
-        }
-
+        } */
+/* 
         .register-width {
             max-width: 600px !important;
             width: 100% !important;
             margin: 0 auto;
             padding: 1.75rem !important;
-        }
+        } */
 
         /* Password field */
-        .password-container {
+        /* .password-container {
             position: relative;
             width: 100%;
-        }
+        } */
 
-        .password-toggle {
+        /* .password-toggle {
             position: absolute;
             right: 12px;
             top: 50%;
@@ -167,19 +82,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             justify-content: center;
             height: 42px;
             padding-right: 4px;
-        }
+        } */
 
         /* Divider */
-        .divider {
+        /* .divider {
             display: flex;
             align-items: center;
             text-align: center;
             margin: 20px 0;
-        }
+        } */
 
-        .divider::before,
-        .divider::after {
-            content: '';
+        /* .divider::before, */
+        /* .divider::after { */
+            /* content: '';
             flex: 1;
             border-bottom: 1px solid rgba(255, 255, 255, 0.3);
         }
@@ -191,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
         }
 
         /* Animations */
-        @keyframes slideUp {
+        /* @keyframes slideUp {
             from {
                 opacity: 0;
                 transform: translateY(20px);
@@ -203,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
         }
 
         /* Register form specific */
-        #registerForm .input-style {
+        /* #registerForm .input-style {
             min-width: 240px;
             width: 100%;
             padding: 8px 40px 8px 16px;
@@ -213,11 +128,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 1rem;
-        }
+        } */
 
         
         /* Tab buttons */
-        .tab-btn {
+        /* .tab-btn {
             background: transparent;
             border: none;
             cursor: pointer;
@@ -238,10 +153,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             height: 2px;
             background: white;
             border-radius: 2px;
-        }
+        } */
 
         /* Logo and title */
-        .logo-container {
+        /* .logo-container {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -263,10 +178,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             width: 40px;
             height: 40px;
             fill: rgba(255, 255, 255, 0.7);
-        }
+        } */
 
         /* Responsive design */
-        @media (max-width: 640px) {
+        /* @media (max-width: 640px) {
             .register-width {
                 width: 100% !important;
                 min-width: 280px !important;
@@ -278,9 +193,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                 gap: 1rem;
             }
             
-            .glass-effect {
+            .glass-effect { */
                 padding: 1.5rem;
-            }
+            /* }
         }
 
         @media (min-width: 641px) and (max-width: 1024px) {
@@ -288,23 +203,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                 width: 90% !important;
                 min-width: 520px !important;
             }
-        }
+        } */
 
-        @media (min-width: 1025px) {
+        /* @media (min-width: 1025px) {
             .register-width {
                 width: 90% !important;
                 min-width: 580px !important;
             }
         }
         
-        /* Terms checkbox */
+        /* Terms checkbox
         .terms-container {
             display: flex;
             align-items: flex-start;
             margin-top: 1rem;
-        }
+        } */
         
-        .terms-container input {
+        /* .terms-container input {
             margin-top: 3px;
         }
     </style>
@@ -312,8 +227,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
 <body>
     <div class="auth-container">
         <div id="authContainer" class="glass-effect max-w-xs w-full space-y-4 p-6 rounded-2xl">
-            <!-- Logo dan Judul -->
-            <div class="logo-container">
+            <!-- Logo dan Judul --> */
+            /* <div class="logo-container">
                 <div class="logo-placeholder">
                     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
@@ -322,16 +237,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                 <div class="space-y-1 text-center">
                     <h1 class="text-white text-2xl font-bold">Reli Vault Store</h1>
                 </div>
-            </div>
+            </div> */ */
 
-            <!-- Auth Tabs -->
+            /* <!-- Auth Tabs -->
             <div class="flex justify-center space-x-4 mb-6 border-b border-white/20 pb-2">
                 <button onclick="showLogin()" class="tab-btn px-6 py-2 text-white opacity-60 hover:opacity-100 transition-opacity active" id="loginTab">Login</button>
                 <button onclick="showRegister()" class="tab-btn px-6 py-2 text-white opacity-60 hover:opacity-100 transition-opacity" id="registerTab">Register</button>
             </div>
 
-            <!-- Login Form -->
-            <div id="loginForm" class="form-container space-y-4">
+            <!-- Login Form --> */ */
+            /* <div id="loginForm" class="form-container space-y-4">
                 <div>
                     <label class="block text-white text-sm font-medium mb-2">Name</label>
                     <input type="text" class="input-style w-full" placeholder="Masukkan nama anda">
@@ -350,8 +265,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                             </svg>
                         </span>
-                    </div>
-                </div>
+                    </div> */
+                /* </div>
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <input type="checkbox" class="h-4 w-4 bg-transparent border-white/30 rounded">
@@ -370,9 +285,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                     <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="h-5 w-5">
                     <span class="text-white">Lanjutkan dengan Google</span>
                 </button>
-            </div>
+            </div> */
 
-            <!-- Register Form -->
+            /* <!-- Register Form -->
             <div id="registerForm" class="form-container hidden space-y-4">
                 <div class="form-grid">
                     <div>
@@ -395,8 +310,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                             </span>
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-white text-sm font-medium mb-2">Konfirmasi Password</label>
+                    <div> */
+                        /* <label class="block text-white text-sm font-medium mb-2">Konfirmasi Password</label>
                         <div class="password-container">
                             <input type="password" id="confirmPassword" class="input-style" placeholder="Konfirmasi kata sandi">
                             <span class="password-toggle" onclick="togglePassword('confirmPassword')">
@@ -407,31 +322,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                             </span>
                         </div>
                     </div>
-                </div>
+                </div> */
 
-                <div class="terms-container">
+                /* <div class="terms-container">
                     <input type="checkbox" class="h-4 w-4 bg-transparent border-white/30 rounded mt-1">
                     <label class="ml-2 block text-sm text-white">Saya setuju dengan <a href="#" class="text-indigo-200 hover:underline">Syarat dan Ketentuan</a></label>
-                </div>
+                </div> */
                 
-                <button class="auth-btn w-full py-3 text-white font-medium">
+                /* <!-- <button class="auth-btn w-full py-3 text-white font-medium">
                     Daftar
                 </button>
                 
                 <div class="divider">
                     <span>atau daftar dengan</span>
-                </div>
+                </div> */ */
                 
-                <button class="social-btn w-full flex justify-center items-center gap-2 py-2.5">
+                /* <button class="social-btn w-full flex justify-center items-center gap-2 py-2.5">
                     <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="h-5 w-5">
                     <span class="text-white">Daftar dengan Google</span>
                 </button>
             </div>
         </div>
-    </div>
+    </div> -->
 
-    <script>
-        function showLogin() {
+    <script> */
+        /* function showLogin() {
             document.getElementById('loginForm').classList.remove('hidden');
             document.getElementById('registerForm').classList.add('hidden');
             document.getElementById('loginTab').classList.add('active');
@@ -453,9 +368,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             document.getElementById('authContainer').classList.add('register-width');
             // Update URL without reloading
             window.history.pushState({}, '', '?form=register');
-        }
+        } */
 
-        // Tambahkan script untuk toggle password
+        /* // Tambahkan script untuk toggle password
         function togglePassword(inputId) {
             const input = document.getElementById(inputId);
             const icon = input.nextElementSibling.querySelector('svg');
@@ -469,8 +384,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             }
         }
     </script>
-
-    <script>
+ */
+    /* <script>
         // Function to get URL parameters
         function getUrlParam(param) {
             const urlParams = new URLSearchParams(window.location.search);
@@ -486,8 +401,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             } else {
                 showLogin();
             }
-            
-            // Initialize animations
+             */
+            /* // Initialize animations
             if (typeof AOS !== 'undefined') {
                 AOS.init({
                     duration: 1000,
@@ -499,4 +414,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
 
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 </body>
-</html>
+</html> */
