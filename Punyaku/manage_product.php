@@ -102,6 +102,7 @@ if ($params) {
     $games = $conn->query($games_query);
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -582,16 +583,17 @@ if ($params) {
             </nav>
         </div>
 
-
         <!-- Main Content Area -->
         <div class="main-content">
             <!-- Topbar -->
             <div class="topbar">
                 <h2>Manage Product</h2>
-                <div class="search-container">
-                    <input type="text" id="searchInput" placeholder="Search product...">
-                    <i class="fas fa-search"></i>
-                </div>
+                <form method="GET" action="" style="display: inline;">
+                    <div class="search-container">
+                        <input type="text" name="search" placeholder="Search product..." value="<?php echo htmlspecialchars($search); ?>">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </form>
                 <div class="topbar-icons">
                     <i class="fas fa-cog"></i>
                     <i class="fas fa-bell"></i>
@@ -604,9 +606,22 @@ if ($params) {
                 <i class="fas fa-plus"></i> Add New Product
             </button>
 
+            <!-- Messages -->
+            <?php if (isset($success_message)): ?>
+                <div class="content-card" style="background-color: #d4edda; color: #155724; margin-bottom: 20px;">
+                    <?php echo $success_message; ?>
+                </div>
+            <?php endif; ?>
+            
+            <?php if (isset($error_message)): ?>
+                <div class="content-card" style="background-color: #f8d7da; color: #721c24; margin-bottom: 20px;">
+                    <?php echo $error_message; ?>
+                </div>
+            <?php endif; ?>
+
             <!-- Product Table -->
             <div class="content-card">
-                <table class="product-table" id="productTable">
+                <table class="product-table">
                     <thead>
                         <tr>
                             <th>Product</th>
@@ -617,12 +632,53 @@ if ($params) {
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Data produk akan di-generate oleh JS -->
+                        <?php while ($game = $games->fetch_assoc()): ?>
+                            <tr>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 15px;">
+                                        <div class="product-image">
+                                            <i class="fas fa-gamepad"></i>
+                                        </div>
+                                        <div>
+                                            <div class="product-name"><?php echo htmlspecialchars($game['name']); ?></div>
+                                            <div class="product-category"><?php echo htmlspecialchars($game['description']); ?></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>Rp <?php echo number_format($game['base_price'], 2); ?></td>
+                                <td><?php echo $game['stock']; ?></td>
+                                <td>
+                                    <span class="status-badge <?php echo ($game['stock'] > 0) ? 'status-active' : 'status-inactive'; ?>">
+                                        <?php echo ($game['stock'] > 0) ? 'Active' : 'Inactive'; ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="action-btn edit" onclick="editProduct(<?php echo $game['id']; ?>, '<?php echo addslashes($game['name']); ?>', '<?php echo addslashes($game['description']); ?>', <?php echo $game['base_price']; ?>, <?php echo $game['stock']; ?>)" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="action-btn delete" onclick="confirmDelete(<?php echo $game['id']; ?>)" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        <?php endwhile; ?>
                     </tbody>
                 </table>
+                
+                <!-- Pagination -->
+                <?php if ($total_pages > 1): ?>
+                <div style="margin-top: 20px; display: flex; justify-content: center;">
+                    <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                        <a href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>" style="margin: 0 5px; padding: 5px 10px; background: <?php echo ($i == $page) ? '#6c5ce7' : '#f0f2f5'; ?>; color: <?php echo ($i == $page) ? 'white' : '#333'; ?>; border-radius: 3px; text-decoration: none;">
+                            <?php echo $i; ?>
+                        </a>
+                    <?php endfor; ?>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
+    
     <!-- Modal Form -->
     <div class="modal" id="productModal">
         <div class="modal-content">
@@ -630,37 +686,28 @@ if ($params) {
                 <h3 id="modalTitle">Add New Product</h3>
                 <button class="close-modal" id="closeModal">&times;</button>
             </div>
-            <form id="productForm">
-                <input type="hidden" id="editIndex">
+            <form id="productForm" method="POST" action="">
+                <input type="hidden" id="editId" name="id">
+                <input type="hidden" id="formAction" name="add_game" value="1">
+                
                 <div class="form-group">
-                    <label for="namaProduk">Product Name</label>
-                    <input type="text" id="namaProduk" class="form-control" required>
+                    <label for="gameName">Product Name</label>
+                    <input type="text" id="gameName" name="name" class="form-control" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="hargaProduk">Price</label>
-                    <input type="number" id="hargaProduk" class="form-control" min="0" required>
+                    <label for="gameDescription">Description</label>
+                    <textarea id="gameDescription" name="description" class="form-control" rows="3"></textarea>
                 </div>
                 
                 <div class="form-group">
-                    <label for="stockProduk">Stock</label>
-                    <input type="number" id="stockProduk" class="form-control" min="0" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="statusProduk">Status</label>
-                    <select id="statusProduk" class="form-control" required>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                    </select>
+                    <label for="gamePrice">Price</label>
+                    <input type="number" id="gamePrice" name="base_price" class="form-control" min="0" step="0.01" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="fotoProduk">Product Image</label>
-                    <input type="file" id="fotoProduk" class="form-control" accept="image/*">
-                    <div class="preview-container">
-                        <img id="previewImg" class="preview-image" alt="Preview">
-                    </div>
+                    <label for="gameStock">Stock</label>
+                    <input type="number" id="gameStock" name="stock" class="form-control" min="0" required>
                 </div>
                 
                 <div class="modal-footer">
@@ -670,114 +717,14 @@ if ($params) {
             </form>
         </div>
     </div>
+    
+    <!-- Delete Confirmation Form -->
+    <form id="deleteForm" method="POST" action="" style="display: none;">
+        <input type="hidden" name="id" id="deleteId">
+        <input type="hidden" name="delete_game" value="1">
+    </form>
 
     <script>
-    // Data produk dummy (bisa diganti dengan data dari backend)
-    let products = [
-        { 
-            nama: "Gabriela Cashmere Blazer", 
-            harga: 113.99, 
-            stock: 1113, 
-            views: 14012,
-            foto: "",
-            status: "active"
-        },
-        { 
-            nama: "Loree blend Jacket - Blue", 
-            harga: 113.99, 
-            stock: 721, 
-            views: 13212,
-            foto: "",
-            status: "active"
-        },
-        { 
-            nama: "Sandro - Jacket - Black", 
-            harga: 113.99, 
-            stock: 407, 
-            views: 8201,
-            foto: "",
-            status: "active"
-        },
-        { 
-            nama: "Addas By Stella McCartney", 
-            harga: 113.99, 
-            stock: 1203, 
-            views: 1002,
-            foto: "",
-            status: "active"
-        },
-        { 
-            nama: "Meteo Hooded Wool Jacket", 
-            harga: 113.99, 
-            stock: 306, 
-            views: 807,
-            foto: "",
-            status: "active"
-        },
-        { 
-            nama: "Hida Down Ski Jacket - Red", 
-            harga: 113.99, 
-            stock: 201, 
-            views: 406,
-            foto: "",
-            status: "inactive"
-        },
-        { 
-            nama: "Dolce & Gabbana", 
-            harga: 113.99, 
-            stock: 108, 
-            views: 204,
-            foto: "",
-            status: "active"
-        },
-        { 
-            nama: "500 THFIB", 
-            harga: 89.99, 
-            stock: 0, 
-            views: 150,
-            foto: "",
-            status: "inactive"
-        }
-    ];
-
-    // Render table
-    function renderTable(filter = "") {
-        const tbody = document.querySelector("#productTable tbody");
-        tbody.innerHTML = "";
-        let filtered = products.filter(p => p.nama.toLowerCase().includes(filter.toLowerCase()));
-        filtered.forEach((p, i) => {
-            tbody.innerHTML += `
-                <tr>
-                    <td>
-                        <div style="display: flex; align-items: center; gap: 15px;">
-                            <div class="product-image">
-                                ${p.foto ? `<img src="${p.foto}" alt="${p.nama}" class="product-image">` : 
-                                  `<i class="fas fa-image"></i>`}
-                            </div>
-                            <div>
-                                <div class="product-name">${p.nama}</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>Rp ${p.harga.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</td>
-                    <td>${p.stock.toLocaleString()}</td>
-                    <td>
-                        <span class="status-badge ${p.status === 'active' ? 'status-active' : 'status-inactive'}">
-                            ${p.status.charAt(0).toUpperCase() + p.status.slice(1)}
-                        </span>
-                    </td>
-                    <td>
-                        <button class="action-btn edit" onclick="editProduct(${i})" title="Edit">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="action-btn delete" onclick="deleteProduct(${i})" title="Delete">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
-        });
-    }
         // Modal logic
         const modal = document.getElementById("productModal");
         const addBtn = document.getElementById("addProductBtn");
@@ -798,14 +745,6 @@ if ($params) {
             modal.classList.add("active");
         };
 
-        // Close modal
-        function closeModalFunc() {
-            modal.classList.remove("active");
-        }
-        
-        closeModal.onclick = closeModalFunc;
-        cancelBtn.onclick = closeModalFunc;
-
         // Edit product function
         window.editProduct = function(id, name, description, price, stock) {
             modalTitle.textContent = "Edit Product";
@@ -820,6 +759,22 @@ if ($params) {
             
             modal.classList.add("active");
         };
+
+        // Delete confirmation
+        window.confirmDelete = function(id) {
+            if (confirm("Are you sure you want to delete this product?")) {
+                document.getElementById("deleteId").value = id;
+                document.getElementById("deleteForm").submit();
+            }
+        };
+
+        // Close modal
+        function closeModalFunc() {
+            modal.classList.remove("active");
+        }
+        
+        closeModal.onclick = closeModalFunc;
+        cancelBtn.onclick = closeModalFunc;
 
         // Close modal when clicking outside
         window.onclick = function(event) {
@@ -836,8 +791,6 @@ if ($params) {
                 this.form.submit();
             }, 500);
         });
-
-
     </script>
 </body>
 </html>
