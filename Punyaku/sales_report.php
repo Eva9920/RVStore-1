@@ -93,7 +93,6 @@ while ($current_date <= $end_date) {
 }
 
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -101,7 +100,7 @@ while ($current_date <= $end_date) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sales Report</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-<style>
+    <style>
         :root {
             --primary: #4e73df;
             --primary-dark: #3a5bc7;
@@ -121,9 +120,8 @@ while ($current_date <= $end_date) {
             background-color: #f8f9fc;
             margin: 0;
             display: flex;
+            min-height: 100vh;
         }
-
-        /* Sidebar Styles */
         .sidebar {
             width: var(--sidebar-width);
             background-color: white;
@@ -132,16 +130,6 @@ while ($current_date <= $end_date) {
             height: 100%;
             z-index: 100;
         }
-
-        img {
-            width: 105px;
-            height: 65px;
-            margin-top: 20px;
-            margin-bottom: -10px;
-            margin-left: 65px;
-        }
-
-
         .logo {
             padding: 20px;
             font-size: 1.5rem;
@@ -150,16 +138,14 @@ while ($current_date <= $end_date) {
             text-align: center;
             border-bottom: 1px solid #eee;
         }
-
         .sidebar nav ul {
             list-style: none;
             padding: 20px 0;
+            margin: 0;
         }
-
         .sidebar nav ul li {
             margin: 5px 0;
         }
-
         .sidebar nav ul li a {
             display: flex;
             align-items: center;
@@ -168,90 +154,57 @@ while ($current_date <= $end_date) {
             text-decoration: none;
             transition: var(--transition);
         }
-
         .sidebar nav ul li a i {
             margin-right: 10px;
             width: 20px;
             text-align: center;
         }
-
         .sidebar nav ul li.active a,
         .sidebar nav ul li a:hover {
             background-color: var(--light-color);
             color: var(--primary-color);
             border-left: 4px solid var(--primary-color);
         }
-
         .main-content {
-            margin-left: 250px;
+            margin-left: var(--sidebar-width);
             flex-grow: 1;
             padding: 20px;
-            width: calc(100% - 250px);
+            width: calc(100% - var(--sidebar-width));
+            min-width: 0;
         }
-        /* Topbar Styles */
-        .topbar {
+        .header {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .header h1 {
+            margin: 0;
+            color: #333;
+            font-size: 2rem;
+        }
+        .user-info {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 15px 25px;
-            background: white;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            margin-bottom: 25px;
-            border-radius: 10px;
-            position: sticky;
-            top: 0;
-            z-index: 10;
+            gap: 10px;
         }
-
-        .topbar h2 {
-            font-weight: 600;
-            color: #1a237e;
-        }
-
-        .search-container {
-            position: relative;
-            width: 300px;
-        }
-
-        .search-container input {
-            width: 100%;
-            padding: 10px 15px 10px 40px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-
-        .search-container input:focus {
-            border-color: var(--primary-color);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(92, 107, 192, 0.2);
-        }
-
-        .search-container i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #777;
-        }
-
-        .topbar-icons {
+        .user-info .avatar {
+            width: 40px;
+            height: 40px;
+            background-color: #ccc;
+            border-radius: 50%;
             display: flex;
-            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #fff;
+            font-size: 1.2em;
         }
-
-        .topbar-icons i {
-            font-size: 20px;
-            color: #5c6bc0;
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-
-        .topbar-icons i:hover {
-            color: #1a237e;
-        }
-
         .card {
             background-color: #fff;
             padding: 20px;
@@ -307,8 +260,6 @@ while ($current_date <= $end_date) {
         .badge-danger { background-color: #dc3545; color: white; }
         .badge-warning { background-color: #ffc107; color: #333; }
         .badge-info { background-color: #17a2b8; color: white; }
-
-        /* Filter and Search styles */
         .filter-section {
             display: flex;
             gap: 15px;
@@ -365,41 +316,90 @@ while ($current_date <= $end_date) {
             font-weight: bold;
             color: #4e73df;
         }
+        .top-selling {
+            margin-top: 30px;
+        }
+        .top-selling h3 {
+            margin-bottom: 10px;
+        }
+      
+        .chart-container {
+            margin-top: 30px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+        }
+        .download-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #6c5ce7 0%, #4834d4 100%);
+            color: #fff;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        .download-btn:hover {
+            background: linear-gradient(135deg, #4834d4 0%, #6c5ce7 100%);
+        }
+        @media (max-width: 900px) {
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding: 10px;
+            }
+            .sidebar {
+                position: static;
+                width: 100%;
+                height: auto;
+                box-shadow: none;
+            }
+        }
+        @media (max-width: 600px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .summary-cards {
+                grid-template-columns: 1fr;
+            }
+            .card, .chart-container {
+                padding: 10px;
+            }
+            .table th, .table td {
+                padding: 8px 6px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="sidebar">
-        <img src="RVS_LOGO.png" alt="RVStore Logo">
-            <nav>
-                <ul>
-                    <li><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                    <li><a href="transaction_history.php"><i class="fas fa-history"></i> Transaction History</a></li>
-                    <li><a href="manage_product.php"><i class="fas fa-boxes"></i> Manage Product</a></li>
-                    <li class="active"><a href="sales_report.php"><i class="fas fa-chart-bar"></i> Sales Report</a></li>
-                    <li><a href="accounts.php"><i class="fas fa-users"></i> Accounts</a></li>
-                    <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-                </ul>
-            </nav>
-        </div>
-
+        <div class="logo">RVStore</div>
+        <nav>
+            <ul>
+                <li><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="transaction_history.php"><i class="fas fa-history"></i> Transaction History</a></li>
+                <li><a href="manage_product.php"><i class="fas fa-boxes"></i> Manage Product</a></li>
+                <li><a href="sales_report.php"><i class="fas fa-chart-bar"></i> Sales Report</a></li>
+                <li><a href="accounts.php"><i class="fas fa-users"></i> Accounts</a></li>
+                <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </nav>
+    </div>
     <div class="main-content">
-            <!-- Topbar -->
-            <div class="topbar">
-                <h2>Sales Report</h2>
-                <form method="GET" class="search-container">
-                    <input type="text" name="search" placeholder="Search product..." value="<?= isset($_GET['search']) ? $_GET['search'] : ''; ?>">
-                    <i class="fas fa-search"></i>
-                </form>
-                <div class="topbar-icons">
-                    <i class="fas fa-cog"></i>
-                    <i class="fas fa-bell"></i>
-                    <i class="fas fa-user-circle"></i>
-                </div>
+        <div class="header">
+            <h1>Sales Report</h1>
+            <div class="user-info">
+                <div class="avatar"><?php echo strtoupper(substr($_SESSION['name'], 0, 1)); ?></div>
+                <span><?php echo htmlspecialchars($_SESSION['name']); ?> (<?php echo htmlspecialchars($_SESSION['role']); ?>)</span>
             </div>
-
+        </div>
         <div class="card">
             <div class="card-header">
-                <h3>Sales Overview</h3>
+                <span>Sales Overview</span>
             </div>
             <form method="GET" action="" class="filter-section">
                 <div class="filter-group">
@@ -417,7 +417,6 @@ while ($current_date <= $end_date) {
                     <button type="button" class="btn" onclick="window.location.href='sales_report.php'">Reset Dates</button>
                 </div>
             </form>
-
             <div class="summary-cards">
                 <div class="summary-card">
                     <div class="title">Total Transactions</div>
@@ -432,127 +431,225 @@ while ($current_date <= $end_date) {
                     <div class="value"><?php echo formatCurrency($summary['average_sale']); ?></div>
                 </div>
             </div>
-
-            <div class="card" style="margin-top: 20px;">
-                <div class="card-header">
-                    <h3>Daily Sales Chart</h3>
-                </div>
-                <canvas id="salesChart" style="max-height: 400px;"></canvas>
+        </div>
+        <div class="card">
+            <div class="card-header">
+            <span>Daily Sales Chart</span>
             </div>
-
-            <div class="card" style="margin-top: 20px;">
-                <div class="card-header">
-                    <h3>Sales By Game</h3>
-                </div>
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Game Name</th>
-                                <th>Transactions</th>
-                                <th>Total Sales</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (empty($sales_by_game)): ?>
-                                <tr>
-                                    <td colspan="3" class="text-center">No sales by game found for this period.</td>
-                                </tr>
-                            <?php else: ?>
-                                <?php foreach ($sales_by_game as $sale) : ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($sale['game_name']); ?></td>
-                                        <td><?php echo $sale['transaction_count']; ?></td>
-                                        <td><?php echo formatCurrency($sale['total_sales']); ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
+            <canvas id="salesChart" style="max-height: 400px; width: 100%;"></canvas>
+            <script>
+            // Initialize line chart with dummy data
+            const salesCtx = document.getElementById('salesChart').getContext('2d');
+            new Chart(salesCtx, {
+                type: 'line',
+                data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Daily Sales (Rp)',
+                    data: [250000, 320000, 280000, 450000, 380000, 520000, 480000],
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1,
+                    fill: false
+                }]
+                },
+                options: {
+                responsive: true,
+                scales: {
+                    y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                        return 'Rp' + value.toLocaleString();
+                        }
+                    }
+                    }
+                }
+                }
+            });
+            </script>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <span>Sales By Game</span>
             </div>
-
-            <div class="card" style="margin-top: 20px;">
-                <div class="card-header">
-                    <h3>Sales By Payment Method</h3>
-                </div>
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Game Name</th>
+                            <th>Transactions</th>
+                            <th>Total Sales</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($sales_by_game)): ?>
                             <tr>
-                                <th>Payment Method</th>
-                                <th>Transactions</th>
-                                <th>Total Sales</th>
+                                <td colspan="3" class="text-center">No sales by game found for this period.</td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (empty($sales_by_payment_method)): ?>
+                        <?php else: ?>
+                            <?php foreach ($sales_by_game as $sale) : ?>
                                 <tr>
-                                    <td colspan="3" class="text-center">No sales by payment method found for this period.</td>
+                                    <td><?php echo htmlspecialchars($sale['game_name']); ?></td>
+                                    <td><?php echo $sale['transaction_count']; ?></td>
+                                    <td><?php echo formatCurrency($sale['total_sales']); ?></td>
                                 </tr>
-                            <?php else: ?>
-                                <?php foreach ($sales_by_payment_method as $sale) : ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($sale['payment_method_name']); ?></td>
-                                        <td><?php echo $sale['transaction_count']; ?></td>
-                                        <td><?php echo formatCurrency($sale['total_sales']); ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
             </div>
         </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        var ctx = document.getElementById('salesChart').getContext('2d');
-        var salesChart = new Chart(ctx, {
+        <div class="card">
+            <div class="card-header">
+                <span>Sales By Payment Method</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Payment Method</th>
+                            <th>Transactions</th>
+                            <th>Total Sales</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (empty($sales_by_payment_method)): ?>
+                            <tr>
+                                <td colspan="3" class="text-center">No sales by payment method found for this period.</td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($sales_by_payment_method as $sale) : ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($sale['payment_method_name']); ?></td>
+                                    <td><?php echo $sale['transaction_count']; ?></td>
+                                    <td><?php echo formatCurrency($sale['total_sales']); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card top-selling"> <h3>Top 5 Selling</h3>
+            
+            <div class="table-responsive">
+                <table id="topSellingTable" class="table">
+                    <thead>
+                        <tr><th>#</th><th>Title</th><th>Price</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>01.</td><td>Roblox</td><td>Rp150.000,00</td></tr>
+                        <tr><td>02.</td><td>Free Fire</td><td>Rp150.000,00</td></tr>
+                        <tr><td>03.</td><td>Mobile Legends</td><td>Rp300.000,00</td></tr>
+                        <tr><td>04.</td><td>PUBG</td><td>Rp150.000,00</td></tr>
+                        <tr><td>05.</td><td>CODM</td><td>Rp200.000,00</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="chart-container">
+            <h3 style="margin-bottom:10px;">Top Selling Bar Chart</h3>
+            <canvas id="topSellingChart" height="120"></canvas>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            // Initialize the bar chart
+            const ctx = document.getElementById('topSellingChart').getContext('2d');
+            new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: <?php echo json_encode($chartLabels); ?>,
+                labels: ['Roblox', 'Free Fire', 'Mobile Legends', 'PUBG', 'CODM'],
                 datasets: [{
-                    label: 'Sales (in Millions IDR)',
-                    data: <?php echo json_encode($chartData); ?>,
-                    backgroundColor: 'rgba(78, 115, 223, 0.5)',
-                    borderColor: 'rgba(78, 115, 223, 1)',
-                    borderWidth: 1
+                label: 'Sales Amount (Rp)',
+                data: [150000, 150000, 300000, 150000, 200000],
+                backgroundColor: [
+                    'rgba(78, 115, 223, 0.8)',
+                    'rgba(54, 185, 204, 0.8)',
+                    'rgba(28, 200, 138, 0.8)', 
+                    'rgba(246, 194, 62, 0.8)',
+                    'rgba(231, 74, 59, 0.8)'
+                ],
+                borderWidth: 1
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false,
+                scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                    callback: function(value) {
+                        return 'Rp' + value.toLocaleString();
+                    }
+                    }
+                }
+                }
+            }
+            });
+        </script>
+        
+        <div style="text-align:right;">
+            <a href="#" class="download-btn" onclick="downloadPDF()">Download Report</a>
+        </div>
+    </div>
+    <script>
+   
+    // Add HTML2PDF library script in the head section
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+    document.head.appendChild(script);
+
+    // PDF Download function
+    function downloadPDF() {
+        const element = document.querySelector('.main-content');
+        const opt = {
+            margin: 1,
+            filename: 'sales-report.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+
+        // Show loading state
+        const downloadBtn = document.querySelector('.download-btn');
+        downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+        downloadBtn.style.pointerEvents = 'none';
+
+        // Generate PDF
+        html2pdf().set(opt).from(element).save().then(() => {
+            // Reset button state
+            downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download Report';
+            downloadBtn.style.pointerEvents = 'auto';
+        });
+    }
+
+    // Initialize charts and other functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        // Your existing chart initialization code here
+        const ctx = document.getElementById('topSellingChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Roblox', 'Free Fire', 'Mobile Legends', 'PUBG', 'CODM'],
+                datasets: [{
+                    label: 'Sales Amount',
+                    data: [150000, 150000, 300000, 150000, 200000],
+                    backgroundColor: '#4e73df'
+                }]
+            },
+            options: {
+                responsive: true,
                 scales: {
                     y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return 'IDR ' + value + 'M';
-                            }
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: true // Show legend for the bar chart
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return 'IDR ' + (context.raw * 1000000).toLocaleString('id-ID');
-                            }
-                        }
+                        beginAtZero: true
                     }
                 }
             }
         });
+    });
+
+    
     </script>
 </body>
 </html>
+<?php
