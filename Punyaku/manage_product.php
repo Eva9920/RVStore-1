@@ -134,7 +134,7 @@ if ($params) {
             color: #333;
         }
 
-         /* Sidebar Styles */
+        /* Sidebar Styles */
         .sidebar {
             width: var(--sidebar-width);
             background-color: white;
@@ -142,6 +142,14 @@ if ($params) {
             position: fixed;
             height: 100%;
             z-index: 100;
+        }
+
+        img {
+            width: 105px;
+            height: 65px;
+            margin-top: 20px;
+            margin-bottom: -10px;
+            margin-left: 65px;
         }
 
         .logo {
@@ -561,7 +569,7 @@ if ($params) {
     <div class="dashboard-container">
       <!-- Sidebar Navigation -->
         <div class="sidebar">
-            <div class="logo">LOGO</div>
+            <img src="RVS_LOGO.png" alt="RVStore Logo">
             <nav>
                 <ul>
                     <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
@@ -569,6 +577,7 @@ if ($params) {
                     <li class="active"><a href="manageproduct.html"><i class="fas fa-boxes"></i> Manage Product</a></li>
                     <li><a href="salesreport.html"><i class="fas fa-chart-bar"></i> Sales Report</a></li>
                     <li><a href="accounts.html"><i class="fas fa-users"></i> Accounts</a></li>
+                    <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
                 </ul>
             </nav>
         </div>

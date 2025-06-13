@@ -130,6 +130,7 @@ $users_query = $conn->query("SELECT id, username, email, role, full_name, status
             margin: 0;
             display: flex;
         }
+        
         /* Sidebar Styles */
         .sidebar {
             width: var(--sidebar-width);
@@ -147,7 +148,6 @@ $users_query = $conn->query("SELECT id, username, email, role, full_name, status
             margin-bottom: -10px;
             margin-left: 65px;
         }
-
 
         .logo {
             padding: 20px;

@@ -146,7 +146,6 @@ if ($params) {
             margin-left: 65px;
         }
 
-
         .logo {
             padding: 20px;
             font-size: 1.5rem;

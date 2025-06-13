@@ -122,6 +122,7 @@ while ($current_date <= $end_date) {
             display: flex;
             min-height: 100vh;
         }
+        /* Sidebar Styles */
         .sidebar {
             width: var(--sidebar-width);
             background-color: white;
@@ -130,6 +131,15 @@ while ($current_date <= $end_date) {
             height: 100%;
             z-index: 100;
         }
+
+        img {
+            width: 105px;
+            height: 65px;
+            margin-top: 20px;
+            margin-bottom: -10px;
+            margin-left: 65px;
+        }
+
         .logo {
             padding: 20px;
             font-size: 1.5rem;
@@ -138,14 +148,16 @@ while ($current_date <= $end_date) {
             text-align: center;
             border-bottom: 1px solid #eee;
         }
+
         .sidebar nav ul {
             list-style: none;
             padding: 20px 0;
-            margin: 0;
         }
+
         .sidebar nav ul li {
             margin: 5px 0;
         }
+
         .sidebar nav ul li a {
             display: flex;
             align-items: center;
@@ -154,17 +166,20 @@ while ($current_date <= $end_date) {
             text-decoration: none;
             transition: var(--transition);
         }
+
         .sidebar nav ul li a i {
             margin-right: 10px;
             width: 20px;
             text-align: center;
         }
+
         .sidebar nav ul li.active a,
         .sidebar nav ul li a:hover {
             background-color: var(--light-color);
             color: var(--primary-color);
             border-left: 4px solid var(--primary-color);
         }
+
         .main-content {
             margin-left: var(--sidebar-width);
             flex-grow: 1;
@@ -377,7 +392,7 @@ while ($current_date <= $end_date) {
 </head>
 <body>
     <div class="sidebar">
-        <div class="logo">RVStore</div>
+        <img src="RVS_LOGO.png" alt="RVStore Logo">
         <nav>
             <ul>
                 <li><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>

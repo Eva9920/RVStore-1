@@ -8,30 +8,75 @@ if (isset($_SESSION['user_id'])) {
     exit;
 }
 
+$error = '';
+$success = '';
+
 // Handle login
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
-    $username = trim($_POST['username']);
+    $nama_lengkap = trim($_POST['nama_lengkap']);
     $password = trim($_POST['password']);
-    
-    $stmt = $conn->prepare("SELECT id, username, password, role, first_name, last_name FROM users WHERE username = ?");
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    if ($result->num_rows === 1) {
-        $user = $result->fetch_assoc();
-        if (password_verify($password, $user['password'])) {
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['username'] = $user['username'];
-            $_SESSION['name'] = $user['first_name'] . ' ' . $user['last_name'];
-            $_SESSION['role'] = $user['role'];
-            
-            header('Location: dashboard.php');
-            exit;
+
+    if (empty($nama_lengkap) || empty($password)) {
+        $error = "Email dan password harus diisi";
+    } else {
+        $stmt = $conn->prepare("SELECT id, nama_lengkap, email, password FROM users WHERE nama_lengkap = ?");
+        $stmt->bind_param("s", $nama_lengkap);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 1) {
+            $user = $result->fetch_assoc();
+            if (password_verify($password, $user['password'])) {
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['username'] = $user['nama_lengkap'];
+                $_SESSION['email'] = $user['email'];
+                
+                header('Location: dashboard.php');
+                exit;
+            } else {
+                $error = "Email atau password salah";
+            }
+        } else {
+            $error = "Email atau password salah";
         }
     }
-    
-    $error = "Invalid username or password";
+}
+
+// Handle register
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
+    $nama_lengkap = trim($_POST['nama_lengkap']);
+    $email = trim($_POST['email']);
+    $password = trim($_POST['password']);
+    $confirm_password = trim($_POST['confirm_password']);
+
+    if (empty($nama_lengkap) || empty($email) || empty($password) || empty($confirm_password)) {
+        $error = "Semua field harus diisi";
+    } elseif ($password !== $confirm_password) {
+        $error = "Password dan konfirmasi password tidak sama";
+    } elseif (strlen($password) < 6) {
+        $error = "Password minimal 6 karakter";
+    } else {
+        // Check if email already exists
+        $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows > 0) {
+            $error = "Email sudah terdaftar";
+        } else {
+            // Insert new user
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+            $stmt = $conn->prepare("INSERT INTO users (nama_lengkap, email, password) VALUES (?, ?, ?)");
+            $stmt->bind_param("sss", $nama_lengkap, $email, $hashed_password);
+            
+            if ($stmt->execute()) {
+                $success = "Registrasi berhasil! Silakan login dengan akun Anda.";
+            } else {
+                $error = "Terjadi kesalahan saat registrasi";
+            }
+        }
+    }
 }
 ?>
 
@@ -46,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     <style>
         /* Base styles */
         * {
-            font-family:  sans-serif;
+            font-family: sans-serif;
         }
 
         /* Container styles */
@@ -58,6 +103,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             justify-content: center;
             padding: 20px;
         }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
         /* Form elements */
         .input-style {
             background: rgba(255, 255, 255, 0.1);
@@ -197,7 +250,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             gap: 1rem;
         }
 
-        
         /* Tab buttons */
         .tab-btn {
             background: transparent;
@@ -221,7 +273,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             background: white;
             border-radius: 2px;
         }
-        /*logo*/
+
+        /* Logo */
         .logo-container {
             display: flex;
             align-items: center;
@@ -229,6 +282,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             flex-direction: column;
             margin-bottom: 1.5rem;
         }
+
+        /* Alert styles */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #FCA5A5;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #86EFAC;
+        }
+
         /* Responsive design */
         @media (max-width: 640px) {
             .register-width {
@@ -292,37 +366,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                 <button onclick="showRegister()" class="tab-btn px-6 py-2 text-white opacity-60 hover:opacity-100 transition-opacity" id="registerTab">Register</button>
             </div>
 
+            <!-- Alert Messages -->
+            <?php if (!empty($error)): ?>
+                <div class="alert alert-error">
+                    <?php echo htmlspecialchars($error); ?>
+                </div>
+            <?php endif; ?>
+
+            <?php if (!empty($success)): ?>
+                <div class="alert alert-success">
+                    <?php echo htmlspecialchars($success); ?>
+                </div>
+            <?php endif; ?>
+
             <!-- Login Form -->
             <div id="loginForm" class="form-container space-y-4">
-                <div>
-                    <label class="block text-white text-sm font-medium mb-2">Name</label>
-                    <input type="text" class="input-style w-full" placeholder="Masukkan nama anda">
-                </div>
-                <div>
-                    <label class="block text-white text-sm font-medium mb-2">Email</label>
-                    <input type="email" class="input-style w-full" placeholder="Masukkan email anda">
-                </div>
-                <div class="relative">
-                    <label class="block text-white text-sm font-medium mb-2">Password</label>
-                    <div class="password-container">
-                        <input type="password" id="loginPassword" class="input-style w-full" placeholder="Masukkan kata sandi">
-                        <span class="password-toggle" onclick="togglePassword('loginPassword')">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                            </svg>
-                        </span>
+                <form method="POST" action="">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-white text-sm font-medium mb-2">Nama</label>
+                            <input type="nama_lengkap" name="nama_lengkap" class="input-style w-full" placeholder="Masukkan nama anda" required>
+                        </div>
+                        <div class="relative">
+                            <label class="block text-white text-sm font-medium mb-2">Password</label>
+                            <div class="password-container">
+                                <input type="password" id="loginPassword" name="password" class="input-style w-full" placeholder="Masukkan kata sandi" required>
+                                <span class="password-toggle" onclick="togglePassword('loginPassword')">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <input type="checkbox" class="h-4 w-4 bg-transparent border-white/30 rounded">
+                                <label class="ml-2 block text-sm text-white">Ingat saya</label>
+                            </div>
+                        </div>
+                        <button type="submit" name="login" class="auth-btn w-full py-3 text-white font-medium">
+                            Masuk
+                        </button>
                     </div>
-                </div>
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <input type="checkbox" class="h-4 w-4 bg-transparent border-white/30 rounded">
-                        <label class="ml-2 block text-sm text-white">Ingat saya</label>
-                    </div>
-                </div>
-                <button class="auth-btn w-full py-3 text-white font-medium">
-                    Masuk
-                </button>
+                </form>
                 
                 <div class="divider">
                     <span>atau lanjutkan dengan</span>
@@ -336,49 +423,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
 
             <!-- Register Form -->
             <div id="registerForm" class="form-container hidden space-y-4">
-                <div class="form-grid">
-                    <div>
-                        <label class="block text-white text-sm font-medium mb-2">Nama Lengkap</label>
-                        <input type="text" class="input-style" placeholder="Masukkan nama lengkap">
-                    </div>
-                    <div>
-                        <label class="block text-white text-sm font-medium mb-2">Email</label>
-                        <input type="email" class="input-style" placeholder="Masukkan email">
-                    </div>
-                    <div>
-                        <label class="block text-white text-sm font-medium mb-2">Password</label>
-                        <div class="password-container">
-                            <input type="password" id="registerPassword" class="input-style" placeholder="Buat kata sandi">
-                            <span class="password-toggle" onclick="togglePassword('registerPassword')">
-                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                </svg>
-                            </span>
+                <form method="POST" action="">
+                    <div class="space-y-4">
+                        <div class="form-grid">
+                            <div>
+                                <label class="block text-white text-sm font-medium mb-2">Nama Lengkap</label>
+                                <input type="text" name="nama_lengkap" class="input-style" placeholder="Masukkan nama lengkap" required>
+                            </div>
+                            <div>
+                                <label class="block text-white text-sm font-medium mb-2">Email</label>
+                                <input type="email" name="email" class="input-style" placeholder="Masukkan email" required>
+                            </div>
+                            <div>
+                                <label class="block text-white text-sm font-medium mb-2">Password</label>
+                                <div class="password-container">
+                                    <input type="password" id="registerPassword" name="password" class="input-style" placeholder="Buat kata sandi" required>
+                                    <span class="password-toggle" onclick="togglePassword('registerPassword')">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                    </span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-white text-sm font-medium mb-2">Konfirmasi Password</label>
+                                <div class="password-container">
+                                    <input type="password" id="confirmPassword" name="confirm_password" class="input-style" placeholder="Konfirmasi kata sandi" required>
+                                    <span class="password-toggle" onclick="togglePassword('confirmPassword')">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div>
-                        <label class="block text-white text-sm font-medium mb-2">Konfirmasi Password</label>
-                        <div class="password-container">
-                            <input type="password" id="confirmPassword" class="input-style" placeholder="Konfirmasi kata sandi">
-                            <span class="password-toggle" onclick="togglePassword('confirmPassword')">
-                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                </svg>
-                            </span>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="terms-container">
-                    <input type="checkbox" class="h-4 w-4 bg-transparent border-white/30 rounded mt-1">
-                    <label class="ml-2 block text-sm text-white">Saya setuju dengan <a href="#" class="text-indigo-200 hover:underline">Syarat dan Ketentuan</a></label>
-                </div>
-                
-                <button class="auth-btn w-full py-3 text-white font-medium">
-                    Daftar
-                </button>
+                        <div class="terms-container">
+                            <input type="checkbox" class="h-4 w-4 bg-transparent border-white/30 rounded mt-1" required>
+                            <label class="ml-2 block text-sm text-white">Saya setuju dengan <a href="#" class="text-indigo-200 hover:underline">Syarat dan Ketentuan</a></label>
+                        </div>
+                        
+                        <button type="submit" name="register" class="auth-btn w-full py-3 text-white font-medium">
+                            Daftar
+                        </button>
+                    </div>
+                </form>
                 
                 <div class="divider">
                     <span>atau daftar dengan</span>
@@ -401,7 +492,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             document.getElementById('registerTab').classList.remove('active');
             document.getElementById('registerTab').classList.add('opacity-60');
             document.getElementById('authContainer').classList.remove('register-width');
-            // Update URL without reloading
             window.history.pushState({}, '', '?form=login');
         }
 
@@ -413,11 +503,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             document.getElementById('loginTab').classList.remove('active');
             document.getElementById('loginTab').classList.add('opacity-60');
             document.getElementById('authContainer').classList.add('register-width');
-            // Update URL without reloading
             window.history.pushState({}, '', '?form=register');
         }
 
-        // Tambahkan script untuk toggle password
         function togglePassword(inputId) {
             const input = document.getElementById(inputId);
             const icon = input.nextElementSibling.querySelector('svg');
@@ -430,26 +518,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
                 icon.setAttribute('data-state', 'hidden');
             }
         }
-    </script>
 
-    <script>
-        // Function to get URL parameters
         function getUrlParam(param) {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get(param);
         }
 
-        // Check URL parameter and show appropriate form immediately on page load
         document.addEventListener('DOMContentLoaded', function() {
             const formType = getUrlParam('form');
             
-            if (formType === 'register') {
-                showRegister();
-            } else {
+            <?php if (!empty($success)): ?>
                 showLogin();
-            }
+            <?php elseif (isset($_POST['register'])): ?>
+                showRegister();
+            <?php else: ?>
+                if (formType === 'register') {
+                    showRegister();
+                } else {
+                    showLogin();
+                }
+            <?php endif; ?>
             
-            // Initialize animations
             if (typeof AOS !== 'undefined') {
                 AOS.init({
                     duration: 1000,
