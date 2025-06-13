@@ -102,7 +102,6 @@ if ($params) {
     $games = $conn->query($games_query);
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -135,26 +134,6 @@ if ($params) {
             color: #333;
         }
 
-        /* Alert Messages */
-        .alert {
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 6px;
-            font-weight: 500;
-        }
-
-        .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .alert-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
          /* Sidebar Styles */
         .sidebar {
             width: var(--sidebar-width);
@@ -164,15 +143,6 @@ if ($params) {
             height: 100%;
             z-index: 100;
         }
-
-        img {
-            width: 105px;
-            height: 65px;
-            margin-top: 20px;
-            margin-bottom: -10px;
-            margin-left: 65px;
-        }
-
 
         .logo {
             padding: 20px;
@@ -297,26 +267,29 @@ if ($params) {
 
         /* Add Product Button */
         .add-product-btn {
-            background: linear-gradient(135deg, #6c5ce7 0%, #4834d4 100%);
+            background: linear-gradient(135deg, #6c5ce7 0%, #4834d4 50%);
             color: white;
             border: none;
-            padding: 12px 25px;
-            border-radius: 6px;
-            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 60;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 5px;
             transition: all 0.3s;
             box-shadow: 0 4px 10px rgba(92, 107, 192, 0.3);
             font-size: 1rem;
-            margin-bottom: 20px;
-            float: right;
+            margin: 20px;
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            z-index: 99;
         }
 
         .add-product-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(92, 107, 192, 0.4);
+            box-shadow: 0 6px 15px rgba(82, 107, 192, 0.4);
         }
 
         /* Table Styles */
@@ -374,9 +347,13 @@ if ($params) {
             margin-bottom: 5px;
         }
 
-        .product-description {
+        .product-category {
             font-size: 13px;
             color: #777;
+        }
+        .product-status {
+            font-weight: 600;
+            margin-bottom: 5px;
         }
 
         .status-badge {
@@ -506,6 +483,22 @@ if ($params) {
             box-shadow: 0 0 0 3px rgba(92, 107, 192, 0.2);
         }
 
+        .preview-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .preview-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid #eee;
+            display: none;
+        }
+
         .modal-footer {
             display: flex;
             justify-content: flex-end;
@@ -543,35 +536,7 @@ if ($params) {
             transform: translateY(-2px);
         }
 
-        /* Pagination */
-        .pagination {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .pagination a, .pagination span {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            color: #333;
-            text-decoration: none;
-            transition: all 0.3s;
-        }
-
-        .pagination a:hover {
-            background-color: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-        .pagination .current {
-            background-color: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
+      
         
         @media (max-width: 768px) {
             .topbar {
@@ -594,45 +559,36 @@ if ($params) {
 <body>
     <!-- Dashboard Container -->
     <div class="dashboard-container">
-        <!-- Sidebar Navigation -->
+      <!-- Sidebar Navigation -->
         <div class="sidebar">
-            <img src="RVS_LOGO.png" alt="RVStore Logo">
+            <div class="logo">LOGO</div>
             <nav>
                 <ul>
-                    <li><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                    <li><a href="transactionhistory.php"><i class="fas fa-history"></i> Transaction History</a></li>
-                    <li class="active"><a href="manageproduct.php"><i class="fas fa-boxes"></i> Manage Product</a></li>
-                    <li><a href="salesreport.php"><i class="fas fa-chart-bar"></i> Sales Report</a></li>
-                    <li><a href="accounts.php"><i class="fas fa-users"></i> Accounts</a></li>
-                    <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                    <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="transactionhistory.html"><i class="fas fa-history"></i> Transaction History</a></li>
+                    <li class="active"><a href="manageproduct.html"><i class="fas fa-boxes"></i> Manage Product</a></li>
+                    <li><a href="salesreport.html"><i class="fas fa-chart-bar"></i> Sales Report</a></li>
+                    <li><a href="accounts.html"><i class="fas fa-users"></i> Accounts</a></li>
                 </ul>
             </nav>
         </div>
+
 
         <!-- Main Content Area -->
         <div class="main-content">
             <!-- Topbar -->
             <div class="topbar">
                 <h2>Manage Product</h2>
-                <form method="GET" class="search-container">
-                    <input type="text" name="search" placeholder="Search product..." value="<?= htmlspecialchars($search) ?>">
+                <div class="search-container">
+                    <input type="text" id="searchInput" placeholder="Search product...">
                     <i class="fas fa-search"></i>
-                </form>
+                </div>
                 <div class="topbar-icons">
                     <i class="fas fa-cog"></i>
                     <i class="fas fa-bell"></i>
                     <i class="fas fa-user-circle"></i>
                 </div>
             </div>
-
-            <!-- Messages -->
-            <?php if (isset($success_message)): ?>
-                <div class="alert alert-success"><?= $success_message ?></div>
-            <?php endif; ?>
-            
-            <?php if (isset($error_message)): ?>
-                <div class="alert alert-error"><?= $error_message ?></div>
-            <?php endif; ?>
 
             <!-- Add Product Button -->
             <button class="add-product-btn" id="addProductBtn">
@@ -641,7 +597,7 @@ if ($params) {
 
             <!-- Product Table -->
             <div class="content-card">
-                <table class="product-table">
+                <table class="product-table" id="productTable">
                     <thead>
                         <tr>
                             <th>Product</th>
@@ -652,67 +608,12 @@ if ($params) {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php while ($game = $games->fetch_assoc()): ?>
-                        <tr>
-                            <td>
-                                <div style="display: flex; align-items: center; gap: 15px;">
-                                    <div class="product-image">
-                                        <i class="fas fa-gamepad"></i>
-                                    </div>
-                                    <div>
-                                        <div class="product-name"><?= htmlspecialchars($game['name']) ?></div>
-                                        <div class="product-description"><?= htmlspecialchars(substr($game['description'], 0, 50)) ?>...</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>Rp <?= number_format($game['base_price'], 0, ',', '.') ?></td>
-                            <td><?= number_format($game['stock']) ?></td>
-                            <td>
-                                <span class="status-badge <?= $game['stock'] > 0 ? 'status-active' : 'status-inactive' ?>">
-                                    <?= $game['stock'] > 0 ? 'Active' : 'Out of Stock' ?>
-                                </span>
-                            </td>
-                            <td>
-                                <button class="action-btn edit" onclick="editProduct(<?= $game['id'] ?>, '<?= htmlspecialchars($game['name']) ?>', '<?= htmlspecialchars($game['description']) ?>', <?= $game['base_price'] ?>, <?= $game['stock'] ?>)" title="Edit">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this product?')">
-                                    <input type="hidden" name="delete_game" value="1">
-                                    <input type="hidden" name="id" value="<?= $game['id'] ?>">
-                                    <button type="submit" class="action-btn delete" title="Delete">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        <?php endwhile; ?>
+                        <!-- Data produk akan di-generate oleh JS -->
                     </tbody>
                 </table>
-
-                <!-- Pagination -->
-                <?php if ($total_pages > 1): ?>
-                <div class="pagination">
-                    <?php if ($page > 1): ?>
-                        <a href="?page=<?= $page - 1 ?>&search=<?= urlencode($search) ?>">Previous</a>
-                    <?php endif; ?>
-                    
-                    <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-                        <?php if ($i == $page): ?>
-                            <span class="current"><?= $i ?></span>
-                        <?php else: ?>
-                            <a href="?page=<?= $i ?>&search=<?= urlencode($search) ?>"><?= $i ?></a>
-                        <?php endif; ?>
-                    <?php endfor; ?>
-                    
-                    <?php if ($page < $total_pages): ?>
-                        <a href="?page=<?= $page + 1 ?>&search=<?= urlencode($search) ?>">Next</a>
-                    <?php endif; ?>
-                </div>
-                <?php endif; ?>
             </div>
         </div>
     </div>
-
     <!-- Modal Form -->
     <div class="modal" id="productModal">
         <div class="modal-content">
@@ -720,28 +621,37 @@ if ($params) {
                 <h3 id="modalTitle">Add New Product</h3>
                 <button class="close-modal" id="closeModal">&times;</button>
             </div>
-            <form id="productForm" method="POST">
-                <input type="hidden" id="editId" name="id">
-                <input type="hidden" id="formAction" name="add_game" value="1">
-                
+            <form id="productForm">
+                <input type="hidden" id="editIndex">
                 <div class="form-group">
-                    <label for="gameName">Product Name</label>
-                    <input type="text" id="gameName" name="name" class="form-control" required>
+                    <label for="namaProduk">Product Name</label>
+                    <input type="text" id="namaProduk" class="form-control" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="gameDescription">Description</label>
-                    <textarea id="gameDescription" name="description" class="form-control" rows="3"></textarea>
+                    <label for="hargaProduk">Price</label>
+                    <input type="number" id="hargaProduk" class="form-control" min="0" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="gamePrice">Base Price</label>
-                    <input type="number" id="gamePrice" name="base_price" class="form-control" min="0" step="0.01" required>
+                    <label for="stockProduk">Stock</label>
+                    <input type="number" id="stockProduk" class="form-control" min="0" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="statusProduk">Status</label>
+                    <select id="statusProduk" class="form-control" required>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
                 </div>
                 
                 <div class="form-group">
-                    <label for="gameStock">Stock</label>
-                    <input type="number" id="gameStock" name="stock" class="form-control" min="0" required>
+                    <label for="fotoProduk">Product Image</label>
+                    <input type="file" id="fotoProduk" class="form-control" accept="image/*">
+                    <div class="preview-container">
+                        <img id="previewImg" class="preview-image" alt="Preview">
+                    </div>
                 </div>
                 
                 <div class="modal-footer">
@@ -753,6 +663,112 @@ if ($params) {
     </div>
 
     <script>
+    // Data produk dummy (bisa diganti dengan data dari backend)
+    let products = [
+        { 
+            nama: "Gabriela Cashmere Blazer", 
+            harga: 113.99, 
+            stock: 1113, 
+            views: 14012,
+            foto: "",
+            status: "active"
+        },
+        { 
+            nama: "Loree blend Jacket - Blue", 
+            harga: 113.99, 
+            stock: 721, 
+            views: 13212,
+            foto: "",
+            status: "active"
+        },
+        { 
+            nama: "Sandro - Jacket - Black", 
+            harga: 113.99, 
+            stock: 407, 
+            views: 8201,
+            foto: "",
+            status: "active"
+        },
+        { 
+            nama: "Addas By Stella McCartney", 
+            harga: 113.99, 
+            stock: 1203, 
+            views: 1002,
+            foto: "",
+            status: "active"
+        },
+        { 
+            nama: "Meteo Hooded Wool Jacket", 
+            harga: 113.99, 
+            stock: 306, 
+            views: 807,
+            foto: "",
+            status: "active"
+        },
+        { 
+            nama: "Hida Down Ski Jacket - Red", 
+            harga: 113.99, 
+            stock: 201, 
+            views: 406,
+            foto: "",
+            status: "inactive"
+        },
+        { 
+            nama: "Dolce & Gabbana", 
+            harga: 113.99, 
+            stock: 108, 
+            views: 204,
+            foto: "",
+            status: "active"
+        },
+        { 
+            nama: "500 THFIB", 
+            harga: 89.99, 
+            stock: 0, 
+            views: 150,
+            foto: "",
+            status: "inactive"
+        }
+    ];
+
+    // Render table
+    function renderTable(filter = "") {
+        const tbody = document.querySelector("#productTable tbody");
+        tbody.innerHTML = "";
+        let filtered = products.filter(p => p.nama.toLowerCase().includes(filter.toLowerCase()));
+        filtered.forEach((p, i) => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div class="product-image">
+                                ${p.foto ? `<img src="${p.foto}" alt="${p.nama}" class="product-image">` : 
+                                  `<i class="fas fa-image"></i>`}
+                            </div>
+                            <div>
+                                <div class="product-name">${p.nama}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>Rp ${p.harga.toLocaleString('id-ID', { minimumFractionDigits: 2 })}</td>
+                    <td>${p.stock.toLocaleString()}</td>
+                    <td>
+                        <span class="status-badge ${p.status === 'active' ? 'status-active' : 'status-inactive'}">
+                            ${p.status.charAt(0).toUpperCase() + p.status.slice(1)}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="action-btn edit" onclick="editProduct(${i})" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn delete" onclick="deleteProduct(${i})" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
         // Modal logic
         const modal = document.getElementById("productModal");
         const addBtn = document.getElementById("addProductBtn");

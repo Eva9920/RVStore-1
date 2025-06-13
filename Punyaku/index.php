@@ -221,32 +221,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             background: white;
             border-radius: 2px;
         }
-
-        /* Logo and title */
+        /*logo*/
         .logo-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-        
-        .logo-placeholder {
-            width: 70px;
-            height: 70px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 16px;
+            flex-direction: column;
+            margin-bottom: 1.5rem;
         }
-        
-        .logo-placeholder svg {
-            width: 40px;
-            height: 40px;
-            fill: rgba(255, 255, 255, 0.7);
-        }
-
         /* Responsive design */
         @media (max-width: 640px) {
             .register-width {
@@ -297,9 +279,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             <!-- Logo dan Judul -->
             <div class="logo-container">
                 <div class="logo-placeholder">
-                    <svg viewBox="RVS_LOGO" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
-                    </svg>
+                    <img src="RVS_LOGO.png" alt="RVS Logo" class="w-16 h-16 rounded-full">
                 </div>
                 <div class="space-y-1 text-center">
                     <h1 class="text-white text-2xl font-bold">Reli Vault Store</h1>
