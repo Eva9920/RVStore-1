@@ -95,6 +95,7 @@ if ($params) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transaction History</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         :root {
             --primary: #4e73df;
@@ -128,62 +129,174 @@ if ($params) {
             min-height: 100vh;
         }
         
-        /* Sidebar Styles */
-        .sidebar {
-            width: var(--sidebar-width);
-            background-color: white;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-            position: fixed;
-            height: 100%;
-            z-index: 100;
-        }
-
         img {
             width: 105px;
             height: 65px;
             margin-top: 20px;
             margin-bottom: -10px;
             margin-left: 65px;
+        }        
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 80px;
+            height: 100%;
+            background: linear-gradient(135deg, #2a0845 0%, #6441a5 100%);
+            backdrop-filter: blur(40px);
+            border-right: 2px solid rgba(255, 20, 147, 0.3); /* Pink magenta border */
+            box-shadow: 0 0 20px rgba(139, 0, 139, 0.5); /* Dark purple shadow */
+            padding: 6px 14px;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
         }
 
-        .logo {
-            padding: 20px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--primary-color);
-            text-align: center;
-            border-bottom: 1px solid #eee;
+        .sidebar.active {
+            width: 260px;
+            background: linear-gradient(135deg, #1a052e 0%, #4b2a8a 100%);
         }
 
-        .sidebar nav ul {
-            list-style: none;
-            padding: 20px 0;
-        }
-
-        .sidebar nav ul li {
-            margin: 5px 0;
-        }
-
-        .sidebar nav ul li a {
+        .sidebar .logo-menu {
             display: flex;
             align-items: center;
-            padding: 12px 20px;
-            color: var(--dark-color);
-            text-decoration: none;
-            transition: var(--transition);
+            width: 100%;
+            height: 70px;
+            border-bottom: 1px solid rgba(255, 20, 147, 0.2); /* Pink magenta subtle divider */
         }
 
-        .sidebar nav ul li a i {
-            margin-right: 10px;
-            width: 20px;
+        .sidebar .logo-menu .logo {
+            font-size: 25px;
+            color: #ff1493; /* Pink magenta */
+            font-weight: 600;
+            pointer-events: none;
+            opacity: 0;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 10px rgba(255, 20, 147, 0.5);
+        }
+
+        .sidebar.active .logo-menu .logo {
+            opacity: 1;
+            transition-delay: 0.2s;
+        }
+
+        .sidebar .logo-menu .toggle-btn {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            font-size: 30px;
+            color: #ff1493; /* Pink magenta */
             text-align: center;
+            line-height: 40px;
+            cursor: pointer;
+            transition: all 0.5s ease;
+            background: rgba(106, 13, 173, 0.3);
+            border-radius: 50%;
         }
 
-        .sidebar nav ul li.active a,
-        .sidebar nav ul li a:hover {
-            background-color: var(--light-color);
-            color: var(--primary-color);
-            border-left: 4px solid var(--primary-color);
+        .sidebar.active .logo-menu .toggle-btn {
+            left: 90%;
+            background: rgba(255, 20, 147, 0.2);
+        }
+
+        .sidebar .logo-menu .toggle-btn:hover {
+            color: #ff69b4; /* Lighter pink */
+            background: rgba(255, 20, 147, 0.3);
+        }
+
+        .sidebar .list {
+            margin-top: 30px;
+        }
+
+        .list .list-item {
+            list-style: ;
+            width: 100%;
+            height: 50px;
+            margin: 10px 0;
+            line-height: 50px;
+        }
+
+        .list .list-item a {
+            display: flex;
+            align-items: center;
+            text-align: none;
+            font-size: 18px;
+            color: #e2b4ff; /* Light purple text */
+            text-decoration: none;
+            border-radius: 6px;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            padding: 0 10px;
+        }
+
+        .list .list-item.active a,
+        .list .list-item a:hover {
+            background: linear-gradient(90deg, rgba(255, 20, 147, 0.3) 0%, rgba(106, 13, 173, 0.3) 100%);
+            color: #fff;
+            box-shadow: 0 5px 15px rgba(139, 0, 139, 0.4);
+        }
+
+        .list .list-item a i {
+            min-width: 30px;
+            height: 50px;
+            text-align: center;
+            line-height: 50px;
+            color: #ff1493; /* Pink magenta icons */
+            font-size: 22px;
+        }
+
+        .list .list-item.active a i,
+        .list .list-item a:hover i {
+            color: #ff69b4; /* Lighter pink on hover/active */
+        }
+
+        .sidebar .link-name {
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .sidebar.active .link-name {
+            margin-left: 8px;
+            opacity: 1;
+            pointer-events: auto;
+            transition-delay: calc(0.1s * var(--i));
+        }
+
+        .main-content {
+            margin-left: 80px;
+            padding: 20px;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background-color: #f8f9fc;
+        }
+
+        .sidebar.active + .main-content {
+            margin-left: 260px;
+        }
+
+        /* Add glowing effect on active/hover */
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px rgba(255, 20, 147, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(255, 20, 147, 0.8); }
+            100% { box-shadow: 0 0 5px rgba(255, 20, 147, 0.5); }
+        }
+
+        .list .list-item.active a {
+            animation: glow 2s infinite;
+        }
+
+        .main-content {
+            margin-left: 80px;
+            padding: 20px;
+            transition: .5s;
+        }
+
+        .sidebar.active + .main-content {
+            margin-left: 260px;
         }
         
         /* Main Content Styles */
@@ -446,21 +559,77 @@ if ($params) {
     </style>
 </head>
 <body>
-    <div class="dashboard-container">
+    <div class="transcation-container">
         <!-- Sidebar Navigation -->
-        <div class="sidebar">
-            <img src="RVS_LOGO.png" alt="RVStore Logo">
-                <nav>
-                    <ul>
-                        <li><a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                        <li class="active"><a href="transaction_history.php"><i class="fas fa-history"></i> Transaction History</a></li>
-                        <li><a href="manage_product.php"><i class="fas fa-boxes"></i> Manage Product</a></li>
-                        <li><a href="sales_report.php"><i class="fas fa-chart-bar"></i> Sales Report</a></li>
-                        <li><a href="accounts.php"><i class="fas fa-users"></i> Accounts</a></li>
-                        <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
-                    </ul>
-                </nav>
-            </div>
+                <div class="sidebar">
+                    <div class="logo-menu">
+                        <h2 class="logo"><img src="RVS_LOGO.png" alt=""></h2>
+                        <i class='bx bx-menu toggle-btn'></i>
+                    </div>
+                    <nav>
+                        <ul class="list">
+                            <li class="list-item">
+                                <a href="dashboard.php">
+                                    <i class='bx bx-home-alt-2'></i>
+                                    <span class="link-name" style="--i:1;">Dashboard</span>
+                                </a>
+                            </li>
+                            <li class="list-item active">
+                                <a href="transaction_history.php">
+                                    <i class='bx bx-history'></i>
+                                    <span class="link-name" style="--i:2;">Transaction History</span>
+                                </a>
+                            </li>
+                            <li class="list-item">
+                                <a href="manage_product.php">
+                                    <i class='bx bx-box'></i>
+                                    <span class="link-name" style="--i:3;">Manage Product</span>
+                                </a>
+                            </li>
+                            <li class="list-item">
+                                <a href="sales_report.php">
+                                    <i class='bx bx-bar-chart-alt-2'></i>
+                                    <span class="link-name" style="--i:4;">Sales Report</span>
+                                </a>
+                            </li>
+                            <li class="list-item">
+                                <a href="accounts.php">
+                                    <i class='bx bx-user'></i>
+                                    <span class="link-name" style="--i:5;">Accounts</span>
+                                </a>
+                            </li>
+                            <li class="list-item">
+                                <a href="logout.php">
+                                    <i class='bx bx-log-out'></i>
+                                    <span class="link-name" style="--i:6;">Logout</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+
+                <script>
+                    const sidebar = document.querySelector('.sidebar');
+                    const toggleBtn = document.querySelector('.toggle-btn');
+
+                    toggleBtn.addEventListener('click', () => {
+                        sidebar.classList.toggle('active');
+                    });
+
+                    // Set active menu item based on current page
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const currentPage = window.location.pathname.split('/').pop();
+                        const menuItems = document.querySelectorAll('.list-item');
+                        
+                        menuItems.forEach(item => {
+                            item.classList.remove('active');
+                            const link = item.querySelector('a').getAttribute('href');
+                            if (link === currentPage) {
+                                item.classList.add('active');
+                            }
+                        });
+                    });
+                </script>
 
         <div class="main-content">
             <!-- Topbar -->

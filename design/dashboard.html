@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Top-Up MIS Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="logo">LOGO</div>
+            <nav>
+                <ul>
+                    <li class="active"><a href="#"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="transactionhistory.html"><i class="fas fa-history"></i> Transaction History</a></li>
+                    <li><a href="#"><i class="fas fa-boxes"></i> Manage Product</a></li>
+                    <li><a href="#"><i class="fas fa-chart-bar"></i> Sales Report</a></li>
+                    <li><a href="#"><i class="fas fa-users"></i> Accounts</a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="search-box">
+                    <input type="text" placeholder="Search...">
+                    <i class="fas fa-search"></i>
+                </div>
+            </div>
+
+            <h1>Dashboard</h1>
+
+            <!-- Stats Cards -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <h3>Total Sales</h3>
+                    <p>IDR 5.000K</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Orders</h3>
+                    <p>2250</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Customers</h3>
+                    <p>1659</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Stock</h3>
+                    <p>5649</p>
+                </div>
+            </div>
+
+            <!-- Main Content Sections -->
+            <div class="content-row">
+                <!-- Sales Report Section -->
+                <div class="content-card wide">
+                    <div class="card-header">
+                        <h2>Sales Report</h2>
+                        <select class="period-select">
+                            <option>Select Period</option>
+                            <option>Last 7 Days</option>
+                            <option>Last Month</option>
+                            <option>Last Year</option>
+                        </select>
+                    </div>
+                    <div class="chart-placeholder">
+                        <div class="chart-lines"></div>
+                        <div class="chart-lines">
+                            <div class="line" style="height: 80%"></div>
+                            <div class="line" style="height: 65%"></div>
+                            <div class="line" style="height: 50%"></div>
+                            <div class="line" style="height: 40%"></div>
+                            <div class="line" style="height: 30%"></div>
+                            <div class="line" style="height: 20%"></div>
+                        </div>
+                        <div class="chart-months">
+                            <span>Jan</span>
+                            <span>Feb</span>
+                            <span>Mar</span>
+                            <span>Apr</span>
+                            <span>May</span>
+                            <span>Jun</span>
+                            <span>Jul</span>
+                            <span>Aug</span>
+                            <span>Sep</span>
+                            <span>Oct</span>
+                            <span>Nov</span>
+                            <span>Dec</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Game Distribution Section -->
+                <div class="content-card">
+                    <h2>Top Games</h2>
+                    <div class="game-distribution">
+                        <div class="game-item">
+                            <span>Mobile Legends</span>
+                            <div class="progress-bar" style="width: 70%"></div>
+                        </div>
+                        <div class="game-item">
+                            <span>CODM</span>
+                            <div class="progress-bar" style="width: 50%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-row">
+                <!-- Users by Country Section -->
+                <div class="content-card">
+                    <h2>Users by Country</h2>
+                    <ul class="country-list">
+                        <li>
+                            <span>Indonesia</span>
+                            <span class="percentage">65%</span>
+                        </li>
+                        <li>
+                            <span>Malaysia</span>
+                            <span class="percentage">20%</span>
+                        </li>
+                        <li>
+                            <span>Singapore</span>
+                            <span class="percentage">15%</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Activity Section -->
+                <div class="content-card">
+                    <h2>Activity</h2>
+                    <div class="activity-chart">
+                        <div class="activity-bar" style="height: 60%"></div>
+                        <div class="activity-bar" style="height: 30%"></div>
+                        <div class="activity-bar" style="height: 45%"></div>
+                        <div class="activity-bar" style="height: 20%"></div>
+                        <div class="time-labels">
+                            <span>00</span>
+                            <span>06</span>
+                            <span>12</span>
+                            <span>18</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
