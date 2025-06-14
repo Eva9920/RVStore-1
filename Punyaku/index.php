@@ -98,9 +98,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
       padding: 0;
       box-sizing: border-box;
     }
-
-    
-
+  .glass-effect {
+      background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        color: white;
+        }
     .video-bg {
       position: fixed;
       top: 0;
@@ -131,8 +135,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
         padding: 20px;
     }
 
-  
-    
         /* Form elements */
         .input-style {
             background: rgba(255, 255, 255, 0.1);
@@ -428,8 +430,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                         </div>
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">
-                                <input type="checkbox" class="h-4 w-4 bg-transparent border-white/30 rounded">
-                                <label class="ml-2 block text-sm text-white">Ingat saya</label>
                             </div>
                         </div>
                         <button type="submit" name="login" class="auth-btn w-full py-3 text-white font-medium">
@@ -478,10 +478,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                             </div>
                         </div>
 
-                        <div class="terms-container">
-                            <input type="checkbox" class="h-4 w-4 bg-transparent border-white/30 rounded mt-1" required>
-                            <label class="ml-2 block text-sm text-white">Saya setuju dengan <a href="#" class="text-indigo-200 hover:underline">Syarat dan Ketentuan</a></label>
-                        </div>
+                       
                         
                         <button type="submit" name="register" class="auth-btn w-full py-3 text-white font-medium">
                             Daftar
