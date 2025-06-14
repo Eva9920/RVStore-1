@@ -559,6 +559,185 @@ $users_query->close();
         .modal-footer .btn {
             margin-left: 10px;
         }
+
+        /* Improved Chatbot Styles */
+        .chatbot-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50px;
+            z-index: 999;
+        }
+        
+        .chatbot-toggle {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #6c5ce7 0%, #4834d4 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .chatbot-toggle:hover {
+            transform: scale(1.1);
+        }
+        
+        .chatbot-toggle i {
+            color: white;
+            font-size: 28px;
+        }
+        
+        .chatbot-window {
+            width: 400px;
+            height: 550px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            display: none;
+            flex-direction: column;
+        }
+        
+        .chatbot-window.active {
+            display: flex;
+            animation: fadeInUp 0.3s ease;
+        }
+        
+        .chatbot-header {
+            background: linear-gradient(135deg, #6c5ce7 0%, #4834d4 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .chatbot-header h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+        
+        .chatbot-header i {
+            position: absolute;
+            right: 15px;
+            cursor: pointer;
+        }
+        
+        .chatbot-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f5f7fb;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            border-radius: 18px;
+            position: relative;
+            word-wrap: break-word;
+        }
+        
+        .bot-message {
+            background: white;
+            border-bottom-left-radius: 5px;
+            align-self: flex-start;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            margin-right: auto;
+        }
+        
+        .user-message {
+            background: #6c5ce7;
+            color: white;
+            border-bottom-right-radius: 5px;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        
+        .chatbot-input {
+            display: flex;
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #eee;
+        }
+        
+        .chatbot-input input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 30px;
+            outline: none;
+        }
+        
+        .chatbot-input button {
+            background: #6c5ce7;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .chatbot-input button:hover {
+            background: #4834d4;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .typing-indicator {
+            display: flex;
+            padding: 10px 15px;
+            background: white;
+            border-radius: 18px;
+            border-bottom-left-radius: 5px;
+            align-self: flex-start;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            margin-bottom: 15px;
+            margin-right: auto;
+        }
+        
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background: #6c5ce7;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            animation: bounce 1.5s infinite ease-in-out;
+        }
+        
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes bounce {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-5px);
+            }
+        }
     </style>
 </head>
 <body>
@@ -597,7 +776,7 @@ $users_query->close();
                             <li class="list-item">
                                 <a href="accounts.php">
                                     <i class='bx bx-user'></i>
-                                    <span class="link-name" style="--i:5;">Accounts</span>
+                                    <span class="link-name" style="--i:5;">Manage Accounts</span>
                                 </a>
                             </li>
                             <li class="list-item">
@@ -613,13 +792,11 @@ $users_query->close();
                 <script>
                     const sidebar = document.querySelector('.sidebar');
                     const toggleBtn = document.querySelector('.toggle-btn');
+                    const mainContent = document.querySelector('.main-content');
 
-                    toggleBtn.addEventListener('click', () => {
-                        sidebar.classList.toggle('active');
-                    });
-
-                    // Set active menu item based on current page
+                    // Cek state sidebar dari localStorage saat halaman dimuat
                     document.addEventListener('DOMContentLoaded', function() {
+                        // Set active menu item based on current page
                         const currentPage = window.location.pathname.split('/').pop();
                         const menuItems = document.querySelectorAll('.list-item');
                         
@@ -630,6 +807,29 @@ $users_query->close();
                                 item.classList.add('active');
                             }
                         });
+
+                        // Cek state sidebar dari localStorage
+                        const sidebarState = localStorage.getItem('sidebarState');
+                        if (sidebarState === 'active') {
+                            sidebar.classList.add('active');
+                            mainContent.style.marginLeft = '260px';
+                            mainContent.style.width = 'calc(100% - 260px)';
+                        }
+                    });
+
+                    // Toggle sidebar dan simpan state ke localStorage
+                    toggleBtn.addEventListener('click', () => {
+                        sidebar.classList.toggle('active');
+                        
+                        if (sidebar.classList.contains('active')) {
+                            localStorage.setItem('sidebarState', 'active');
+                            mainContent.style.marginLeft = '260px';
+                            mainContent.style.width = 'calc(100% - 260px)';
+                        } else {
+                            localStorage.setItem('sidebarState', 'inactive');
+                            mainContent.style.marginLeft = '80px';
+                            mainContent.style.width = 'calc(100% - 80px)';
+                        }
                     });
                 </script>
 
@@ -714,5 +914,88 @@ $users_query->close();
             </div>
         </div>
     </div>
+
+        <div class="chatbot-container">
+            <div class="chatbot-window" id="chatbotWindow">
+                <div class="chatbot-header">
+                    <h3>RVStore AI Assistant</h3>
+                    <i class="fas fa-times" onclick="toggleChatbot()"></i>
+                </div>
+                <div class="chatbot-messages" id="chatbotMessages">
+                    <div class="message bot-message">
+                        Hello! How can I help you today?
+                    </div>
+                </div>
+                <div class="chatbot-input">
+                    <input type="text" id="chatbotInput" placeholder="Type your message..." onkeypress="if(event.keyCode==13) sendMessage()">
+                    <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+            <div class="chatbot-toggle" onclick="toggleChatbot()">
+                <i class="fas fa-robot"></i>
+            </div>
+        </div>
+
+        <script>
+            function toggleChatbot() {
+                const chatbotWindow = document.getElementById('chatbotWindow');
+                chatbotWindow.classList.toggle('active');
+            }
+            
+            function sendMessage() {
+                const input = document.getElementById('chatbotInput');
+                const message = input.value.trim();
+                
+                if (message === '') return;
+                
+                // Add user message (right aligned)
+                addMessage(message, 'user-message');
+                input.value = '';
+                
+                // Show typing indicator (left aligned)
+                const typingIndicator = document.createElement('div');
+                typingIndicator.className = 'message typing-indicator';
+                typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+                document.getElementById('chatbotMessages').appendChild(typingIndicator);
+                
+                // Scroll to bottom
+                scrollToBottom();
+                
+                // Simulate bot response (left aligned)
+                setTimeout(() => {
+                    // Remove typing indicator
+                    const indicator = document.querySelector('.typing-indicator');
+                    if (indicator) indicator.remove();
+                    
+                    // Add bot response
+                    const responses = [
+                        "I can help you with your questions about our products and services.",
+                        "For order inquiries, please check the Transaction History page.",
+                        "Our support team is available 24/7 to assist you.",
+                        "You can find more information in our FAQ section.",
+                        "Is there anything else I can help you with?"
+                    ];
+                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                    addMessage(randomResponse, 'bot-message');
+                    
+                    // Scroll to bottom again after response
+                    scrollToBottom();
+                }, 1500);
+            }
+            
+            function addMessage(text, className) {
+                const messagesContainer = document.getElementById('chatbotMessages');
+                const messageElement = document.createElement('div');
+                messageElement.className = `message ${className}`;
+                messageElement.textContent = text;
+                messagesContainer.appendChild(messageElement);
+            }
+            
+            function scrollToBottom() {
+                const messagesContainer = document.getElementById('chatbotMessages');
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+        </script>
+    
 </body>
 </html>
