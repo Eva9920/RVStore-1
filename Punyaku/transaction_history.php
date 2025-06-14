@@ -97,7 +97,6 @@ if ($params) {
 } else {
     $transactions = $conn->query($transactions_query);
 }
-?>
 
 <!DOCTYPE html>
 <html lang="en">

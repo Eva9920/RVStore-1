@@ -575,16 +575,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
                             <span class="link-name" style="--i:4;">Sales Report</span>
                         </a>
                     </li>
-                    <li class="list-item active">
-                        <a href="profile.php">
-                            <i class='bx bx-user'></i>
-                            <span class="link-name" style="--i:5;">Profile</span>
-                        </a>
-                    </li>
                     <li class="list-item">
                         <a href="logout.php">
                             <i class='bx bx-log-out'></i>
-                            <span class="link-name" style="--i:6;">Logout</span>
+                            <span class="link-name" style="--i:7;">Logout</span>
                         </a>
                     </li>
                 </ul>
@@ -596,10 +590,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
             <!-- Topbar -->
             <div class="topbar">
                 <h2>User Profile</h2>
-                <div class="search-container">
-                    <input type="text" placeholder="Search...">
-                    <i class="fas fa-search"></i>
-                </div>
             </div>
 
             <!-- Profile Card -->
