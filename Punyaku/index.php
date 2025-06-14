@@ -93,17 +93,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
         * {
             font-family: sans-serif;
         }
+         * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        /* Container styles */
-        .auth-container {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #12022F 0%, #A439FF 40%, #FF4FE0 70%, #57C2FF 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
+    .video-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+   .hero-video {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    z-index: -1;
+    object-fit: cover;
+}
 
+    /* Add these new styles for centering */
+    .auth-container {
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+
+  
+    
         /* Form elements */
         .input-style {
             background: rgba(255, 255, 255, 0.1);
@@ -197,10 +224,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             padding-right: 4px;
         }
 
-        .password-toggle.hidden {
-            display: none;
-        }
-
         /* Divider */
         .divider {
             display: flex;
@@ -277,7 +300,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             align-items: center;
             justify-content: center;
             flex-direction: column;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         /* Alert styles */
@@ -345,6 +368,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
     </style>
 </head>
 <body>
+ <video class="hero-video" autoplay loop muted playsinline>
+    <source src="VIDEO.mp4" type="video/mp4">
+    </video>
     <div class="auth-container">
         <div id="authContainer" class="glass-effect max-w-xs w-full space-y-4 p-6 rounded-2xl">
             <!-- Logo dan Judul -->
@@ -388,11 +414,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                             <label class="block text-white text-sm font-medium mb-2">Password</label>
                             <div class="password-container">
                                 <input type="password" id="loginPassword" name="password" class="input-style w-full" placeholder="Masukkan kata sandi" required>
-                                <span class="password-toggle" onclick="togglePassword('loginPassword')">
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                    </svg>
+                                 
                                 </span>
                             </div>
                         </div>
@@ -435,24 +457,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                                 <label class="block text-white text-sm font-medium mb-2">Password</label>
                                 <div class="password-container">
                                     <input type="password" id="registerPassword" name="password" class="input-style" placeholder="Buat kata sandi" required>
-                                    <span class="password-toggle" onclick="togglePassword('registerPassword')">
-                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                        </svg>
-                                    </span>
+                                   
+                                   
                                 </div>
                             </div>
                             <div>
                                 <label class="block text-white text-sm font-medium mb-2">Konfirmasi Password</label>
                                 <div class="password-container">
                                     <input type="password" id="confirmPassword" name="confirm_password" class="input-style" placeholder="Konfirmasi kata sandi" required>
-                                    <span class="password-toggle" onclick="togglePassword('confirmPassword')">
-                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                        </svg>
-                                    </span>
+                                    
                                 </div>
                             </div>
                         </div>
