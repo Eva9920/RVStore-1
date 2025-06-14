@@ -396,4 +396,50 @@ checkRememberToken();
 
 // Register shutdown function to close connection
 register_shutdown_function('closeConnection');
+
+// Fungsi untuk mendapatkan data user saat ini
+function getCurrentUser() {
+    global $conn;
+    if (!isset($_SESSION['user_id'])) {
+        return null;
+    }
+    
+    $stmt = $conn->prepare("SELECT id, nama_lengkap as username, email FROM users WHERE id = ?");
+    $stmt->bind_param("i", $_SESSION['user_id']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result->num_rows === 0) {
+        return null;
+    }
+    
+    return $result->fetch_assoc();
+}
+
+// Fungsi untuk update profile
+function updateProfile($userId, $username, $email, $profileImage = null) {
+    global $conn;
+    
+    $stmt = $conn->prepare("UPDATE users SET nama_lengkap = ?, email = ? WHERE id = ?");
+    $stmt->bind_param("ssi", $username, $email, $userId);
+    
+    return $stmt->execute();
+}
+
+// Fungsi untuk menghandle upload gambar
+function handleImageUpload($file) {
+    $targetDir = "uploads/";
+    if (!file_exists($targetDir)) {
+        mkdir($targetDir, 0777, true);
+    }
+    
+    $fileName = uniqid() . '_' . basename($file['name']);
+    $targetPath = $targetDir . $fileName;
+    
+    if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+        return $fileName;
+    }
+    return null;
+}
 ?>
+

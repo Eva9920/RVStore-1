@@ -927,56 +927,35 @@ if ($params) {
             }
         }
 
-        /* Bottom Icons Styles */
+        /* Bottom Icons */
         .bottom-icons {
             position: fixed;
             bottom: 20px;
-            left: 11px;
-            width: 100%;
-            padding: 0 14px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 100;
         }
 
-        .bottom-icons .list-item {
-            margin: 20px 0;
-        }
-
-        .bottom-icons .list-item a {
-            padding: 0 10px;
-        }
-
-        .bottom-icons .list-item a i {
-            color:rgb(255, 255, 255);
-            font-size: 26px;
-        }
-
-        .bottom-icons .list-item a:hover i {
-            color: #fff;
-        }
-
-        .bottom-icons .list-item a:hover {
-            background: var(--accent-gradient);
-            color: #fff;
-            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
-            transform: translateX(5px);
-        }
-
-        .bottom-icons .list-item.active a {
-            background: var(--accent-gradient);
-            color: #fff;
-            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
-        }
-
-        .bottom-icons .list-item {
-            width: 55px;
-            height: 55px;
-            background: var(--accent-gradient);
+        .bottom-icon {
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
+            background: var(--accent-gradient);
             display: flex;
             align-items: center;
             justify-content: center;
+            color: white;
+            font-size: 20px;
             cursor: pointer;
-            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.4);
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.4);
             transition: var(--transition);
+        }
+
+        .bottom-icon:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.5);
         }
     </style>
 </head>
@@ -1050,21 +1029,16 @@ if ($params) {
                 </form>
             </div>
 
+            <!-- Bottom Icons -->
             <div class="bottom-icons">
-                <div class="list-item">
-                    <a href="profile.php">
-                        <i class='bx bx-user-circle'></i>
-                    </a>
+                <div class="bottom-icon" onclick="window.location.href='profile.php'">
+                    <i class='bx bx-user'></i>
                 </div>
-                <div class="list-item">
-                    <a href="notifications.php">
-                        <i class='bx bx-bell'></i>
-                    </a>
+                <div class="bottom-icon" onclick="window.location.href='notifications.php'">
+                    <i class='bx bx-bell'></i>
                 </div>
-                <div class="list-item">
-                    <a href="settings.php">
-                        <i class='bx bx-cog'></i>
-                    </a>
+                <div class="bottom-icon" onclick="window.location.href='settings.php'">
+                    <i class='bx bx-cog'></i>
                 </div>
             </div>
 
