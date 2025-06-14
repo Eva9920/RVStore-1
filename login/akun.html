@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Kompas Kampus</title>
+    
+    <!-- Dependencies -->
+    <script src="https://unpkg.com/alpinejs" defer></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/dash.css">
+    <script>
+        function previewImage(input, imageId) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                const file = input.files[0];
+                
+                // Check file size (max 2MB)
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('❌ File size too large! Maximum size is 2MB');
+                    return;
+                }
+
+                // Check file type
+                if (!file.type.match('image.*')) {
+                    alert('❌ Please select an image file');
+                    return;
+                }
+
+                // Confirm before uploading
+                if (!confirm('Are you sure you want to change your profile picture?')) {
+                    return;
+                }
+
+                reader.onload = function(e) {
+                    document.getElementById(imageId).src = e.target.result;
+                    
+                    // Create form data
+                    const formData = new FormData();
+                    formData.append('avatar', file);
+                }
+                
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Contact information handling
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('profileManager', () => ({
+                userId: 1, // You should get this from session
+                isEditModalOpen: false,
+                isDeleteModalOpen: false,
+                phone: '', // Updated
+                email: '', // Updated
+                name: 'John Doe', // Default name
+                tempPhone: '', // Updated
+                tempEmail: '', // Updated
+                tempName: '',
+                deleteConfirmText: '',
+                deleteReason: '', // Add this new property
+                otherReason: '', // Add this new property
+                isDeleting: false, // Add this new property
+
+                async init() {
+                    await this.loadContactInfo(); // Updated
+                },
+
+                async loadContactInfo() { // Updated
+                    try {
+                        const response = await fetch('php/oauth.php?action=get_contact_info');
+                        const data = await response.json();
+                        
+                        if (data.status === 'success') {
+                            this.phone = data.data.phone || '';
+                            this.email = data.data.email || '';
+                            this.tempPhone = this.phone;
+                            this.tempEmail = this.email;
+                        } else {
+                            console.error('Error loading contact info:', data.message);
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                },
+
+                async saveChanges() { // Updated
+                    if (!this.tempPhone || !this.tempEmail) {
+                        alert('⚠️ Please fill in all fields');
+                        return;
+                    }
+                    
+                    try {
+                        const response = await fetch('php/oauth.php?action=update_contact_info', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                email: this.tempEmail,
+                                phone: this.tempPhone
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.status === 'success') {
+                            this.phone = this.tempPhone;
+                            this.email = this.tempEmail;
+                            this.isEditModalOpen = false;
+                            alert('✅ Changes saved successfully!');
+                        } else {
+                            throw new Error(result.message || 'Failed to save changes');
+                        }
+                    } catch (error) {
+                        alert(`❌ Error: ${error.message}`);
+                    }
+                },
+
+                async deleteAccount() {
+                    if (this.deleteConfirmText === 'DELETE' && this.deleteReason) {
+                        try {
+                            const initialConfirm = confirm('⚠️ WARNING: This action cannot be undone!\n\nAre you absolutely sure you want to delete your account?');
+                            
+                            if (initialConfirm) {
+                                const finalConfirm = confirm('🚨 FINAL WARNING!\n\nBy clicking OK:\n- Your profile will be permanently deleted\n- All your data will be removed\n- You cannot recover this account\n\nAre you 100% sure?');
+                                
+                                if (finalConfirm) {
+                                    this.isDeleting = true;
+                                    
+                                    const finalReason = this.deleteReason === 'other' ? this.otherReason : this.deleteReason;
+                                    const idUser = sessionStorage.getItem('email');
+                                    
+                                    const response = await fetch('api/delete_account.php', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                        },
+                                        body: JSON.stringify({
+                                            userId:  idUser,
+                                            reason: finalReason,
+                                            deletedBy: 'user', // Can be 'user' or 'admin'
+                                            deletionDate: new Date().toISOString()
+                                        })
+                                    });
+                                    
+                                    const result = await response.json();
+                                    if (result.success) {
+                                        // Clear all storage
+                                        localStorage.clear();
+                                        sessionStorage.clear();
+                                        
+                                        // Clear cookies
+                                        document.cookie.split(";").forEach(function(c) { 
+                                            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+                                        });
+                                        
+                                        alert('Your account has been permanently deleted.\nYou will now be redirected to the home page.');
+                                        
+                                        // Force redirect to home page
+                                        window.location.replace('../homebeforelogin/index.html');
+                                    } else {
+                                        throw new Error(result.message || 'Failed to delete account');
+                                    }
+                                }
+                            }
+                        } catch (error) {
+                            alert(`❌ Error: ${error.message}`);
+                        } finally {
+                            this.isDeleting = false;
+                            this.isDeleteModalOpen = false;
+                        }
+                    } else {
+                        alert('⚠️ Please type DELETE and select a reason to confirm');
+                    }
+                },
+
+                openEditModal() {
+                    this.tempPhone = this.phone;
+                    this.tempEmail = this.email;
+                    this.isEditModalOpen = true;
+                },
+
+                cancelEdit() {
+                    this.isEditModalOpen = false;
+                    this.tempPhone = this.phone;
+                    this.tempEmail = this.email;
+                },
+
+                openDeleteModal() {
+                    this.isDeleteModalOpen = true;
+                },
+
+                cancelDelete() {
+                    this.isDeleteModalOpen = false;
+                    this.deleteConfirmText = '';
+                },
+
+                openBiodataModal() {
+                    this.isBiodataModalOpen = true;
+                },
+                
+                cancelBiodata() {
+                    this.isBiodataModalOpen = false;
+                },
+
+                openSecurityModal() {
+                    this.isAccountSecurityModalOpen = true;
+                },
+                
+                cancelSecurity() {
+                    this.isAccountSecurityModalOpen = false;
+                }
+            }))
+        })
+    </script>
+    <style>
+        .fade-enter {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        .fade-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 300ms, transform 300ms;
+        }
+        .profile-card {
+            transition: all 0.3s ease;
+        }
+        .profile-card:hover {
+            transform: translateY(-5px);
+        }
+        [x-cloak] { 
+            display: none !important; 
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    
+    <!-- Header - Without shadow and background -->
+    <header class="fixed w-full z-50">
+        <div class="flex justify-between items-center px-6 py-3">
+            <!-- Back button with blue background -->
+            <a href="dash.html" class="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                <i class="fas fa-arrow-left text-xl mr-2"></i>
+                <span class="font-medium">Back to Dashboard</span>
+            </a>
+
+            <!-- User Menu - Right aligned -->
+            <div class="flex items-center">
+                <div class="relative" x-data="{ isOpen: false }">
+                    <button @click="isOpen = !isOpen" 
+                            class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50">
+                        <img src="student1.jpg" alt="Profile" class="w-10 h-10 rounded-full border-2 border-blue-500">
+                        <i class="fas fa-chevron-down text-gray-400"></i>
+                    </button>
+                    <div x-show="isOpen" 
+                         @click.away="isOpen = false"
+                         class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
+                        <a href="dash.html" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-50">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                        <!-- Update this logout link -->
+                        <a href="../dashboard/php/logout.php" class="flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Adjust main padding-top -->
+    <main class="pt-28 p-6"> <!-- Changed from pt-20 to pt-28 -->
+        <div class="max-w-4xl mx-auto space-y-8" x-data="profileManager">
+            <!-- Enhanced Profile Card -->
+            <div class="profile-card bg-white rounded-2xl shadow-xl overflow-hidden">
+                <div class="h-56 bg-gradient-to-r from-blue-500 via-blue-400 to-blue-600 relative overflow-hidden">
+                    <!-- Animated background patterns -->
+                    <div class="absolute inset-0">
+                        <div class="absolute top-0 left-0 w-full h-full opacity-10">
+                            <div class="absolute top-0 left-10 w-20 h-20 rounded-full bg-white transform rotate-45"></div>
+                            <div class="absolute top-4 right-20 w-32 h-32 rounded-lg bg-white transform -rotate-12"></div>
+                            <div class="absolute bottom-8 left-1/4 w-24 h-24 rounded-full bg-white"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="px-8 relative">
+                    <!-- Profile Picture Section -->
+                    <div class="relative -mt-24 flex">
+                        <div class="relative group">
+                            <div class="w-56 h-56 rounded-full border-4 border-white shadow-lg overflow-hidden">
+                                <img id="profilePreview" 
+                                     src="student1.jpg" 
+                                     alt="Profile" 
+                                     class="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110">
+                            </div>
+                            <label class="absolute bottom-3 right-3 bg-blue-600 text-white p-3 rounded-full cursor-pointer hover:bg-blue-700 transition-all">
+                                <i class="fas fa-camera"></i>
+                                <input type="file" class="hidden" accept="image/*" onchange="previewImage(this, 'profilePreview')">
+                            </label>
+                        </div>
+                        
+                        <!-- Name section - Now in white background area -->
+                        <div class="flex-1 ml-8 mt-32">
+                            <h1 id="profile-name" class="text-5xl font-bold text-gray-900">John Doe</h1>
+                            <!-- <p id="profile-email" class="text-lg text-gray-600">john.doe@example.com</p> -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Management Section -->
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Edit Profile Card -->
+                <div class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-semibold text-gray-800">
+                            <i class="fas fa-user-edit mr-2 text-blue-600"></i>Profile Settings
+                        </h2>
+                    </div>
+                    <div class="space-y-4">
+                        <button @click="openEditModal" 
+                                class="w-full flex items-center p-4 rounded-lg hover:bg-blue-50 text-blue-600 transition-colors border border-blue-200">
+                            <i class="fas fa-pencil-alt w-8"></i>
+                            <span class="ml-3">Edit Profile Information</span>
+                            <i class="fas fa-chevron-right ml-auto"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Account Management Card -->
+                <div class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-semibold text-gray-800"></h2>
+                            <i class="fas fa-shield-alt mr-2 text-red-600"></i>Account Management
+                        </h2>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                            <h3 class="font-medium text-yellow-800 mb-2">Account Security</h3>
+                            <p class="text-sm text-yellow-600 mb-4">Deleting your account will permanently remove all your data. This action cannot be undone.</p>
+                            <button @click="openDeleteModal" 
+                                    class="w-full flex items-center justify-center p-3 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors group">
+                                <i class="fas fa-trash-alt mr-2 group-hover:animate-bounce"></i>
+                                <span>Delete Account</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Profile Modal -->
+            <div x-show="isEditModalOpen" 
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 transform scale-90"
+                 x-transition:enter-end="opacity-100 transform scale-100"
+                 x-transition:leave="transition ease-in duration-300"
+                 x-transition:leave-start="opacity-100 transform scale-100"
+                 x-transition:leave-end="opacity-0 transform scale-90"
+                 class="fixed inset-0 z-50 overflow-y-auto"
+                 x-cloak>
+                
+                <!-- Backdrop -->
+                <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+
+                <!-- Modal -->
+                <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                    <div class="relative inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                        <!-- Modal Content -->
+                        <div class="bg-white p-6 sm:p-8">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold text-gray-800">Edit Profile Information</h3>
+                                <button @click="cancelEdit" class="text-gray-500 hover:text-gray-700">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <!-- Form inputs -->
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                                    <input type="tel" 
+                                           x-model="tempPhone"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                           placeholder="+62 xxx-xxxx-xxxx">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                                    <input type="email" 
+                                           x-model="tempEmail"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                           placeholder="email@example.com">
+                                </div>
+                            </div>
+                            <div class="flex justify-end space-x-3 mt-6">
+                                <button @click="cancelEdit"
+                                        class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                                    Cancel
+                                </button>
+                                <button @click="saveChanges"
+                                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                    Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Separate Delete Account Modal -->
+            <div x-show="isDeleteModalOpen" 
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:enter-start="opacity-0 transform scale-90"
+                 x-transition:enter-end="opacity-100 transform scale-100"
+                 x-transition:leave="transition ease-in duration-300"
+                 x-transition:leave-start="opacity-100 transform scale-100"
+                 x-transition:leave-end="opacity-0 transform scale-90"
+                 class="fixed inset-0 z-50 overflow-y-auto"
+                 x-cloak>
+                
+                <!-- Backdrop -->
+                <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+
+                <!-- Modal Container -->
+                <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+                    <div class="relative inline-block w-full max-w-md bg-white rounded-xl shadow-xl transform transition-all">
+                        <!-- Modal Content -->
+                        <div class="px-6 pt-5 pb-4 sm:p-8">
+                            <!-- Header -->
+                            <div class="flex flex-col items-center">
+                                <div class="flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+                                    <i class="fas fa-exclamation-triangle text-2xl text-red-600"></i>
+                                </div>
+                                <h3 class="text-2xl font-bold text-gray-900 mb-2">Delete Your Account?</h3>
+                                <p class="text-sm text-gray-500 mb-6">This action cannot be undone</p>
+                            </div>
+
+                            <!-- Warning Box -->
+                            <div class="bg-red-50 border border-red-200 rounded-xl p-6 mb-6">
+                                <ul class="space-y-3">
+                                    <li class="flex items-center text-red-600">
+                                        <i class="fas fa-times-circle mr-3"></i>
+                                        <span class="text-sm">Your profile will be permanently deleted</span>
+                                    </li>
+                                    <li class="flex items-center text-red-600">
+                                        <i class="fas fa-times-circle mr-3"></i>
+                                        <span class="text-sm">All your data will be removed</span>
+                                    </li>
+                                    <li class="flex items-center text-red-600">
+                                        <i class="fas fa-times-circle mr-3"></i>
+                                        <span class="text-sm">You cannot recover this account</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Reason Selector -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Why are you deleting your account?
+                                </label>
+                                <select x-model="deleteReason"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors">
+                                    <option value="">Select a reason</option>
+                                    <option value="not_useful">Not finding the service useful</option>
+                                    <option value="privacy">Privacy concerns</option>
+                                    <option value="new_account">Creating a new account</option>
+                                    <option value="too_many_emails">Receiving too many emails</option>
+                                    <option value="data_concerns">Data usage concerns</option>
+                                    <option value="other">Other reason</option>
+                                </select>
+                            </div>
+
+                            <!-- Other Reason Text Area -->
+                            <div x-show="deleteReason === 'other'" class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Please specify your reason
+                                </label>
+                                <textarea
+                                    x-model="otherReason"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors"
+                                    rows="3"
+                                    placeholder="Tell us why you're leaving..."
+                                    required></textarea>
+                            </div>
+
+                            <!-- Confirmation Input -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Type DELETE to confirm
+                                </label>
+                                <input type="text" 
+                                       x-model="deleteConfirmText"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors"
+                                       placeholder="Type DELETE here">
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="space-y-3">
+                                <button @click="deleteAccount"
+                                        class="w-full flex items-center justify-center px-6 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors">
+                                    <i class="fas fa-trash-alt mr-2"></i>
+                                    Permanently Delete Account
+                                </button>
+                                <button @click="cancelDelete"
+                                        class="w-full flex items-center justify-center px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors">
+                                    Cancel
+                                </button>
+                            </div>
+
+                            <!-- Support Link -->
+                            <div class="mt-6 text-center border-t border-gray-200 pt-4">
+                                <p class="text-sm text-gray-600">
+                                    Need help? 
+                                    <a href="#" class="text-blue-600 hover:underline font-medium">
+                                        Contact Support
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Biodata Modal -->
+            <div x-show="isBiodataModalOpen"
+                 x-transition
+                 x-cloak
+                 class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                 @click.away="cancelBiodata">
+                <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-semibold">Edit Biodata</h3>
+                        <button @click="cancelBiodata" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Enter your full name">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="@username">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+                            <textarea class="w-full px-3 py-2 border border-gray-300 rounded-lg" rows="3" placeholder="Write something about yourself"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Your location">
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button @click="cancelBiodata" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+                            Cancel
+                        </button>
+                        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            Save Changes
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Security Modal -->
+            <div x-show="isAccountSecurityModalOpen"
+                 x-transition
+                 x-cloak
+                 class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                 @click.away="cancelSecurity">
+                <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-semibold">Account Security</h3>
+                        <button @click="cancelSecurity" class="text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-medium">Two-Factor Authentication</h4>
+                                    <p class="text-sm text-gray-600">Add an extra layer of security</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h4 class="font-medium">Login Notifications</h4>
+                                    <p class="text-sm text-gray-600">Get notified of new logins</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-6"></div>
+                        <button @click="cancelSecurity" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+                            Cancel
+                        </button>
+                        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            Save Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="imageModal" 
+         class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50"
+         x-data="{ show: false }"
+         x-show="show"
+         @click.away="show = false">
+        <div class="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Crop Image</h3>
+                <button @click="show = false" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="aspect-w-16 aspect-h-9 bg-gray-100 rounded-lg mb-4">
+                <!-- Image preview will be inserted here -->
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button @click="show = false" 
+                        class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+                    Cancel
+                </button>
+                <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const fullname = sessionStorage.getItem('fullname');
+            const email = sessionStorage.getItem('email');
+            const userIds = sessionStorage.getItem('user_id');
+
+            if (fullname && email) {
+                document.getElementById('profile-name').textContent = fullname;
+                document.getElementById('profile-email').textContent = email;
+                document.getElementById('profile-id').textContent = userIds;
+                // ...existing code...
+            }
+        });
+    </script>
+</body>
+</html>
+
