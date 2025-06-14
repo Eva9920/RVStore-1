@@ -17,13 +17,15 @@
       --text-muted: #777;
       --radius: 12px;
     }
-    
+
     body {
       margin: 0;
       padding: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: var(--bg-light);
       color: var(--text-dark);
+      min-height: 100vh;
+      overflow-y: auto;
     }
 
     .logo {
@@ -31,7 +33,6 @@
       height: auto;
     }
 
-    /* Navbar */
     nav {
       background: var(--white);
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -66,10 +67,9 @@
     }
 
     .main-content {
-    max-width: 800px;
-      margin: 20px auto 30px; 
-      padding: 0 20px;
-
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 80px 20px 30px; /* Top padding added for navbar space */
     }
 
     .settings-section {
@@ -112,7 +112,6 @@
       background: #fff;
     }
 
-    /* Toggle Switch */
     .toggle-label {
       display: flex;
       justify-content: space-between;
@@ -164,7 +163,6 @@
       transform: translateX(24px);
     }
 
-    /* Save Button */
     .save-btn {
       width: 100%;
       padding: 12px;
@@ -184,18 +182,14 @@
 </head>
 
 <body>
-    <!-- Navbar -->
-<nav>
-  <div class="nav-container">   
-    <button onclick="history.back()" class="flex items-center text-blue-600 hover:text-blue-800 font-semibold">
-        <i class="fas fa-arrow-left mr-2"></i>
-    </button>
-    <img src="RVS_LOGO.png" alt="Logo" class="logo" />
-  </div>
-    
-    <!-- Main Content -->
-</body>
-  <!-- Main Settings Content -->
+  <!-- Navbar -->
+  <nav>
+    <div class="nav-container">   
+      <img src="RVS_LOGO.png" alt="Logo" class="logo" />
+    </div>
+  </nav>
+
+  <!-- Main Content -->
   <div class="main-content">
 
     <div class="settings-section">
@@ -239,10 +233,10 @@
         </select>
       </div>
       <div class="form-group">
-        <label for="theme">Language</label>
-        <select id="theme">
+        <label for="language">Language</label>
+        <select id="language">
           <option>Indonesia</option>
-          <option>English(US)</option>
+          <option>English (US)</option>
         </select>
       </div>
     </div>

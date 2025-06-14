@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Notification Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
+  <style>
+    :root {
+      --gradient-purple-pink: linear-gradient(135deg, #2a0845 0%, #ff1493 100%);
+      --dark-purple: #1a1a2e;
+      --bg-color: #0f0f1a;
+      --text-light: #f0f0f0;
+      --text-muted: #aaa;
+      --accent-pink: #ff1493;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg-color);
+      color: var(--text-light);
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      background: var(--gradient-purple-pink);
+    }
+
+    .logo {
+      height: 40px;
+    }
+
+    .nav-back {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .nav-back i {
+      margin-right: 8px;
+    }
+
+    .notification-panel {
+      width: 100%;
+      min-height: 100vh;
+      background: var(--dark-purple);
+      padding: 24px;
+    }
+
+    .notification-panel h2 {
+      font-size: 26px;
+      margin-bottom: 6px;
+      color: white;
+    }
+
+    .notification-panel p.subtext {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .tab-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 20px;
+    }
+
+    .tabs span {
+      cursor: pointer;
+      font-weight: 500;
+      color: #bbb;
+    }
+
+    .tabs span.active {
+      color: #fff;
+      border-bottom: 2px solid var(--accent-pink);
+      padding-bottom: 2px;
+    }
+
+    .mark-read {
+      font-size: 13px;
+      color: #0a84ff;
+      cursor: pointer;
+    }
+
+    .notif-group-title {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: 18px 0 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .notif-item {
+      display: flex;
+      align-items: flex-start;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      position: relative;
+    }
+
+    .notif-icon {
+      margin-right: 14px;
+      font-size: 20px;
+      color: var(--accent-pink);
+    }
+
+    .notif-content {
+      flex: 1;
+    }
+
+    .notif-text {
+      font-size: 15px;
+      color: white;
+    }
+
+    .notif-time {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .notif-unread-dot {
+      width: 8px;
+      height: 8px;
+      background: red;
+      border-radius: 50%;
+      position: absolute;
+      right: 0;
+      top: 20px;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <img src="RVS_LOGO.png" alt="Logo" class="logo" />
+</nav>
+
+<!-- NOTIFICATION PANEL -->
+<div class="notification-panel">
+  <h2>Notifications</h2>
+  <div class="tab-bar">
+    <div class="tabs">
+      <span class="active" onclick="filterNotifications('all')">All</span>
+      <span onclick="filterNotifications('unread')">Unread</span>
+    </div>
+    <span class="mark-read" onclick="markAllAsRead()">Mark all as read</span>
+  </div>
+
+  <div class="notif-group-title">Today</div>
+
+  <div class="notif-item unread">
+    <i class="notif-icon fas fa-user"></i>
+    <div class="notif-content">
+      <div class="notif-text">John Doe submitted a leave request for July 25–27, 2024</div>
+      <div class="notif-time">July 16, 2024 | 09:00 PM</div>
+    </div>
+    <div class="notif-unread-dot"></div>
+  </div>
+
+  <div class="notif-item unread">
+    <i class="notif-icon fas fa-info-circle"></i>
+    <div class="notif-content">
+      <div class="notif-text">Michael Browns contract renewal due July 21, 2024</div>
+      <div class="notif-time">July 16, 2024 | 05:10 PM</div>
+    </div>
+    <div class="notif-unread-dot"></div>
+  </div>
+
+  <div class="notif-item unread">
+    <i class="notif-icon fas fa-calendar-alt"></i>
+    <div class="notif-content">
+      <div class="notif-text">Emily Davis scheduled a meeting for July 20, 2024</div>
+      <div class="notif-time">July 16, 2024 | 03:47 PM</div>
+    </div>
+    <div class="notif-unread-dot"></div>
+  </div>
+
+  <!-- Tambahan Unread -->
+  <div class="notif-item unread">
+    <i class="notif-icon fas fa-bell"></i>
+    <div class="notif-content">
+      <div class="notif-text">System maintenance scheduled for July 18, 2024</div>
+      <div class="notif-time">July 16, 2024 | 01:45 PM</div>
+    </div>
+    <div class="notif-unread-dot"></div>
+  </div>
+
+  <div class="notif-item unread">
+    <i class="notif-icon fas fa-star"></i>
+    <div class="notif-content">
+      <div class="notif-text">Congratulations! You earned 100 points in the app</div>
+      <div class="notif-time">July 16, 2024 | 12:00 PM</div>
+    </div>
+    <div class="notif-unread-dot"></div>
+  </div>
+
+  <!-- Read -->
+  <div class="notif-item">
+    <i class="notif-icon fas fa-calendar-alt"></i>
+    <div class="notif-content">
+      <div class="notif-text">Matthew Martinez scheduled a meeting for July 23, 2024</div>
+      <div class="notif-time">July 16, 2024 | 11:30 AM</div>
+    </div>
+  </div>
+
+  <div class="notif-item">
+    <i class="notif-icon fas fa-info-circle"></i>
+    <div class="notif-content">
+      <div class="notif-text">Nifer Harriss\ contract renewal due on Nov 1, 2024</div>
+      <div class="notif-time">July 16, 2024 | 10:00 AM</div>
+    </div>
+  </div>
+
+  <div class="notif-group-title">Yesterday</div>
+
+  <div class="notif-item">
+    <i class="notif-icon fas fa-user"></i>
+    <div class="notif-content">
+      <div class="notif-text">Sarah Wilson submitted a leave request for July 18–20, 2024</div>
+      <div class="notif-time">July 15, 2024 | 04:30 PM</div>
+    </div>
+  </div>
+
+  <div class="notif-item">
+    <i class="notif-icon fas fa-info-circle"></i>
+    <div class="notif-content">
+      <div class="notif-text">David Johnson’s contract renewal due on July 19, 2024</div>
+      <div class="notif-time">July 15, 2024 | 02:15 PM</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function filterNotifications(type) {
+    document.querySelectorAll('.tabs span').forEach(tab => tab.classList.remove('active'));
+    if (type === 'unread') {
+      document.querySelectorAll('.tabs span')[1].classList.add('active');
+      document.querySelectorAll('.notif-item').forEach(item => {
+        item.classList.contains('unread') ? item.classList.remove('hidden') : item.classList.add('hidden');
+      });
+    } else {
+      document.querySelectorAll('.tabs span')[0].classList.add('active');
+      document.querySelectorAll('.notif-item').forEach(item => item.classList.remove('hidden'));
+    }
+  }
+
+  function markAllAsRead() {
+    document.querySelectorAll('.notif-item.unread').forEach(item => {
+      item.classList.remove('unread');
+      const dot = item.querySelector('.notif-unread-dot');
+      if (dot) dot.remove();
+    });
+  }
+</script>
+
+</body>
+</html>
