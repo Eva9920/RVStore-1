@@ -3,8 +3,8 @@ require_once 'config.php';
 requireAuth();
 
 // Get date range (default to last 30 days)
-$date_from = isset($_GET['date_from']) ? $_GET['date_from'] : date('Y-m-d', strtotime(''));
-$date_to = isset($_GET['date_to']) ? $_GET['date_to'] : date('Y-m-d');
+$date_from = isset($_GET['date_from']) ? $_GET['date_from'] : date('');
+$date_to = isset($_GET['date_to']) ? $_GET['date_to'] : date('');
 
 // Get sales summary
 $summary_stmt = $conn->prepare("
@@ -103,27 +103,27 @@ while ($current_date <= $end_date) {
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         :root {
-            --primary: #4e73df;
-            --primary-dark: #3a5bc7;
-            --secondary: #858796;
-            --success: #1cc88a;
-            --info: #36b9cc;
-            --warning: #f6c23e;
-            --danger: #e74a3b;
             --primary-color: #6c5ce7;
             --dark-color: #2d3436;
             --light-color: #f7f7f7;
             --sidebar-width: 250px;
             --transition: all 0.3s ease;
         }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fc;
+        
+        * {
             margin: 0;
-            display: flex;
-            min-height: 100vh;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+        }
+    
+
         img {
             width: 105px;
             height: 65px;
@@ -282,6 +282,16 @@ while ($current_date <= $end_date) {
 
         .list .list-item.active a {
             animation: glow 2s infinite;
+        }
+
+        .main-content {
+            margin-left: 80px;
+            padding: 20px;
+            transition: .5s;
+        }
+
+        .sidebar.active + .main-content {
+            margin-left: 260px;
         }
 
         .main-content {

@@ -1,6 +1,6 @@
 <?php
-require_once 'config.php';
-requireAuth(); // Pastikan pengguna sudah login
+require_once 'config2.php';
+requireAuth(); // Ensure user is logged in
 
 // Handle form submissions
 $message = '';
@@ -95,11 +95,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
     }
 }
 
-// Fetch all users
-$users_query = $conn->query("SELECT id, username, email, role, full_name, status, created_at FROM users ORDER BY created_at DESC");
-// $users = $users_query->fetch_all(MYSQLI_ASSOC);
-// $users_query->close();
-// ?>
+// Fetch all users with search functionality
+$search = isset($_GET['search']) ? $_GET['search'] : '';
+$users_query = $conn->prepare("SELECT id, username, email, role, full_name, status, created_at FROM users 
+                              WHERE username LIKE ? OR email LIKE ? OR full_name LIKE ? 
+                              ORDER BY created_at DESC");
+$search_param = "%$search%";
+$users_query->bind_param("sss", $search_param, $search_param, $search_param);
+$users_query->execute();
+$users_result = $users_query->get_result();
+$users = $users_result->fetch_all(MYSQLI_ASSOC);
+$users_query->close();
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -111,27 +118,27 @@ $users_query = $conn->query("SELECT id, username, email, role, full_name, status
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         :root {
-            --primary: #4e73df;
-            --primary-dark: #3a5bc7;
-            --secondary: #858796;
-            --success: #1cc88a;
-            --info: #36b9cc;
-            --warning: #f6c23e;
-            --danger: #e74a3b;
             --primary-color: #6c5ce7;
             --dark-color: #2d3436;
             --light-color: #f7f7f7;
             --sidebar-width: 250px;
             --transition: all 0.3s ease;
         }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fc;
+        
+        * {
             margin: 0;
-            display: flex;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+        }
+    
+
         img {
             width: 105px;
             height: 65px;
@@ -290,6 +297,16 @@ $users_query = $conn->query("SELECT id, username, email, role, full_name, status
 
         .list .list-item.active a {
             animation: glow 2s infinite;
+        }
+
+        .main-content {
+            margin-left: 80px;
+            padding: 20px;
+            transition: .5s;
+        }
+
+        .sidebar.active + .main-content {
+            margin-left: 260px;
         }
 
         .main-content {
@@ -617,19 +634,19 @@ $users_query = $conn->query("SELECT id, username, email, role, full_name, status
                 </script>
 
     <div class="main-content">
-            <!-- Topbar -->
-            <div class="topbar">
-                <h2>Manage Accounts</h2>
-                <form method="GET" class="search-container">
-                    <input type="text" name="search" placeholder="Search product..." value="<?php echo isset($_GET['search']) ? $_GET['search'] : ''; ?>">
-                    <i class="fas fa-search"></i>
-                </form>
-                <div class="topbar-icons">
-                    <i class="fas fa-cog"></i>
-                    <i class="fas fa-bell"></i>
-                    <i class="fas fa-user-circle"></i>
-                </div>
+        <!-- Topbar -->
+        <div class="topbar">
+            <h2>Manage Accounts</h2>
+            <form method="GET" class="search-container">
+                <input type="text" name="search" placeholder="Search users..." value="<?php echo htmlspecialchars($search); ?>">
+                <i class="fas fa-search"></i>
+            </form>
+            <div class="topbar-icons">
+                <i class="fas fa-cog"></i>
+                <i class="fas fa-bell"></i>
+                <i class="fas fa-user-circle"></i>
             </div>
+        </div>
 
         <?php if (!empty($message)): ?>
             <div class="message <?php echo $messageType; ?>">
@@ -640,7 +657,6 @@ $users_query = $conn->query("SELECT id, username, email, role, full_name, status
         <div class="card">
             <div class="card-header">
                 <h3>All Users</h3>
-                <button class="btn btn-primary" onclick="openAddModal()">Add New User</button>
             </div>
             <div class="table-responsive">
                 <table class="table">
@@ -671,7 +687,7 @@ $users_query = $conn->query("SELECT id, username, email, role, full_name, status
                                 </td>
                                 <td><?php echo formatDate($user['created_at']); ?></td>
                                 <td>
-                                    <?php if ($user['id'] != $_SESSION['user_id']): // Prevent actions on current user ?>
+                                    <?php if ($user['id'] != $_SESSION['user_id']): ?>
                                         <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to change status for this user?');">
                                             <input type="hidden" name="action" value="toggle_status">
                                             <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
@@ -698,59 +714,5 @@ $users_query = $conn->query("SELECT id, username, email, role, full_name, status
             </div>
         </div>
     </div>
-
-    <div id="addModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button" onclick="closeAddModal()">&times;</span>
-            <h2>Add New User</h2>
-            <form method="POST" action="">
-                <input type="hidden" name="action" value="add_user">
-                <div class="form-group">
-                    <label for="add_full_name">Full Name</label>
-                    <input type="text" id="add_full_name" name="full_name" required>
-                </div>
-                <div class="form-group">
-                    <label for="add_username">Username</label>
-                    <input type="text" id="add_username" name="username" required>
-                </div>
-                <div class="form-group">
-                    <label for="add_email">Email</label>
-                    <input type="email" id="add_email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="add_password">Password</label>
-                    <input type="password" id="add_password" name="password" required>
-                </div>
-                <div class="form-group">
-                    <label for="add_role">Role</label>
-                    <select id="add_role" name="role" required>
-                        <option value="customer">Customer</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeAddModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Add User</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        function openAddModal() {
-            document.getElementById('addModal').style.display = 'flex'; // Use flex to center
-        }
-
-        function closeAddModal() {
-            document.getElementById('addModal').style.display = 'none';
-        }
-
-        // Close modals when clicking outside
-        window.onclick = function(event) {
-            if (event.target.className === 'modal') {
-                event.target.style.display = 'none';
-            }
-        }
-    </script>
 </body>
 </html>
