@@ -114,15 +114,19 @@ $users_query->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Accounts - Admin Panel</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         :root {
-            --primary-color: #6c5ce7;
-            --dark-color: #2d3436;
-            --light-color: #f7f7f7;
-            --sidebar-width: 250px;
-            --transition: all 0.3s ease;
+            --primary-gradient: linear-gradient(135deg, #2a0845 0%, #6441a5 100%);
+            --accent-gradient: linear-gradient(135deg, #ff1493 0%, #6441a5 100%);
+            --card-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.95) 100%);
+            --background-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --border-radius: 20px;
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         * {
@@ -132,19 +136,23 @@ $users_query->close();
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
-        
         body {
-            background-color: #f5f7fa;
-            color: #333;
+            background: var(--background-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
         }
-    
 
         img {
             width: 105px;
             height: 65px;
             margin-top: 20px;
-            margin-bottom: 17px;
+            margin-bottom: 15px;
             margin-left: 55px;
+        }
+        
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
         }
 
         /* Sidebar Styles */
@@ -154,18 +162,17 @@ $users_query->close();
             left: 0;
             width: 80px;
             height: 100%;
-            background: linear-gradient(135deg, #2a0845 0%, #6441a5 100%);
+            background: var(--primary-gradient);
             backdrop-filter: blur(40px);
-            border-right: 2px solid rgba(255, 20, 147, 0.3); /* Pink magenta border */
-            box-shadow: 0 0 20px rgba(139, 0, 139, 0.5); /* Dark purple shadow */
+            border-right: 2px solid rgba(255, 20, 147, 0.3);
+            box-shadow: 0 0 30px rgba(139, 0, 139, 0.5);
             padding: 6px 14px;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: var(--transition);
             z-index: 100;
         }
 
         .sidebar.active {
             width: 260px;
-            background: linear-gradient(135deg, #1a052e 0%, #4b2a8a 100%);
         }
 
         .sidebar .logo-menu {
@@ -173,16 +180,16 @@ $users_query->close();
             align-items: center;
             width: 100%;
             height: 70px;
-            border-bottom: 1px solid rgba(255, 20, 147, 0.2); /* Pink magenta subtle divider */
+            border-bottom: 1px solid rgba(255, 20, 147, 0.2);
         }
 
         .sidebar .logo-menu .logo {
             font-size: 25px;
-            color: #ff1493; /* Pink magenta */
+            color: #ff1493;
             font-weight: 600;
             pointer-events: none;
             opacity: 0;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             text-shadow: 0 0 10px rgba(255, 20, 147, 0.5);
         }
 
@@ -198,11 +205,11 @@ $users_query->close();
             width: 40px;
             height: 40px;
             font-size: 30px;
-            color: #ff1493; /* Pink magenta */
+            color: #ff1493;
             text-align: center;
             line-height: 40px;
             cursor: pointer;
-            transition: all 0.5s ease;
+            transition: var(--transition);
             background: rgba(106, 13, 173, 0.3);
             border-radius: 50%;
         }
@@ -213,8 +220,9 @@ $users_query->close();
         }
 
         .sidebar .logo-menu .toggle-btn:hover {
-            color: #ff69b4; /* Lighter pink */
+            color: #ff69b4;
             background: rgba(255, 20, 147, 0.3);
+            transform: translateX(-50%) scale(1.1);
         }
 
         .sidebar .list {
@@ -222,7 +230,7 @@ $users_query->close();
         }
 
         .list .list-item {
-            list-style: ;
+            list-style: none;
             width: 100%;
             height: 50px;
             margin: 10px 0;
@@ -232,21 +240,21 @@ $users_query->close();
         .list .list-item a {
             display: flex;
             align-items: center;
-            text-align: none;
-            font-size: 18px;
-            color: #e2b4ff; /* Light purple text */
             text-decoration: none;
-            border-radius: 6px;
+            font-size: 18px;
+            color: #e2b4ff;
+            border-radius: 12px;
             white-space: nowrap;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             padding: 0 10px;
         }
 
         .list .list-item.active a,
         .list .list-item a:hover {
-            background: linear-gradient(90deg, rgba(255, 20, 147, 0.3) 0%, rgba(106, 13, 173, 0.3) 100%);
+            background: var(--accent-gradient);
             color: #fff;
-            box-shadow: 0 5px 15px rgba(139, 0, 139, 0.4);
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
+            transform: translateX(5px);
         }
 
         .list .list-item a i {
@@ -254,123 +262,137 @@ $users_query->close();
             height: 50px;
             text-align: center;
             line-height: 50px;
-            color: #ff1493; /* Pink magenta icons */
+            color: #ff1493;
             font-size: 22px;
         }
 
         .list .list-item.active a i,
         .list .list-item a:hover i {
-            color: #ff69b4; /* Lighter pink on hover/active */
+            color: #fff;
         }
 
         .sidebar .link-name {
             opacity: 0;
             pointer-events: none;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             font-weight: 500;
+            margin-left: 8px;
         }
 
         .sidebar.active .link-name {
-            margin-left: 8px;
             opacity: 1;
             pointer-events: auto;
             transition-delay: calc(0.1s * var(--i));
         }
 
+        /* Main Content */
         .main-content {
             margin-left: 80px;
             padding: 20px;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            background-color: #f8f9fc;
+            transition: var(--transition);
+            width: calc(100% - 80px);
+            min-height: 100vh;
         }
 
         .sidebar.active + .main-content {
             margin-left: 260px;
+            width: calc(100% - 260px);
         }
 
-        /* Add glowing effect on active/hover */
-        @keyframes glow {
-            0% { box-shadow: 0 0 5px rgba(255, 20, 147, 0.5); }
-            50% { box-shadow: 0 0 20px rgba(255, 20, 147, 0.8); }
-            100% { box-shadow: 0 0 5px rgba(255, 20, 147, 0.5); }
+       /* Hamburger Toggle Button */
+       .sidebar .hamburger-toggle {
+            position: absolute;
+            top: 15px;
+            right: -70px;
+            width: 50px;
+            height: 50px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1001;
+            transition: var(--transition);
         }
 
-        .list .list-item.active a {
-            animation: glow 2s infinite;
+        .sidebar.active .hamburger-toggle {
+            right: 20px;
         }
 
-        .main-content {
-            margin-left: 80px;
-            padding: 20px;
-            transition: .5s;
+        .sidebar .hamburger-toggle i {
+            color: white;
+            font-size: 20px;
         }
 
-        .sidebar.active + .main-content {
-            margin-left: 260px;
+        /* Sidebar Adjustment */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -260px;
+            width: 260px;
+            z-index: 1000;
+            transition: var(--transition);
         }
 
-        .main-content {
-            margin-left: 80px;
-            padding: 20px;
-            transition: .5s;
+        .sidebar.active {
+            left: 0;
         }
 
-        .sidebar.active + .main-content {
-            margin-left: 260px;
-        }
-
-        .main-content {
-            margin-left: 250px;
-            flex-grow: 1;
-            padding: 20px;
-            width: calc(100% - 250px);
-        }
-        /* Topbar Styles */
+        /* Topbar */
         .topbar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 15px 25px;
-            background: white;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            margin-bottom: 25px;
-            border-radius: 10px;
-            position: sticky;
-            top: 0;
-            z-index: 10;
+            padding: 20px 30px;
+            background: var(--card-gradient);
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .topbar h2 {
-            font-weight: 600;
-            color: #1a237e;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 28px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .search-container {
             position: relative;
-            width: 300px;
+            width: 350px;
         }
 
         .search-container input {
             width: 100%;
-            padding: 10px 15px 10px 40px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
+            padding: 15px 20px 15px 50px;
+            border: 2px solid rgba(255, 20, 147, 0.2);
+            border-radius: 25px;
             font-size: 14px;
-            transition: all 0.3s;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
         }
 
         .search-container input:focus {
-            border-color: var(--primary-color);
+            border-color: #ff1493;
             outline: none;
-            box-shadow: 0 0 0 3px rgba(92, 107, 192, 0.2);
+            box-shadow: 0 0 20px rgba(255, 20, 147, 0.3);
+            background: rgba(255, 255, 255, 0.95);
         }
 
         .search-container i {
             position: absolute;
-            left: 15px;
+            left: 18px;
             top: 50%;
             transform: translateY(-50%);
-            color: #777;
+            color: #ff1493;
+            font-size: 18px;
         }
 
         .topbar-icons {
@@ -379,623 +401,611 @@ $users_query->close();
         }
 
         .topbar-icons i {
-            font-size: 20px;
-            color: #5c6bc0;
+            font-size: 24px;
+            color: #6441a5;
             cursor: pointer;
-            transition: color 0.3s;
+            transition: var(--transition);
+            padding: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
         }
 
         .topbar-icons i:hover {
-            color: #1a237e;
+            color: #ff1493;
+            background: rgba(255, 20, 147, 0.1);
+            transform: scale(1.1);
         }
-        
-        .card {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
+
+        /* Content Cards */
+        .content-card {
+            background: var(--card-gradient);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
         }
+
+        .content-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.12);
+        }
+
         .card-header {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #555;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 20, 147, 0.1);
         }
+
+        .card-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Table Styles */
         .table-responsive {
             overflow-x: auto;
         }
+
         .table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            overflow: hidden;
         }
+
         .table th, .table td {
-            padding: 12px 15px;
-            border: 1px solid #ddd;
+            padding: 15px 20px;
             text-align: left;
+            border-bottom: 1px solid rgba(255, 20, 147, 0.1);
         }
+
         .table th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-            color: #333;
-        }
-        .table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        .table tr:hover {
-            background-color: #f1f1f1;
-        }
-        .btn {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            background: var(--accent-gradient);
             color: white;
-            font-size: 0.9em;
-            transition: background-color 0.3s;
-        }
-        .btn-primary {
-            background-color: #007bff;
-        }
-        .btn-primary:hover {
-            background-color: #0056b3;
-        }
-        .btn-success {
-            background-color: #28a745;
-        }
-        .btn-success:hover {
-            background-color: #218838;
-        }
-        .btn-warning {
-            background-color: #ffc107;
-            color: #333;
-        }
-        .btn-warning:hover {
-            background-color: #e0a800;
-        }
-        .btn-danger {
-            background-color: #dc3545;
-        }
-        .btn-danger:hover {
-            background-color: #c82333;
-        }
-        .btn-info {
-            background-color: #17a2b8;
-        }
-        .btn-info:hover {
-            background-color: #138496;
-        }
-        .message {
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-        }
-        .message.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .message.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        /* Modal styles */
-        .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1000; /* Sit on top */
-            left: 0;
-            top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-            justify-content: center;
-            align-items: center;
+        .table tr:hover {
+            background: rgba(255, 20, 147, 0.05);
         }
 
-        .modal-content {
-            background-color: #fefefe;
-            margin: auto;
-            padding: 20px;
-            border: 1px solid #888;
-            border-radius: 8px;
-            width: 80%; /* Could be more specific */
-            max-width: 500px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            position: relative;
-            animation-name: animatetop;
-            animation-duration: 0.4s
+        .badge {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: inline-block;
+            letter-spacing: 0.5px;
         }
 
-        /* Add Animation */
-        @-webkit-keyframes animatetop {
-            from {top:-300px; opacity:0} 
-            to {top:0; opacity:1}
+        .badge-success {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc70 100%);
+            color: white;
         }
 
-        @keyframes animatetop {
-            from {top:-300px; opacity:0}
-            to {top:0; opacity:1}
+        .badge-danger {
+            background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
+            color: white;
         }
 
-        .close-button {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .close-button:hover,
-        .close-button:focus {
-            color: black;
-            text-decoration: none;
+        /* Button Styles */
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 20px;
             cursor: pointer;
-        }
-        .modal .form-group {
-            margin-bottom: 15px;
-        }
-        .modal .form-group label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        .modal .form-group input,
-        .modal .form-group select {
-            width: calc(100% - 22px); /* Adjust for padding and border */
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .modal-footer {
-            margin-top: 20px;
-            text-align: right;
-        }
-        .modal-footer .btn {
-            margin-left: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
         }
 
-        /* Improved Chatbot Styles */
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Message Styles */
+        .message {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: var(--border-radius);
+            background: var(--card-gradient);
+            box-shadow: var(--shadow);
+            border-left: 4px solid transparent;
+        }
+
+        .message.success {
+            border-left-color: #00cc70;
+            background: rgba(0, 204, 112, 0.1);
+        }
+
+        .message.error {
+            border-left-color: #ff3742;
+            background: rgba(255, 55, 66, 0.1);
+        }
+
+        /* Chatbot Styles */
         .chatbot-container {
             position: fixed;
             bottom: 30px;
             left: 50px;
             z-index: 999;
         }
-        
+
         .chatbot-toggle {
             width: 70px;
             height: 70px;
-            background: linear-gradient(135deg, #6c5ce7 0%, #4834d4 100%);
+            background: var(--accent-gradient);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.4);
+            transition: var(--transition);
         }
-        
+
         .chatbot-toggle:hover {
             transform: scale(1.1);
+            box-shadow: 0 15px 40px rgba(255, 20, 147, 0.5);
         }
-        
+
         .chatbot-toggle i {
             color: white;
             font-size: 28px;
         }
-        
+
         .chatbot-window {
             width: 400px;
             height: 550px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            background: var(--card-gradient);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
             overflow: hidden;
             display: none;
             flex-direction: column;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
+
         .chatbot-window.active {
             display: flex;
             animation: fadeInUp 0.3s ease;
         }
-        
+
         .chatbot-header {
-            background: linear-gradient(135deg, #6c5ce7 0%, #4834d4 100%);
+            background: var(--accent-gradient);
             color: white;
-            padding: 15px;
+            padding: 20px;
             text-align: center;
+            position: relative;
         }
-        
+
         .chatbot-header h3 {
             margin: 0;
             font-size: 18px;
+            font-weight: 700;
         }
-        
+
         .chatbot-header i {
             position: absolute;
-            right: 15px;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
             cursor: pointer;
+            font-size: 20px;
+            transition: var(--transition);
         }
-        
+
+        .chatbot-header i:hover {
+            transform: translateY(-50%) scale(1.2);
+        }
+
         .chatbot-messages {
             flex: 1;
-            padding: 15px;
+            padding: 20px;
             overflow-y: auto;
-            background: #f5f7fb;
+            background: rgba(255, 255, 255, 0.1);
             display: flex;
             flex-direction: column;
         }
-        
+
         .message {
             max-width: 80%;
-            padding: 10px 15px;
+            padding: 12px 18px;
             margin-bottom: 15px;
-            border-radius: 18px;
+            border-radius: 20px;
             position: relative;
             word-wrap: break-word;
+            font-size: 14px;
+            line-height: 1.5;
         }
-        
+
         .bot-message {
-            background: white;
-            border-bottom-left-radius: 5px;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--text-primary);
+            border-bottom-left-radius: 8px;
             align-self: flex-start;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             margin-right: auto;
         }
-        
+
         .user-message {
-            background: #6c5ce7;
+            background: var(--accent-gradient);
             color: white;
-            border-bottom-right-radius: 5px;
+            border-bottom-right-radius: 8px;
             align-self: flex-end;
             margin-left: auto;
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
         }
-        
+
         .chatbot-input {
             display: flex;
-            padding: 15px;
-            background: white;
-            border-top: 1px solid #eee;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-top: 1px solid rgba(255, 20, 147, 0.2);
         }
-        
+
         .chatbot-input input {
             flex: 1;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 30px;
+            padding: 12px 18px;
+            border: 2px solid rgba(255, 20, 147, 0.2);
+            border-radius: 25px;
             outline: none;
+            font-size: 14px;
+            transition: var(--transition);
         }
-        
+
+        .chatbot-input input:focus {
+            border-color: #ff1493;
+            box-shadow: 0 0 15px rgba(255, 20, 147, 0.2);
+        }
+
         .chatbot-input button {
-            background: #6c5ce7;
+            background: var(--accent-gradient);
             color: white;
             border: none;
             border-radius: 50%;
-            width: 45px;
-            height: 45px;
+            width: 50px;
+            height: 50px;
             margin-left: 10px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: var(--transition);
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
         }
-        
+
         .chatbot-input button:hover {
-            background: #4834d4;
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
         }
-        
+
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(30px);
             }
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-        
+
         .typing-indicator {
             display: flex;
-            padding: 10px 15px;
-            background: white;
-            border-radius: 18px;
-            border-bottom-left-radius: 5px;
+            padding: 12px 18px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            border-bottom-left-radius: 8px;
             align-self: flex-start;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             margin-bottom: 15px;
             margin-right: auto;
         }
-        
+
         .typing-indicator span {
             height: 8px;
             width: 8px;
-            background: #6c5ce7;
+            background: #ff1493;
             border-radius: 50%;
             display: inline-block;
             margin: 0 2px;
             animation: bounce 1.5s infinite ease-in-out;
         }
-        
+
         .typing-indicator span:nth-child(2) {
             animation-delay: 0.2s;
         }
-        
+
         .typing-indicator span:nth-child(3) {
             animation-delay: 0.4s;
         }
-        
+
         @keyframes bounce {
             0%, 60%, 100% {
                 transform: translateY(0);
             }
             30% {
-                transform: translateY(-5px);
+                transform: translateY(-8px);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .search-container {
+                width: 250px;
+            }
+            
+            .topbar h2 {
+                font-size: 22px;
+            }
+            
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Sidebar Navigation -->
-                <div class="sidebar">
-                    <div class="logo-menu">
-                        <h2 class="logo"><img src="RVS_LOGO.png" alt=""></h2>
-                        <i class='bx bx-menu toggle-btn'></i>
-                    </div>
-                    <nav>
-                        <ul class="list">
-                            <li class="list-item active">
-                                <a href="dashboard.php">
-                                    <i class='bx bx-home-alt-2'></i>
-                                    <span class="link-name" style="--i:1;">Dashboard</span>
-                                </a>
-                            </li>
-                            <li class="list-item">
-                                <a href="transaction_history.php">
-                                    <i class='bx bx-history'></i>
-                                    <span class="link-name" style="--i:2;">Transaction History</span>
-                                </a>
-                            </li>
-                            <li class="list-item">
-                                <a href="manage_product.php">
-                                    <i class='bx bx-box'></i>
-                                    <span class="link-name" style="--i:3;">Manage Product</span>
-                                </a>
-                            </li>
-                            <li class="list-item">
-                                <a href="sales_report.php">
-                                    <i class='bx bx-bar-chart-alt-2'></i>
-                                    <span class="link-name" style="--i:4;">Sales Report</span>
-                                </a>
-                            </li>
-                            <li class="list-item">
-                                <a href="accounts.php">
-                                    <i class='bx bx-user'></i>
-                                    <span class="link-name" style="--i:5;">Manage Accounts</span>
-                                </a>
-                            </li>
-                            <li class="list-item">
-                                <a href="logout.php">
-                                    <i class='bx bx-log-out'></i>
-                                    <span class="link-name" style="--i:6;">Logout</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </nav>
-                </div>
-
-                <script>
-                    const sidebar = document.querySelector('.sidebar');
-                    const toggleBtn = document.querySelector('.toggle-btn');
-                    const mainContent = document.querySelector('.main-content');
-
-                    // Cek state sidebar dari localStorage saat halaman dimuat
-                    document.addEventListener('DOMContentLoaded', function() {
-                        // Set active menu item based on current page
-                        const currentPage = window.location.pathname.split('/').pop();
-                        const menuItems = document.querySelectorAll('.list-item');
-                        
-                        menuItems.forEach(item => {
-                            item.classList.remove('active');
-                            const link = item.querySelector('a').getAttribute('href');
-                            if (link === currentPage) {
-                                item.classList.add('active');
-                            }
-                        });
-
-                        // Cek state sidebar dari localStorage
-                        const sidebarState = localStorage.getItem('sidebarState');
-                        if (sidebarState === 'active') {
-                            sidebar.classList.add('active');
-                            mainContent.style.marginLeft = '260px';
-                            mainContent.style.width = 'calc(100% - 260px)';
-                        }
-                    });
-
-                    // Toggle sidebar dan simpan state ke localStorage
-                    toggleBtn.addEventListener('click', () => {
-                        sidebar.classList.toggle('active');
-                        
-                        if (sidebar.classList.contains('active')) {
-                            localStorage.setItem('sidebarState', 'active');
-                            mainContent.style.marginLeft = '260px';
-                            mainContent.style.width = 'calc(100% - 260px)';
-                        } else {
-                            localStorage.setItem('sidebarState', 'inactive');
-                            mainContent.style.marginLeft = '80px';
-                            mainContent.style.width = 'calc(100% - 80px)';
-                        }
-                    });
-                </script>
-
-    <div class="main-content">
-        <!-- Topbar -->
-        <div class="topbar">
-            <h2>Manage Accounts</h2>
-            <form method="GET" class="search-container">
-                <input type="text" name="search" placeholder="Search users..." value="<?php echo htmlspecialchars($search); ?>">
-                <i class="fas fa-search"></i>
-            </form>
-            <div class="topbar-icons">
-                <i class="fas fa-cog"></i>
-                <i class="fas fa-bell"></i>
-                <i class="fas fa-user-circle"></i>
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="hamburger-toggle">
+                <i class='bx bx-menu'></i>
             </div>
+
+            <script>
+                document.querySelector('.hamburger-toggle').addEventListener('click', function() {
+                    document.querySelector('.sidebar').classList.toggle('active');
+                });
+            </script>
+            
+            <div class="logo-menu">
+                <h2 class="logo"><img src="RVS_LOGO.png" alt=""></h2>
+            </div>
+            <nav>
+                <ul class="list">
+                    <li class="list-item">
+                        <a href="dashboard.php">
+                            <i class='bx bx-home-alt-2'></i>
+                            <span class="link-name" style="--i:1;">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <a href="transaction_history.php">
+                            <i class='bx bx-history'></i>
+                            <span class="link-name" style="--i:2;">Transaction History</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <a href="manage_product.php">
+                            <i class='bx bx-box'></i>
+                            <span class="link-name" style="--i:3;">Manage Product</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <a href="sales_report.php">
+                            <i class='bx bx-bar-chart-alt-2'></i>
+                            <span class="link-name" style="--i:4;">Sales Report</span>
+                        </a>
+                    </li>
+                    <li class="list-item active">
+                        <a href="accounts.php">
+                            <i class='bx bx-user'></i>
+                            <span class="link-name" style="--i:5;">Manage Accounts</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <a href="logout.php">
+                            <i class='bx bx-log-out'></i>
+                            <span class="link-name" style="--i:6;">Logout</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
         </div>
 
-        <?php if (!empty($message)): ?>
-            <div class="message <?php echo $messageType; ?>">
-                <?php echo htmlspecialchars($message); ?>
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Topbar -->
+            <div class="topbar">
+                <h2>Manage Accounts</h2>
+                <form method="GET" class="search-container">
+                    <input type="text" name="search" placeholder="Search users..." value="<?php echo htmlspecialchars($search); ?>">
+                    <i class="fas fa-search"></i>
+                </form>
+                <div class="topbar-icons">
+                    <i class="fas fa-cog"></i>
+                    <i class="fas fa-bell"></i>
+                    <i class="fas fa-user-circle"></i>
+                </div>
             </div>
-        <?php endif; ?>
 
-        <div class="card">
-            <div class="card-header">
-                <h3>All Users</h3>
-            </div>
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Full Name</th>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                            <th>Created At</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($users as $user): ?>
+            <?php if (!empty($message)): ?>
+                <div class="message <?php echo $messageType; ?>">
+                    <?php echo htmlspecialchars($message); ?>
+                </div>
+            <?php endif; ?>
+
+            <div class="content-card">
+                <div class="card-header">
+                    <h2>All Users</h2>
+                </div>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
                             <tr>
-                                <td><?php echo $user['id']; ?></td>
-                                <td><?php echo htmlspecialchars($user['full_name']); ?></td>
-                                <td><?php echo htmlspecialchars($user['username']); ?></td>
-                                <td><?php echo htmlspecialchars($user['email']); ?></td>
-                                <td><?php echo htmlspecialchars($user['role']); ?></td>
-                                <td>
-                                    <span class="badge <?php echo $user['status'] == 'active' ? 'badge-success' : 'badge-danger'; ?>">
-                                        <?php echo ucfirst($user['status']); ?>
-                                    </span>
-                                </td>
-                                <td><?php echo formatDate($user['created_at']); ?></td>
-                                <td>
-                                    <?php if ($user['id'] != $_SESSION['user_id']): ?>
-                                        <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to change status for this user?');">
-                                            <input type="hidden" name="action" value="toggle_status">
-                                            <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
-                                            <input type="hidden" name="current_status" value="<?php echo $user['status']; ?>">
-                                            <button type="submit" class="btn btn-sm <?php echo $user['status'] == 'active' ? 'btn-warning' : 'btn-success'; ?>" title="<?php echo $user['status'] == 'active' ? 'Deactivate User' : 'Activate User'; ?>">
-                                                <i class="fas fa-<?php echo $user['status'] == 'active' ? 'pause' : 'play'; ?>"></i>
-                                            </button>
-                                        </form>
-                                        <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this user?');">
-                                            <input type="hidden" name="action" value="delete_user">
-                                            <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
-                                            <button type="submit" class="btn btn-sm btn-danger" title="Delete User">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    <?php else: ?>
-                                        <span class="text-muted">Current User</span>
-                                    <?php endif; ?>
-                                </td>
+                                <th>ID</th>
+                                <th>Full Name</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Created At</th>
+                                <th>Actions</th>
                             </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($users as $user): ?>
+                                <tr>
+                                    <td><?php echo $user['id']; ?></td>
+                                    <td><?php echo htmlspecialchars($user['full_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($user['username']); ?></td>
+                                    <td><?php echo htmlspecialchars($user['email']); ?></td>
+                                    <td><?php echo htmlspecialchars($user['role']); ?></td>
+                                    <td>
+                                        <span class="badge <?php echo $user['status'] == 'active' ? 'badge-success' : 'badge-danger'; ?>">
+                                            <?php echo ucfirst($user['status']); ?>
+                                        </span>
+                                    </td>
+                                    <td><?php echo date('d M Y', strtotime($user['created_at'])); ?></td>
+                                    <td>
+                                        <?php if ($user['id'] != $_SESSION['user_id']): ?>
+                                            <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to change status for this user?');">
+                                                <input type="hidden" name="action" value="toggle_status">
+                                                <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
+                                                <input type="hidden" name="current_status" value="<?php echo $user['status']; ?>">
+                                                <button type="submit" class="btn btn-sm <?php echo $user['status'] == 'active' ? 'btn-warning' : 'btn-success'; ?>" title="<?php echo $user['status'] == 'active' ? 'Deactivate User' : 'Activate User'; ?>">
+                                                    <i class="fas fa-<?php echo $user['status'] == 'active' ? 'pause' : 'play'; ?>"></i>
+                                                </button>
+                                            </form>
+                                            <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                                <input type="hidden" name="action" value="delete_user">
+                                                <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
+                                                <button type="submit" class="btn btn-sm btn-danger" title="Delete User">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        <?php else: ?>
+                                            <span class="text-muted">Current User</span>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
-        <div class="chatbot-container">
-            <div class="chatbot-window" id="chatbotWindow">
-                <div class="chatbot-header">
-                    <h3>RVStore AI Assistant</h3>
-                    <i class="fas fa-times" onclick="toggleChatbot()"></i>
-                </div>
-                <div class="chatbot-messages" id="chatbotMessages">
-                    <div class="message bot-message">
-                        Hello! How can I help you today?
-                    </div>
-                </div>
-                <div class="chatbot-input">
-                    <input type="text" id="chatbotInput" placeholder="Type your message..." onkeypress="if(event.keyCode==13) sendMessage()">
-                    <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+    <div class="chatbot-container">
+        <div class="chatbot-window" id="chatbotWindow">
+            <div class="chatbot-header">
+                <h3>RVStore AI Assistant</h3>
+                <i class="fas fa-times" onclick="toggleChatbot()"></i>
+            </div>
+            <div class="chatbot-messages" id="chatbotMessages">
+                <div class="message bot-message">
+                    Hello! How can I help you today?
                 </div>
             </div>
-            <div class="chatbot-toggle" onclick="toggleChatbot()">
-                <i class="fas fa-robot"></i>
+            <div class="chatbot-input">
+                <input type="text" id="chatbotInput" placeholder="Type your message..." onkeypress="if(event.keyCode==13) sendMessage()">
+                <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
+        <div class="chatbot-toggle" onclick="toggleChatbot()">
+            <i class="fas fa-robot"></i>
+        </div>
+    </div>
 
-        <script>
-            function toggleChatbot() {
-                const chatbotWindow = document.getElementById('chatbotWindow');
-                chatbotWindow.classList.toggle('active');
-            }
+    <script>
+        function toggleChatbot() {
+            const chatbotWindow = document.getElementById('chatbotWindow');
+            chatbotWindow.classList.toggle('active');
+        }
+        
+        function sendMessage() {
+            const input = document.getElementById('chatbotInput');
+            const message = input.value.trim();
             
-            function sendMessage() {
-                const input = document.getElementById('chatbotInput');
-                const message = input.value.trim();
+            if (message === '') return;
+            
+            // Add user message (right aligned)
+            addMessage(message, 'user-message');
+            input.value = '';
+            
+            // Show typing indicator (left aligned)
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'message typing-indicator';
+            typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+            document.getElementById('chatbotMessages').appendChild(typingIndicator);
+            
+            // Scroll to bottom
+            scrollToBottom();
+            
+            // Simulate bot response (left aligned)
+            setTimeout(() => {
+                // Remove typing indicator
+                const indicator = document.querySelector('.typing-indicator');
+                if (indicator) indicator.remove();
                 
-                if (message === '') return;
+                // Add bot response
+                const responses = [
+                    "I can help you with your questions about our products and services.",
+                    "For order inquiries, please check the Transaction History page.",
+                    "Our support team is available 24/7 to assist you.",
+                    "You can find more information in our FAQ section.",
+                    "Is there anything else I can help you with?"
+                ];
+                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                addMessage(randomResponse, 'bot-message');
                 
-                // Add user message (right aligned)
-                addMessage(message, 'user-message');
-                input.value = '';
-                
-                // Show typing indicator (left aligned)
-                const typingIndicator = document.createElement('div');
-                typingIndicator.className = 'message typing-indicator';
-                typingIndicator.innerHTML = '<span></span><span></span><span></span>';
-                document.getElementById('chatbotMessages').appendChild(typingIndicator);
-                
-                // Scroll to bottom
+                // Scroll to bottom again after response
                 scrollToBottom();
-                
-                // Simulate bot response (left aligned)
-                setTimeout(() => {
-                    // Remove typing indicator
-                    const indicator = document.querySelector('.typing-indicator');
-                    if (indicator) indicator.remove();
-                    
-                    // Add bot response
-                    const responses = [
-                        "I can help you with your questions about our products and services.",
-                        "For order inquiries, please check the Transaction History page.",
-                        "Our support team is available 24/7 to assist you.",
-                        "You can find more information in our FAQ section.",
-                        "Is there anything else I can help you with?"
-                    ];
-                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-                    addMessage(randomResponse, 'bot-message');
-                    
-                    // Scroll to bottom again after response
-                    scrollToBottom();
-                }, 1500);
-            }
-            
-            function addMessage(text, className) {
-                const messagesContainer = document.getElementById('chatbotMessages');
-                const messageElement = document.createElement('div');
-                messageElement.className = `message ${className}`;
-                messageElement.textContent = text;
-                messagesContainer.appendChild(messageElement);
-            }
-            
-            function scrollToBottom() {
-                const messagesContainer = document.getElementById('chatbotMessages');
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }
-        </script>
-    
+            }, 1500);
+        }
+        
+        function addMessage(text, className) {
+            const messagesContainer = document.getElementById('chatbotMessages');
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${className}`;
+            messageElement.textContent = text;
+            messagesContainer.appendChild(messageElement);
+        }
+        
+        function scrollToBottom() {
+            const messagesContainer = document.getElementById('chatbotMessages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    </script>
 </body>
 </html>

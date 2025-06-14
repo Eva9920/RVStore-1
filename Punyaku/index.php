@@ -197,6 +197,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             padding-right: 4px;
         }
 
+        .password-toggle.hidden {
+            display: none;
+        }
+
         /* Divider */
         .divider {
             display: flex;

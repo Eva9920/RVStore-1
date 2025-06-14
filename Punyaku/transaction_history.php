@@ -2,6 +2,17 @@
 require_once 'config.php';
 requireAuth();
 
+// Get stats
+$stats = [];
+$result = $conn->query("SELECT COUNT(*) as total_orders, SUM(amount) as total_sales FROM transactions WHERE status = 'success'");
+$stats = $result->fetch_assoc();
+
+$result = $conn->query("SELECT COUNT(DISTINCT user_id) as total_customers FROM transactions");
+$stats['total_customers'] = $result->fetch_assoc()['total_customers'];
+
+$result = $conn->query("SELECT SUM(stock) as total_stock FROM games");
+$stats['total_stock'] = $result->fetch_assoc()['total_stock'];
+
 // Pagination
 $per_page = 10;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
@@ -97,19 +108,17 @@ if ($params) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
+        /* Copy all CSS from dashboard.php */
         :root {
-            --primary: #4e73df;
-            --primary-dark: #3a5bc7;
-            --secondary: #858796;
-            --success: #1cc88a;
-            --info: #36b9cc;
-            --warning: #f6c23e;
-            --danger: #e74a3b;
-            --primary-color: #6c5ce7;
-            --dark-color: #2d3436;
-            --light-color: #f7f7f7;
-            --sidebar-width: 250px;
-            --transition: all 0.3s ease;
+            --primary-gradient: linear-gradient(135deg, #2a0845 0%, #6441a5 100%);
+            --accent-gradient: linear-gradient(135deg, #ff1493 0%, #6441a5 100%);
+            --card-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.95) 100%);
+            --background-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --border-radius: 20px;
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         * {
@@ -120,22 +129,23 @@ if ($params) {
         }
         
         body {
-            background-color: #f5f7fa;
-            color: #333;
+            background: var(--background-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        img {
+            width: 105px;
+            height: 65px;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            margin-left: 55px;
         }
         
         .dashboard-container {
             display: flex;
             min-height: 100vh;
         }
-        
-        img {
-            width: 105px;
-            height: 65px;
-            margin-top: 20px;
-            margin-bottom: 17px;
-            margin-left: 55px;
-        }      
 
         /* Sidebar Styles */
         .sidebar {
@@ -144,18 +154,17 @@ if ($params) {
             left: 0;
             width: 80px;
             height: 100%;
-            background: linear-gradient(135deg, #2a0845 0%, #6441a5 100%);
+            background: var(--primary-gradient);
             backdrop-filter: blur(40px);
-            border-right: 2px solid rgba(255, 20, 147, 0.3); /* Pink magenta border */
-            box-shadow: 0 0 20px rgba(139, 0, 139, 0.5); /* Dark purple shadow */
+            border-right: 2px solid rgba(255, 20, 147, 0.3);
+            box-shadow: 0 0 30px rgba(139, 0, 139, 0.5);
             padding: 6px 14px;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: var(--transition);
             z-index: 100;
         }
 
         .sidebar.active {
             width: 260px;
-            background: linear-gradient(135deg, #1a052e 0%, #4b2a8a 100%);
         }
 
         .sidebar .logo-menu {
@@ -163,16 +172,16 @@ if ($params) {
             align-items: center;
             width: 100%;
             height: 70px;
-            border-bottom: 1px solid rgba(255, 20, 147, 0.2); /* Pink magenta subtle divider */
+            border-bottom: 1px solid rgba(255, 20, 147, 0.2);
         }
 
         .sidebar .logo-menu .logo {
             font-size: 25px;
-            color: #ff1493; /* Pink magenta */
+            color: #ff1493;
             font-weight: 600;
             pointer-events: none;
             opacity: 0;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             text-shadow: 0 0 10px rgba(255, 20, 147, 0.5);
         }
 
@@ -188,11 +197,11 @@ if ($params) {
             width: 40px;
             height: 40px;
             font-size: 30px;
-            color: #ff1493; /* Pink magenta */
+            color: #ff1493;
             text-align: center;
             line-height: 40px;
             cursor: pointer;
-            transition: all 0.5s ease;
+            transition: var(--transition);
             background: rgba(106, 13, 173, 0.3);
             border-radius: 50%;
         }
@@ -203,8 +212,9 @@ if ($params) {
         }
 
         .sidebar .logo-menu .toggle-btn:hover {
-            color: #ff69b4; /* Lighter pink */
+            color: #ff69b4;
             background: rgba(255, 20, 147, 0.3);
+            transform: translateX(-50%) scale(1.1);
         }
 
         .sidebar .list {
@@ -212,7 +222,7 @@ if ($params) {
         }
 
         .list .list-item {
-            list-style: ;
+            list-style: none;
             width: 100%;
             height: 50px;
             margin: 10px 0;
@@ -222,21 +232,21 @@ if ($params) {
         .list .list-item a {
             display: flex;
             align-items: center;
-            text-align: none;
-            font-size: 18px;
-            color: #e2b4ff; /* Light purple text */
             text-decoration: none;
-            border-radius: 6px;
+            font-size: 18px;
+            color: #e2b4ff;
+            border-radius: 12px;
             white-space: nowrap;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             padding: 0 10px;
         }
 
         .list .list-item.active a,
         .list .list-item a:hover {
-            background: linear-gradient(90deg, rgba(255, 20, 147, 0.3) 0%, rgba(106, 13, 173, 0.3) 100%);
+            background: var(--accent-gradient);
             color: #fff;
-            box-shadow: 0 5px 15px rgba(139, 0, 139, 0.4);
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
+            transform: translateX(5px);
         }
 
         .list .list-item a i {
@@ -244,261 +254,341 @@ if ($params) {
             height: 50px;
             text-align: center;
             line-height: 50px;
-            color: #ff1493; /* Pink magenta icons */
+            color: #ff1493;
             font-size: 22px;
         }
 
         .list .list-item.active a i,
         .list .list-item a:hover i {
-            color: #ff69b4; /* Lighter pink on hover/active */
+            color: #fff;
         }
 
         .sidebar .link-name {
             opacity: 0;
             pointer-events: none;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             font-weight: 500;
+            margin-left: 8px;
         }
 
         .sidebar.active .link-name {
-            margin-left: 8px;
             opacity: 1;
             pointer-events: auto;
             transition-delay: calc(0.1s * var(--i));
         }
 
+        /* Main Content */
         .main-content {
             margin-left: 80px;
             padding: 20px;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            background-color: #f8f9fc;
+            transition: var(--transition);
+            width: calc(100% - 80px);
+            min-height: 100vh;
         }
 
         .sidebar.active + .main-content {
             margin-left: 260px;
+            width: calc(100% - 260px);
         }
 
-        /* Add glowing effect on active/hover */
-        @keyframes glow {
-            0% { box-shadow: 0 0 5px rgba(255, 20, 147, 0.5); }
-            50% { box-shadow: 0 0 20px rgba(255, 20, 147, 0.8); }
-            100% { box-shadow: 0 0 5px rgba(255, 20, 147, 0.5); }
+       /* Hamburger Toggle Button */
+       .sidebar .hamburger-toggle {
+            position: absolute;
+            top: 15px;
+            right: -70px; /* Posisi di luar sidebar sebelah kanan */
+            width: 50px;
+            height: 50px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1001;
+            transition: var(--transition);
         }
 
-        .list .list-item.active a {
-            animation: glow 2s infinite;
+        .sidebar.active .hamburger-toggle {
+            right: 20px; /* Saat sidebar aktif, posisi di dalam kanan atas */
         }
 
-        .main-content {
-            margin-left: 80px;
-            padding: 20px;
-            transition: .5s;
+        .sidebar .hamburger-toggle i {
+            color: white;
+            font-size: 20px;
         }
 
-        .sidebar.active + .main-content {
-            margin-left: 260px;
+        /* Sidebar Adjustment */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -260px;
+            width: 260px;
+            z-index: 1000;
+            transition: var(--transition);
         }
-        
-        /* Main Content Styles */
-        .main-content {
-            margin-left: 250px;
-            width: calc(100% - 250px);
-            padding: 20px;
+
+        .sidebar.active {
+            left: 0;
         }
-        
-        /* Topbar Styles */
+
+        /* Topbar */
         .topbar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 15px 25px;
-            background: white;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            margin-bottom: 25px;
-            border-radius: 10px;
-            position: sticky;
-            top: 0;
-            z-index: 10;
+            padding: 20px 30px;
+            background: var(--card-gradient);
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .topbar h2 {
-            font-weight: 600;
-            color: #1a237e;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 28px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .search-container {
             position: relative;
-            width: 300px;
+            width: 350px;
         }
 
         .search-container input {
             width: 100%;
-            padding: 10px 15px 10px 40px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
+            padding: 15px 20px 15px 50px;
+            border: 2px solid rgba(255, 20, 147, 0.2);
+            border-radius: 25px;
             font-size: 14px;
-            transition: all 0.3s;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
         }
 
         .search-container input:focus {
-            border-color: var(--primary-color);
+            border-color: #ff1493;
             outline: none;
-            box-shadow: 0 0 0 3px rgba(92, 107, 192, 0.2);
+            box-shadow: 0 0 20px rgba(255, 20, 147, 0.3);
+            background: rgba(255, 255, 255, 0.95);
         }
 
         .search-container i {
             position: absolute;
-            left: 15px;
+            left: 18px;
             top: 50%;
             transform: translateY(-50%);
-            color: #777;
+            color: #ff1493;
+            font-size: 18px;
         }
 
-        .topbar-icons {
-            display: flex;
-            gap: 20px;
-        }
-
-        .topbar-icons i {
-            font-size: 20px;
-            color: #5c6bc0;
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-
-        .topbar-icons i:hover {
-            color: #1a237e;
-        }
-        
+        /* Content Cards */
         .content-card {
-            background-color: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            background: var(--card-gradient);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
+            margin-bottom: 30px;
         }
-        
+
+        .content-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.12);
+        }
+
+        .content-card.wide {
+            grid-column: span 2;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 20, 147, 0.1);
+        }
+
+        .card-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Filters Section */
         .filters-section {
-            background-color: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            background: var(--card-gradient);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 30px;
         }
-        
+
         .filters-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 15px;
+            gap: 20px;
+            margin-bottom: 20px;
         }
-        
+
         .filter-group {
             display: flex;
             flex-direction: column;
         }
-        
+
         .filter-group label {
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: 600;
-            color: var(--dark);
+            color: var(--text-secondary);
         }
-        
-        .filter-group input, .filter-group select {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+
+        .filter-group input,
+        .filter-group select {
+            padding: 12px 15px;
+            border: 2px solid rgba(255, 20, 147, 0.2);
+            border-radius: 12px;
             font-size: 14px;
+            background: rgba(255, 255, 255, 0.8);
+            transition: var(--transition);
         }
-        
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            border-color: #ff1493;
+            outline: none;
+            box-shadow: 0 0 15px rgba(255, 20, 147, 0.2);
+        }
+
         .filter-buttons {
             display: flex;
-            gap: 10px;
+            gap: 15px;
         }
-        
+
         .btn {
-            padding: 10px 20px;
+            padding: 12px 25px;
             border: none;
-            border-radius: 5px;
+            border-radius: 12px;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            text-decoration: none;
+            transition: var(--transition);
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            transition: all 0.3s;
         }
-        
+
         .btn-primary {
-            background-color: var(--primary);
+            background: var(--accent-gradient);
             color: white;
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
         }
-        
+
         .btn-primary:hover {
-            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 20, 147, 0.4);
         }
-        
+
         .btn-secondary {
-            background-color: var(--secondary);
-            color: white;
+            background: rgba(255, 255, 255, 0.8);
+            color: var(--text-primary);
+            border: 2px solid rgba(255, 20, 147, 0.2);
         }
-        
+
         .btn-secondary:hover {
-            background-color: #6c757d;
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(255, 20, 147, 0.3);
         }
-        
+
+        /* Table Styles */
         .table-responsive {
             overflow-x: auto;
         }
-        
+
         .transaction-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 14px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            overflow: hidden;
         }
-        
-        .transaction-table th, .transaction-table td {
-            padding: 12px 15px;
+
+        .transaction-table th,
+        .transaction-table td {
+            padding: 15px 20px;
             text-align: left;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid rgba(255, 20, 147, 0.1);
         }
-        
+
         .transaction-table th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-            color: var(--dark);
-            position: sticky;
-            top: 0;
+            background: var(--accent-gradient);
+            color: white;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        
-        .transaction-table tbody tr:hover {
-            background-color: #f8f9fa;
+
+        .transaction-table tr:hover {
+            background: rgba(255, 20, 147, 0.05);
         }
-        
+
         .status-badge {
-            padding: 5px 10px;
+            padding: 8px 15px;
             border-radius: 20px;
             font-size: 12px;
-            font-weight: bold;
+            font-weight: 700;
             text-transform: uppercase;
             display: inline-block;
+            letter-spacing: 0.5px;
         }
-        
+
         .status-badge.pending {
-            background-color: #FFF3CD;
-            color: #856404;
+            background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+            color: white;
         }
-        
+
         .status-badge.success {
-            background-color: #D4EDDA;
-            color: #155724;
+            background: linear-gradient(135deg, #00ff88 0%, #00cc70 100%);
+            color: white;
         }
-        
+
         .status-badge.failed {
-            background-color: #F8D7DA;
-            color: #721C24;
+            background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
+            color: white;
         }
-        
+
+        .action-btn {
+            padding: 8px 15px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            background: var(--accent-gradient);
+            color: white;
+            text-decoration: none;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
+        }
+
+        /* Pagination */
         .pagination {
             display: flex;
             justify-content: center;
@@ -506,344 +596,406 @@ if ($params) {
             margin-top: 20px;
             gap: 10px;
         }
-        
-        .pagination a, .pagination span {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
+
+        .pagination a,
+        .pagination span {
+            padding: 10px 15px;
+            border-radius: 12px;
             text-decoration: none;
-            color: var(--dark);
-            border-radius: 5px;
-        }
-        
-        .pagination a:hover {
-            background-color: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-        
-        .pagination .current {
-            background-color: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-        
-        .results-info {
-            margin-bottom: 15px;
-            color: var(--secondary);
-            font-size: 14px;
-        }
-        
-        .export-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .btn-success {
-            background-color: var(--success);
-            color: white;
-        }
-        
-        .btn-success:hover {
-            background-color: #17a673;
-        }
-        
-        .btn-info {
-            background-color: var(--info);
-            color: white;
-        }
-        
-        .btn-info:hover {
-            background-color: #2c9faf;
+            transition: var(--transition);
         }
 
-        /* Improved Chatbot Styles */
+        .pagination a {
+            background: rgba(255, 255, 255, 0.5);
+            border: 2px solid rgba(255, 20, 147, 0.2);
+            color: var(--text-primary);
+        }
+
+        .pagination a:hover {
+            background: var(--accent-gradient);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+        }
+
+        .pagination .current {
+            background: var(--accent-gradient);
+            color: white;
+            border: 2px solid transparent;
+        }
+
+        .results-info {
+            margin-bottom: 15px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc70 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 204, 112, 0.3);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 204, 112, 0.4);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #00c9ff 0%, #0095d9 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 201, 255, 0.3);
+        }
+
+        .btn-info:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 201, 255, 0.4);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: rgba(255, 20, 147, 0.3);
+            margin-bottom: 15px;
+        }
+
+        .empty-state p {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .filters-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .export-buttons {
+                flex-direction: column;
+            }
+            
+            .search-container {
+                width: 250px;
+            }
+            
+            .topbar h2 {
+                font-size: 22px;
+            }
+        }
+
+        /* Chatbot Styles */
         .chatbot-container {
             position: fixed;
             bottom: 30px;
             left: 50px;
             z-index: 999;
         }
-        
+
         .chatbot-toggle {
             width: 70px;
             height: 70px;
-            background: linear-gradient(135deg, #6c5ce7 0%, #4834d4 100%);
+            background: var(--accent-gradient);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.4);
+            transition: var(--transition);
         }
-        
+
         .chatbot-toggle:hover {
             transform: scale(1.1);
+            box-shadow: 0 15px 40px rgba(255, 20, 147, 0.5);
         }
-        
+
         .chatbot-toggle i {
             color: white;
             font-size: 28px;
         }
-        
+
         .chatbot-window {
             width: 400px;
             height: 550px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            background: var(--card-gradient);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
             overflow: hidden;
             display: none;
             flex-direction: column;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
+
         .chatbot-window.active {
             display: flex;
             animation: fadeInUp 0.3s ease;
         }
-        
+
         .chatbot-header {
-            background: linear-gradient(135deg, #6c5ce7 0%, #4834d4 100%);
+            background: var(--accent-gradient);
             color: white;
-            padding: 15px;
+            padding: 20px;
             text-align: center;
+            position: relative;
         }
-        
+
         .chatbot-header h3 {
             margin: 0;
             font-size: 18px;
+            font-weight: 700;
         }
-        
+
         .chatbot-header i {
             position: absolute;
-            right: 15px;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
             cursor: pointer;
+            font-size: 20px;
+            transition: var(--transition);
         }
-        
+
+        .chatbot-header i:hover {
+            transform: translateY(-50%) scale(1.2);
+        }
+
         .chatbot-messages {
             flex: 1;
-            padding: 15px;
+            padding: 20px;
             overflow-y: auto;
-            background: #f5f7fb;
+            background: rgba(255, 255, 255, 0.1);
             display: flex;
             flex-direction: column;
         }
-        
+
         .message {
             max-width: 80%;
-            padding: 10px 15px;
+            padding: 12px 18px;
             margin-bottom: 15px;
-            border-radius: 18px;
+            border-radius: 20px;
             position: relative;
             word-wrap: break-word;
+            font-size: 14px;
+            line-height: 1.5;
         }
-        
+
         .bot-message {
-            background: white;
-            border-bottom-left-radius: 5px;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--text-primary);
+            border-bottom-left-radius: 8px;
             align-self: flex-start;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             margin-right: auto;
         }
-        
+
         .user-message {
-            background: #6c5ce7;
+            background: var(--accent-gradient);
             color: white;
-            border-bottom-right-radius: 5px;
+            border-bottom-right-radius: 8px;
             align-self: flex-end;
             margin-left: auto;
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
         }
-        
+
         .chatbot-input {
             display: flex;
-            padding: 15px;
-            background: white;
-            border-top: 1px solid #eee;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-top: 1px solid rgba(255, 20, 147, 0.2);
         }
-        
+
         .chatbot-input input {
             flex: 1;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 30px;
+            padding: 12px 18px;
+            border: 2px solid rgba(255, 20, 147, 0.2);
+            border-radius: 25px;
             outline: none;
+            font-size: 14px;
+            transition: var(--transition);
         }
-        
+
+        .chatbot-input input:focus {
+            border-color: #ff1493;
+            box-shadow: 0 0 15px rgba(255, 20, 147, 0.2);
+        }
+
         .chatbot-input button {
-            background: #6c5ce7;
+            background: var(--accent-gradient);
             color: white;
             border: none;
             border-radius: 50%;
-            width: 45px;
-            height: 45px;
+            width: 50px;
+            height: 50px;
             margin-left: 10px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: var(--transition);
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
         }
-        
+
         .chatbot-input button:hover {
-            background: #4834d4;
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
         }
-        
+
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(30px);
             }
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-        
+
         .typing-indicator {
             display: flex;
-            padding: 10px 15px;
-            background: white;
-            border-radius: 18px;
-            border-bottom-left-radius: 5px;
+            padding: 12px 18px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            border-bottom-left-radius: 8px;
             align-self: flex-start;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             margin-bottom: 15px;
             margin-right: auto;
         }
-        
+
         .typing-indicator span {
             height: 8px;
             width: 8px;
-            background: #6c5ce7;
+            background: #ff1493;
             border-radius: 50%;
             display: inline-block;
             margin: 0 2px;
             animation: bounce 1.5s infinite ease-in-out;
         }
-        
+
         .typing-indicator span:nth-child(2) {
             animation-delay: 0.2s;
         }
-        
+
         .typing-indicator span:nth-child(3) {
             animation-delay: 0.4s;
         }
-        
+
         @keyframes bounce {
             0%, 60%, 100% {
                 transform: translateY(0);
             }
             30% {
-                transform: translateY(-5px);
+                transform: translateY(-8px);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .content-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-container {
+                width: 250px;
+            }
+            
+            .topbar h2 {
+                font-size: 22px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="transcation-container">
+    <div class="dashboard-container">
         <!-- Sidebar Navigation -->
-                <div class="sidebar">
-                    <div class="logo-menu">
-                        <h2 class="logo"><img src="RVS_LOGO.png" alt=""></h2>
-                        <i class='bx bx-menu toggle-btn'></i>
-                    </div>
-                    <nav>
-                        <ul class="list">
-                            <li class="list-item">
-                                <a href="dashboard.php">
-                                    <i class='bx bx-home-alt-2'></i>
-                                    <span class="link-name" style="--i:1;">Dashboard</span>
-                                </a>
-                            </li>
-                            <li class="list-item active">
-                                <a href="transaction_history.php">
-                                    <i class='bx bx-history'></i>
-                                    <span class="link-name" style="--i:2;">Transaction History</span>
-                                </a>
-                            </li>
-                            <li class="list-item">
-                                <a href="manage_product.php">
-                                    <i class='bx bx-box'></i>
-                                    <span class="link-name" style="--i:3;">Manage Product</span>
-                                </a>
-                            </li>
-                            <li class="list-item">
-                                <a href="sales_report.php">
-                                    <i class='bx bx-bar-chart-alt-2'></i>
-                                    <span class="link-name" style="--i:4;">Sales Report</span>
-                                </a>
-                            </li>
-                            <li class="list-item">
-                                <a href="accounts.php">
-                                    <i class='bx bx-user'></i>
-                                    <span class="link-name" style="--i:5;">Manage Accounts</span>
-                                </a>
-                            </li>
-                            <li class="list-item">
-                                <a href="logout.php">
-                                    <i class='bx bx-log-out'></i>
-                                    <span class="link-name" style="--i:6;">Logout</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </nav>
-                </div>
+        <div class="sidebar">
+            <div class="hamburger-toggle">
+                <i class='bx bx-menu'></i>
+            </div>
 
-                <script>
-                    const sidebar = document.querySelector('.sidebar');
-                    const toggleBtn = document.querySelector('.toggle-btn');
-                    const mainContent = document.querySelector('.main-content');
+            <script>
+                document.querySelector('.hamburger-toggle').addEventListener('click', function() {
+                    document.querySelector('.sidebar').classList.toggle('active');
+                });
+            </script>
+            
+            <div class="logo-menu">
+                <h2 class="logo"><img src="RVS_LOGO.png" alt=""></h2>
+            </div>
+            <nav>
+                <ul class="list">
+                    <li class="list-item">
+                        <a href="dashboard.php">
+                            <i class='bx bx-home-alt-2'></i>
+                            <span class="link-name" style="--i:1;">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="list-item active">
+                        <a href="transaction_history.php">
+                            <i class='bx bx-history'></i>
+                            <span class="link-name" style="--i:2;">Transaction History</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <a href="manage_product.php">
+                            <i class='bx bx-box'></i>
+                            <span class="link-name" style="--i:3;">Manage Product</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <a href="sales_report.php">
+                            <i class='bx bx-bar-chart-alt-2'></i>
+                            <span class="link-name" style="--i:4;">Sales Report</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <a href="accounts.php">
+                            <i class='bx bx-user'></i>
+                            <span class="link-name" style="--i:5;">Manage Accounts</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <a href="logout.php">
+                            <i class='bx bx-log-out'></i>
+                            <span class="link-name" style="--i:6;">Logout</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
 
-                    // Cek state sidebar dari localStorage saat halaman dimuat
-                    document.addEventListener('DOMContentLoaded', function() {
-                        // Set active menu item based on current page
-                        const currentPage = window.location.pathname.split('/').pop();
-                        const menuItems = document.querySelectorAll('.list-item');
-                        
-                        menuItems.forEach(item => {
-                            item.classList.remove('active');
-                            const link = item.querySelector('a').getAttribute('href');
-                            if (link === currentPage) {
-                                item.classList.add('active');
-                            }
-                        });
-
-                        // Cek state sidebar dari localStorage
-                        const sidebarState = localStorage.getItem('sidebarState');
-                        if (sidebarState === 'active') {
-                            sidebar.classList.add('active');
-                            mainContent.style.marginLeft = '260px';
-                            mainContent.style.width = 'calc(100% - 260px)';
-                        }
-                    });
-
-                    // Toggle sidebar dan simpan state ke localStorage
-                    toggleBtn.addEventListener('click', () => {
-                        sidebar.classList.toggle('active');
-                        
-                        if (sidebar.classList.contains('active')) {
-                            localStorage.setItem('sidebarState', 'active');
-                            mainContent.style.marginLeft = '260px';
-                            mainContent.style.width = 'calc(100% - 260px)';
-                        } else {
-                            localStorage.setItem('sidebarState', 'inactive');
-                            mainContent.style.marginLeft = '80px';
-                            mainContent.style.width = 'calc(100% - 80px)';
-                        }
-                    });
-                </script>
-
+        <!-- Main Content Area -->
         <div class="main-content">
             <!-- Topbar -->
             <div class="topbar">
                 <h2>Transaction History</h2>
                 <form method="GET" class="search-container">
-                    <input type="text" name="search" placeholder="Search product..." value="<?= htmlspecialchars($search) ?>">
+                    <input type="text" name="search" placeholder="Search product..." value="<?php echo htmlspecialchars($search); ?>">
                     <i class="fas fa-search"></i>
                 </form>
-                <div class="topbar-icons">
-                    <i class="fas fa-cog"></i>
-                    <i class="fas fa-bell"></i>
-                    <i class="fas fa-user-circle"></i>
-                </div>
             </div>
 
             <!-- Filters Section -->
@@ -925,7 +1077,7 @@ if ($params) {
                                         <td><span class="status-badge <?php echo htmlspecialchars($row['status']); ?>"><?php echo ucfirst($row['status']); ?></span></td>
                                         <td><?php echo htmlspecialchars($row['notes'] ?? '-'); ?></td>
                                         <td>
-                                            <a href="transaction_detail.php?id=<?php echo $row['id']; ?>" class="btn btn-primary" style="padding: 5px 10px; font-size: 12px;">
+                                            <a href="transaction_detail.php?id=<?php echo $row['id']; ?>" class="action-btn">
                                                 <i class="fas fa-eye"></i> View
                                             </a>
                                         </td>
@@ -933,8 +1085,8 @@ if ($params) {
                                 <?php endwhile; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="8" style="text-align: center; padding: 40px;">
-                                        <i class="fas fa-inbox" style="font-size: 48px; color: #ccc; margin-bottom: 10px;"></i>
+                                    <td colspan="8" class="empty-state">
+                                        <i class="fas fa-inbox"></i>
                                         <p>No transactions found</p>
                                     </td>
                                 </tr>
@@ -974,19 +1126,7 @@ if ($params) {
         </div>
     </div>
 
-    <script>
-        // Global search functionality
-        document.getElementById('globalSearch').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                const searchValue = this.value;
-                const urlParams = new URLSearchParams(window.location.search);
-                urlParams.set('search', searchValue);
-                urlParams.delete('page');
-                window.location.href = window.location.pathname + '?' + urlParams.toString();
-            }
-        });
-    </script>
-
+    <!-- Chatbot (same as dashboard) -->
     <div class="chatbot-container">
         <div class="chatbot-window" id="chatbotWindow">
             <div class="chatbot-header">
@@ -1009,6 +1149,7 @@ if ($params) {
     </div>
 
     <script>
+        // Chatbot functionality (same as dashboard)
         function toggleChatbot() {
             const chatbotWindow = document.getElementById('chatbotWindow');
             chatbotWindow.classList.toggle('active');
@@ -1020,53 +1161,69 @@ if ($params) {
             
             if (message === '') return;
             
-            // Add user message (right aligned)
+            // Add user message
             addMessage(message, 'user-message');
             input.value = '';
             
-            // Show typing indicator (left aligned)
-            const typingIndicator = document.createElement('div');
-            typingIndicator.className = 'message typing-indicator';
-            typingIndicator.innerHTML = '<span></span><span></span><span></span>';
-            document.getElementById('chatbotMessages').appendChild(typingIndicator);
+            // Show typing indicator
+            showTypingIndicator();
             
-            // Scroll to bottom
-            scrollToBottom();
-            
-            // Simulate bot response (left aligned)
+            // Simulate bot response after delay
             setTimeout(() => {
-                // Remove typing indicator
-                const indicator = document.querySelector('.typing-indicator');
-                if (indicator) indicator.remove();
-                
-                // Add bot response
-                const responses = [
-                    "I can help you with your questions about our products and services.",
-                    "For order inquiries, please check the Transaction History page.",
-                    "Our support team is available 24/7 to assist you.",
-                    "You can find more information in our FAQ section.",
-                    "Is there anything else I can help you with?"
-                ];
-                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-                addMessage(randomResponse, 'bot-message');
-                
-                // Scroll to bottom again after response
+                removeTypingIndicator();
+                const response = getBotResponse();
+                addMessage(response, 'bot-message');
                 scrollToBottom();
             }, 1500);
         }
         
+        // Helper Functions
         function addMessage(text, className) {
             const messagesContainer = document.getElementById('chatbotMessages');
             const messageElement = document.createElement('div');
             messageElement.className = `message ${className}`;
             messageElement.textContent = text;
             messagesContainer.appendChild(messageElement);
+            scrollToBottom();
+        }
+        
+        function showTypingIndicator() {
+            const messagesContainer = document.getElementById('chatbotMessages');
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'message typing-indicator';
+            typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+            typingIndicator.id = 'typingIndicator';
+            messagesContainer.appendChild(typingIndicator);
+            scrollToBottom();
+        }
+        
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
+        
+        function getBotResponse() {
+            const responses = [
+                "I can help you with your questions about our products and services.",
+                "For order inquiries, please check the Transaction History page.",
+                "Our support team is available 24/7 to assist you.",
+                "You can find more information in our FAQ section.",
+                "Is there anything else I can help you with?"
+            ];
+            return responses[Math.floor(Math.random() * responses.length)];
         }
         
         function scrollToBottom() {
             const messagesContainer = document.getElementById('chatbotMessages');
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
+        
+        // Handle Enter key press
+        document.getElementById('chatbotInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
     </script>
 </body>
 </html>

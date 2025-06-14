@@ -112,15 +112,18 @@ if ($params) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
-        /* Global styles */
         :root {
-            --primary-color: #6c5ce7;
-            --dark-color: #2d3436;
-            --light-color: #f7f7f7;
-            --sidebar-width: 250px;
-            --transition: all 0.3s ease;
+            --primary-gradient: linear-gradient(135deg, #2a0845 0%, #6441a5 100%);
+            --accent-gradient: linear-gradient(135deg, #ff1493 0%, #6441a5 100%);
+            --card-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.95) 100%);
+            --background-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --border-radius: 20px;
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
+        
         * {
             margin: 0;
             padding: 0;
@@ -129,19 +132,22 @@ if ($params) {
         }
         
         body {
-            background-color: #f0f2f5;
-            margin: 0;
-            padding: 0;
+            background: var(--background-gradient);
+            color: var(--text-primary);
             min-height: 100vh;
-            color: #333;
         }
 
         img {
             width: 105px;
             height: 65px;
             margin-top: 20px;
-            margin-bottom: 17px;
+            margin-bottom: 15px;
             margin-left: 55px;
+        }
+        
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
         }
 
         /* Sidebar Styles */
@@ -151,18 +157,17 @@ if ($params) {
             left: 0;
             width: 80px;
             height: 100%;
-            background: linear-gradient(135deg, #2a0845 0%, #6441a5 100%);
+            background: var(--primary-gradient);
             backdrop-filter: blur(40px);
-            border-right: 2px solid rgba(255, 20, 147, 0.3); /* Pink magenta border */
-            box-shadow: 0 0 20px rgba(139, 0, 139, 0.5); /* Dark purple shadow */
+            border-right: 2px solid rgba(255, 20, 147, 0.3);
+            box-shadow: 0 0 30px rgba(139, 0, 139, 0.5);
             padding: 6px 14px;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: var(--transition);
             z-index: 100;
         }
 
         .sidebar.active {
             width: 260px;
-            background: linear-gradient(135deg, #1a052e 0%, #4b2a8a 100%);
         }
 
         .sidebar .logo-menu {
@@ -170,16 +175,16 @@ if ($params) {
             align-items: center;
             width: 100%;
             height: 70px;
-            border-bottom: 1px solid rgba(255, 20, 147, 0.2); /* Pink magenta subtle divider */
+            border-bottom: 1px solid rgba(255, 20, 147, 0.2);
         }
 
         .sidebar .logo-menu .logo {
             font-size: 25px;
-            color: #ff1493; /* Pink magenta */
+            color: #ff1493;
             font-weight: 600;
             pointer-events: none;
             opacity: 0;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             text-shadow: 0 0 10px rgba(255, 20, 147, 0.5);
         }
 
@@ -195,11 +200,11 @@ if ($params) {
             width: 40px;
             height: 40px;
             font-size: 30px;
-            color: #ff1493; /* Pink magenta */
+            color: #ff1493;
             text-align: center;
             line-height: 40px;
             cursor: pointer;
-            transition: all 0.5s ease;
+            transition: var(--transition);
             background: rgba(106, 13, 173, 0.3);
             border-radius: 50%;
         }
@@ -210,8 +215,9 @@ if ($params) {
         }
 
         .sidebar .logo-menu .toggle-btn:hover {
-            color: #ff69b4; /* Lighter pink */
+            color: #ff69b4;
             background: rgba(255, 20, 147, 0.3);
+            transform: translateX(-50%) scale(1.1);
         }
 
         .sidebar .list {
@@ -219,7 +225,7 @@ if ($params) {
         }
 
         .list .list-item {
-            list-style: ;
+            list-style: none;
             width: 100%;
             height: 50px;
             margin: 10px 0;
@@ -229,21 +235,21 @@ if ($params) {
         .list .list-item a {
             display: flex;
             align-items: center;
-            text-align: none;
-            font-size: 18px;
-            color: #e2b4ff; /* Light purple text */
             text-decoration: none;
-            border-radius: 6px;
+            font-size: 18px;
+            color: #e2b4ff;
+            border-radius: 12px;
             white-space: nowrap;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             padding: 0 10px;
         }
 
         .list .list-item.active a,
         .list .list-item a:hover {
-            background: linear-gradient(90deg, rgba(255, 20, 147, 0.3) 0%, rgba(106, 13, 173, 0.3) 100%);
+            background: var(--accent-gradient);
             color: #fff;
-            box-shadow: 0 5px 15px rgba(139, 0, 139, 0.4);
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
+            transform: translateX(5px);
         }
 
         .list .list-item a i {
@@ -251,115 +257,137 @@ if ($params) {
             height: 50px;
             text-align: center;
             line-height: 50px;
-            color: #ff1493; /* Pink magenta icons */
+            color: #ff1493;
             font-size: 22px;
         }
 
         .list .list-item.active a i,
         .list .list-item a:hover i {
-            color: #ff69b4; /* Lighter pink on hover/active */
+            color: #fff;
         }
 
         .sidebar .link-name {
             opacity: 0;
             pointer-events: none;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             font-weight: 500;
+            margin-left: 8px;
         }
 
         .sidebar.active .link-name {
-            margin-left: 8px;
             opacity: 1;
             pointer-events: auto;
             transition-delay: calc(0.1s * var(--i));
         }
 
+        /* Main Content */
         .main-content {
             margin-left: 80px;
             padding: 20px;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            background-color: #f8f9fc;
-        }
-
-        .sidebar.active + .main-content {
-            margin-left: 260px;
-        }
-
-        /* Add glowing effect on active/hover */
-        @keyframes glow {
-            0% { box-shadow: 0 0 5px rgba(255, 20, 147, 0.5); }
-            50% { box-shadow: 0 0 20px rgba(255, 20, 147, 0.8); }
-            100% { box-shadow: 0 0 5px rgba(255, 20, 147, 0.5); }
-        }
-
-        .list .list-item.active a {
-            animation: glow 2s infinite;
-        }
-
-        .main-content {
-            margin-left: 80px;
-            padding: 20px;
-            transition: .5s;
-        }
-
-        .sidebar.active + .main-content {
-            margin-left: 260px;
-        }
-
-        /* Main Content Area */
-        .main-content {
-            margin-left: var(--sidebar-width);
-            padding: 20px;
-            background-color: #f0f2f5;
+            transition: var(--transition);
+            width: calc(100% - 80px);
             min-height: 100vh;
         }
 
-        /* Topbar Styles */
+        .sidebar.active + .main-content {
+            margin-left: 260px;
+            width: calc(100% - 260px);
+        }
+
+       /* Hamburger Toggle Button */
+       .sidebar .hamburger-toggle {
+            position: absolute;
+            top: 15px;
+            right: -70px;
+            width: 50px;
+            height: 50px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1001;
+            transition: var(--transition);
+        }
+
+        .sidebar.active .hamburger-toggle {
+            right: 20px;
+        }
+
+        .sidebar .hamburger-toggle i {
+            color: white;
+            font-size: 20px;
+        }
+
+        /* Sidebar Adjustment */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -260px;
+            width: 260px;
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        /* Topbar */
         .topbar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 15px 25px;
-            background: white;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            margin-bottom: 25px;
-            border-radius: 10px;
-            position: sticky;
-            top: 0;
-            z-index: 10;
+            padding: 20px 30px;
+            background: var(--card-gradient);
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .topbar h2 {
-            font-weight: 600;
-            color: #1a237e;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 28px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .search-container {
             position: relative;
-            width: 300px;
+            width: 350px;
         }
 
         .search-container input {
             width: 100%;
-            padding: 10px 15px 10px 40px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
+            padding: 15px 20px 15px 50px;
+            border: 2px solid rgba(255, 20, 147, 0.2);
+            border-radius: 25px;
             font-size: 14px;
-            transition: all 0.3s;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
         }
 
         .search-container input:focus {
-            border-color: var(--primary-color);
+            border-color: #ff1493;
             outline: none;
-            box-shadow: 0 0 0 3px rgba(92, 107, 192, 0.2);
+            box-shadow: 0 0 20px rgba(255, 20, 147, 0.3);
+            background: rgba(255, 255, 255, 0.95);
         }
 
         .search-container i {
             position: absolute;
-            left: 15px;
+            left: 18px;
             top: 50%;
             transform: translateY(-50%);
-            color: #777;
+            color: #ff1493;
+            font-size: 18px;
         }
 
         .topbar-icons {
@@ -368,84 +396,86 @@ if ($params) {
         }
 
         .topbar-icons i {
-            font-size: 20px;
-            color: #5c6bc0;
+            font-size: 24px;
+            color: #6441a5;
             cursor: pointer;
-            transition: color 0.3s;
+            transition: var(--transition);
+            padding: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
         }
 
         .topbar-icons i:hover {
-            color: #1a237e;
+            color: #ff1493;
+            background: rgba(255, 20, 147, 0.1);
+            transform: scale(1.1);
         }
 
-        /* Content Card */
+        /* Content Cards */
         .content-card {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            background: var(--card-gradient);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
             margin-bottom: 30px;
         }
 
-        /* Add Product Button */
-        .add-product-btn {
-            background: linear-gradient(135deg, #6c5ce7 0%, #4834d4 50%);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            font-weight: 60;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.3s;
-            box-shadow: 0 4px 10px rgba(92, 107, 192, 0.3);
-            font-size: 1rem;
-            margin: 20px;
-            position: fixed;
-            bottom: 0;
-            right: 0;
-            z-index: 99;
+        .content-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.12);
         }
 
-        .add-product-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(82, 107, 192, 0.4);
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 20, 147, 0.1);
+        }
+
+        .card-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         /* Table Styles */
         .product-table {
             width: 100%;
             border-collapse: collapse;
-            background: white;
-            border-radius: 8px;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .product-table th,
+        .product-table td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 20, 147, 0.1);
         }
 
         .product-table th {
-            background-color: #f8f9fc;
-            padding: 15px 20px;
-            text-align: left;
-            font-weight: 600;
-            color: #5c6bc0;
-            border-bottom: 1px solid #eee;
+            background: var(--accent-gradient);
+            color: white;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .product-table td {
-            padding: 15px 20px;
-            border-bottom: 1px solid #eee;
-            color: #555;
-            vertical-align: middle;
+        .product-table tr:hover {
+            background: rgba(255, 20, 147, 0.05);
         }
 
         .product-table tr:last-child td {
             border-bottom: none;
-        }
-
-        .product-table tr:hover {
-            background-color: #f9fafc;
         }
 
         .product-image {
@@ -453,7 +483,6 @@ if ($params) {
             height: 50px;
             border-radius: 8px;
             object-fit: cover;
-            border: 1px solid #eee;
             background-color: #f8f9fa;
             display: flex;
             align-items: center;
@@ -467,33 +496,32 @@ if ($params) {
         .product-name {
             font-weight: 600;
             margin-bottom: 5px;
+            color: var(--text-primary);
         }
 
         .product-category {
             font-size: 13px;
-            color: #777;
-        }
-        .product-status {
-            font-weight: 600;
-            margin-bottom: 5px;
+            color: var(--text-secondary);
         }
 
         .status-badge {
-            display: inline-block;
-            padding: 5px 12px;
+            padding: 8px 15px;
             border-radius: 20px;
-            font-size: 13px;
-            font-weight: 500;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: inline-block;
+            letter-spacing: 0.5px;
         }
 
         .status-active {
-            background: #e8f5e9;
-            color: #2e7d32;
+            background: linear-gradient(135deg, #00ff88 0%, #00cc70 100%);
+            color: white;
         }
 
         .status-inactive {
-            background: #ffebee;
-            color: #c62828;
+            background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
+            color: white;
         }
 
         /* Action Buttons */
@@ -503,25 +531,52 @@ if ($params) {
             cursor: pointer;
             margin: 0 5px;
             font-size: 16px;
-            padding: 5px 10px;
-            border-radius: 4px;
-            transition: all 0.3s;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: var(--transition);
         }
 
         .action-btn.edit {
             color: #1976d2;
+            background: rgba(25, 118, 210, 0.1);
         }
 
         .action-btn.edit:hover {
-            background: #e3f2fd;
+            background: rgba(25, 118, 210, 0.2);
+            transform: scale(1.1);
         }
 
         .action-btn.delete {
             color: #d32f2f;
+            background: rgba(211, 47, 47, 0.1);
         }
 
         .action-btn.delete:hover {
-            background: #ffebee;
+            background: rgba(211, 47, 47, 0.2);
+            transform: scale(1.1);
+        }
+
+        /* Add Product Button */
+        .add-product-btn {
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .add-product-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
         }
 
         /* Modal Styles */
@@ -543,12 +598,14 @@ if ($params) {
         }
 
         .modal-content {
-            background: #fff;
+            background: var(--card-gradient);
+            backdrop-filter: blur(20px);
             padding: 30px;
-            border-radius: 10px;
+            border-radius: var(--border-radius);
             width: 450px;
             max-width: 90%;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .modal-header {
@@ -557,26 +614,30 @@ if ($params) {
             align-items: center;
             margin-bottom: 20px;
             padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 2px solid rgba(255, 20, 147, 0.1);
         }
 
         .modal-header h3 {
-            font-size: 1.5rem;
-            color: #1a237e;
+            font-size: 22px;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             margin: 0;
         }
 
         .close-modal {
             background: none;
             border: none;
-            font-size: 1.5rem;
+            font-size: 24px;
             cursor: pointer;
-            color: #777;
-            transition: color 0.3s;
+            color: #ff1493;
+            transition: var(--transition);
         }
 
         .close-modal:hover {
-            color: #333;
+            color: #ff69b4;
+            transform: scale(1.1);
         }
 
         .form-group {
@@ -586,89 +647,126 @@ if ($params) {
         .form-group label {
             display: block;
             margin-bottom: 8px;
-            font-weight: 500;
-            color: #555;
+            font-weight: 600;
+            color: var(--text-primary);
         }
 
         .form-control {
             width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
+            padding: 15px;
+            border: 2px solid rgba(255, 20, 147, 0.2);
+            border-radius: 12px;
             font-size: 15px;
-            transition: all 0.3s;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.8);
         }
 
         .form-control:focus {
-            border-color: var(--primary-color);
+            border-color: #ff1493;
             outline: none;
-            box-shadow: 0 0 0 3px rgba(92, 107, 192, 0.2);
+            box-shadow: 0 0 15px rgba(255, 20, 147, 0.2);
+            background: rgba(255, 255, 255, 0.95);
         }
 
-        .preview-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-top: 10px;
-        }
-
-        .preview-image {
-            width: 80px;
-            height: 80px;
-            border-radius: 8px;
-            object-fit: cover;
-            border: 1px solid #eee;
-            display: none;
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
         }
 
         .modal-footer {
             display: flex;
             justify-content: flex-end;
-            gap: 10px;
-            margin-top: 10px;
+            gap: 15px;
+            margin-top: 20px;
         }
 
         .btn {
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-size: 15px;
-            font-weight: 500;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: var(--transition);
             border: none;
         }
 
         .btn-secondary {
-            background: #f0f2f5;
-            color: #555;
+            background: rgba(255, 255, 255, 0.3);
+            color: var(--text-primary);
         }
 
         .btn-secondary:hover {
-            background: #e4e6e9;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #6c5ce7 0%, #4834d4 100%);
-            color: white;
-            box-shadow: 0 4px 10px rgba(92, 107, 192, 0.3);
-        }
-
-        .btn-primary:hover {
-            box-shadow: 0 6px 15px rgba(92, 107, 192, 0.4);
+            background: rgba(255, 255, 255, 0.5);
             transform: translateY(-2px);
         }
 
-      
-        
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .pagination a {
+            padding: 8px 16px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.3);
+            color: var(--text-primary);
+        }
+
+        .pagination a:hover {
+            background: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .pagination a.active {
+            background: var(--accent-gradient);
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
+        }
+
+        /* Messages */
+        .message-alert {
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            font-weight: 600;
+            box-shadow: var(--shadow);
+        }
+
+        .message-success {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc70 100%);
+            color: white;
+        }
+
+        .message-error {
+            background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
+            color: white;
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
-            .topbar {
-                flex-direction: column;
-                gap: 15px;
-                padding: 15px;
+            .search-container {
+                width: 250px;
             }
             
-            .search-container {
-                width: 100%;
+            .topbar h2 {
+                font-size: 22px;
             }
             
             .product-table {
@@ -677,279 +775,289 @@ if ($params) {
             }
         }
 
-        /* Improved Chatbot Styles */
+        /* Chatbot Styles */
         .chatbot-container {
             position: fixed;
             bottom: 30px;
             left: 50px;
             z-index: 999;
         }
-        
+
         .chatbot-toggle {
             width: 70px;
             height: 70px;
-            background: linear-gradient(135deg, #6c5ce7 0%, #4834d4 100%);
+            background: var(--accent-gradient);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.4);
+            transition: var(--transition);
         }
-        
+
         .chatbot-toggle:hover {
             transform: scale(1.1);
+            box-shadow: 0 15px 40px rgba(255, 20, 147, 0.5);
         }
-        
+
         .chatbot-toggle i {
             color: white;
             font-size: 28px;
         }
-        
+
         .chatbot-window {
             width: 400px;
             height: 550px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            background: var(--card-gradient);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
             overflow: hidden;
             display: none;
             flex-direction: column;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
+
         .chatbot-window.active {
             display: flex;
             animation: fadeInUp 0.3s ease;
         }
-        
+
         .chatbot-header {
-            background: linear-gradient(135deg, #6c5ce7 0%, #4834d4 100%);
+            background: var(--accent-gradient);
             color: white;
-            padding: 15px;
+            padding: 20px;
             text-align: center;
+            position: relative;
         }
-        
+
         .chatbot-header h3 {
             margin: 0;
             font-size: 18px;
+            font-weight: 700;
         }
-        
+
         .chatbot-header i {
             position: absolute;
-            right: 15px;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
             cursor: pointer;
+            font-size: 20px;
+            transition: var(--transition);
         }
-        
+
+        .chatbot-header i:hover {
+            transform: translateY(-50%) scale(1.2);
+        }
+
         .chatbot-messages {
             flex: 1;
-            padding: 15px;
+            padding: 20px;
             overflow-y: auto;
-            background: #f5f7fb;
+            background: rgba(255, 255, 255, 0.1);
             display: flex;
             flex-direction: column;
         }
-        
+
         .message {
             max-width: 80%;
-            padding: 10px 15px;
+            padding: 12px 18px;
             margin-bottom: 15px;
-            border-radius: 18px;
+            border-radius: 20px;
             position: relative;
             word-wrap: break-word;
+            font-size: 14px;
+            line-height: 1.5;
         }
-        
+
         .bot-message {
-            background: white;
-            border-bottom-left-radius: 5px;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--text-primary);
+            border-bottom-left-radius: 8px;
             align-self: flex-start;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             margin-right: auto;
         }
-        
+
         .user-message {
-            background: #6c5ce7;
+            background: var(--accent-gradient);
             color: white;
-            border-bottom-right-radius: 5px;
+            border-bottom-right-radius: 8px;
             align-self: flex-end;
             margin-left: auto;
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
         }
-        
+
         .chatbot-input {
             display: flex;
-            padding: 15px;
-            background: white;
-            border-top: 1px solid #eee;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-top: 1px solid rgba(255, 20, 147, 0.2);
         }
-        
+
         .chatbot-input input {
             flex: 1;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 30px;
+            padding: 12px 18px;
+            border: 2px solid rgba(255, 20, 147, 0.2);
+            border-radius: 25px;
             outline: none;
+            font-size: 14px;
+            transition: var(--transition);
         }
-        
+
+        .chatbot-input input:focus {
+            border-color: #ff1493;
+            box-shadow: 0 0 15px rgba(255, 20, 147, 0.2);
+        }
+
         .chatbot-input button {
-            background: #6c5ce7;
+            background: var(--accent-gradient);
             color: white;
             border: none;
             border-radius: 50%;
-            width: 45px;
-            height: 45px;
+            width: 50px;
+            height: 50px;
             margin-left: 10px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: var(--transition);
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
         }
-        
+
         .chatbot-input button:hover {
-            background: #4834d4;
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
         }
-        
+
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(30px);
             }
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-        
+
         .typing-indicator {
             display: flex;
-            padding: 10px 15px;
-            background: white;
-            border-radius: 18px;
-            border-bottom-left-radius: 5px;
+            padding: 12px 18px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            border-bottom-left-radius: 8px;
             align-self: flex-start;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             margin-bottom: 15px;
             margin-right: auto;
         }
-        
+
         .typing-indicator span {
             height: 8px;
             width: 8px;
-            background: #6c5ce7;
+            background: #ff1493;
             border-radius: 50%;
             display: inline-block;
             margin: 0 2px;
             animation: bounce 1.5s infinite ease-in-out;
         }
-        
+
         .typing-indicator span:nth-child(2) {
             animation-delay: 0.2s;
         }
-        
+
         .typing-indicator span:nth-child(3) {
             animation-delay: 0.4s;
         }
-        
+
         @keyframes bounce {
             0%, 60%, 100% {
                 transform: translateY(0);
             }
             30% {
-                transform: translateY(-5px);
+                transform: translateY(-8px);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .content-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-container {
+                width: 250px;
+            }
+            
+            .topbar h2 {
+                font-size: 22px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="manageproduct-container">
+    <div class="dashboard-container">
         <!-- Sidebar Navigation -->
-                <div class="sidebar">
-                    <div class="logo-menu">
-                        <h2 class="logo"><img src="RVS_LOGO.png" alt=""></h2>
-                        <i class='bx bx-menu toggle-btn'></i>
-                    </div>
-                    <nav>
-                        <ul class="list">
-                            <li class="list-item">
-                                <a href="dashboard.php">
-                                    <i class='bx bx-home-alt-2'></i>
-                                    <span class="link-name" style="--i:1;">Dashboard</span>
-                                </a>
-                            </li>
-                            <li class="list-item">
-                                <a href="transaction_history.php">
-                                    <i class='bx bx-history'></i>
-                                    <span class="link-name" style="--i:2;">Transaction History</span>
-                                </a>
-                            </li>
-                            <li class="list-item active">
-                                <a href="manage_product.php">
-                                    <i class='bx bx-box'></i>
-                                    <span class="link-name" style="--i:3;">Manage Product</span>
-                                </a>
-                            </li>
-                            <li class="list-item">
-                                <a href="sales_report.php">
-                                    <i class='bx bx-bar-chart-alt-2'></i>
-                                    <span class="link-name" style="--i:4;">Sales Report</span>
-                                </a>
-                            </li>
-                            <li class="list-item">
-                                <a href="accounts.php">
-                                    <i class='bx bx-user'></i>
-                                    <span class="link-name" style="--i:5;">Manage Accounts</span>
-                                </a>
-                            </li>
-                            <li class="list-item">
-                                <a href="logout.php">
-                                    <i class='bx bx-log-out'></i>
-                                    <span class="link-name" style="--i:6;">Logout</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </nav>
-                </div>
+        <div class="sidebar">
+            <div class="hamburger-toggle">
+                <i class='bx bx-menu'></i>
+            </div>
 
-                <script>
-                    const sidebar = document.querySelector('.sidebar');
-                    const toggleBtn = document.querySelector('.toggle-btn');
-                    const mainContent = document.querySelector('.main-content');
-
-                    // Cek state sidebar dari localStorage saat halaman dimuat
-                    document.addEventListener('DOMContentLoaded', function() {
-                        // Set active menu item based on current page
-                        const currentPage = window.location.pathname.split('/').pop();
-                        const menuItems = document.querySelectorAll('.list-item');
-                        
-                        menuItems.forEach(item => {
-                            item.classList.remove('active');
-                            const link = item.querySelector('a').getAttribute('href');
-                            if (link === currentPage) {
-                                item.classList.add('active');
-                            }
-                        });
-
-                        // Cek state sidebar dari localStorage
-                        const sidebarState = localStorage.getItem('sidebarState');
-                        if (sidebarState === 'active') {
-                            sidebar.classList.add('active');
-                            mainContent.style.marginLeft = '260px';
-                            mainContent.style.width = 'calc(100% - 260px)';
-                        }
-                    });
-
-                    // Toggle sidebar dan simpan state ke localStorage
-                    toggleBtn.addEventListener('click', () => {
-                        sidebar.classList.toggle('active');
-                        
-                        if (sidebar.classList.contains('active')) {
-                            localStorage.setItem('sidebarState', 'active');
-                            mainContent.style.marginLeft = '260px';
-                            mainContent.style.width = 'calc(100% - 260px)';
-                        } else {
-                            localStorage.setItem('sidebarState', 'inactive');
-                            mainContent.style.marginLeft = '80px';
-                            mainContent.style.width = 'calc(100% - 80px)';
-                        }
-                    });
-                </script>
+            <script>
+                document.querySelector('.hamburger-toggle').addEventListener('click', function() {
+                    document.querySelector('.sidebar').classList.toggle('active');
+                });
+            </script>
+            
+            <div class="logo-menu">
+                <h2 class="logo"><img src="RVS_LOGO.png" alt=""></h2>
+            </div>
+            <nav>
+                <ul class="list">
+                    <li class="list-item">
+                        <a href="dashboard.php">
+                            <i class='bx bx-home-alt-2'></i>
+                            <span class="link-name" style="--i:1;">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <a href="transaction_history.php">
+                            <i class='bx bx-history'></i>
+                            <span class="link-name" style="--i:2;">Transaction History</span>
+                        </a>
+                    </li>
+                    <li class="list-item active">
+                        <a href="manage_product.php">
+                            <i class='bx bx-box'></i>
+                            <span class="link-name" style="--i:3;">Manage Product</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <a href="sales_report.php">
+                            <i class='bx bx-bar-chart-alt-2'></i>
+                            <span class="link-name" style="--i:4;">Sales Report</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <a href="accounts.php">
+                            <i class='bx bx-user'></i>
+                            <span class="link-name" style="--i:5;">Manage Accounts</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <a href="logout.php">
+                            <i class='bx bx-log-out'></i>
+                            <span class="link-name" style="--i:6;">Logout</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
 
         <!-- Main Content Area -->
         <div class="main-content">
@@ -976,13 +1084,13 @@ if ($params) {
 
             <!-- Messages -->
             <?php if (isset($success_message)): ?>
-                <div class="content-card" style="background-color: #d4edda; color: #155724; margin-bottom: 20px;">
+                <div class="message-alert message-success">
                     <?php echo $success_message; ?>
                 </div>
             <?php endif; ?>
             
             <?php if (isset($error_message)): ?>
-                <div class="content-card" style="background-color: #f8d7da; color: #721c24; margin-bottom: 20px;">
+                <div class="message-alert message-error">
                     <?php echo $error_message; ?>
                 </div>
             <?php endif; ?>
@@ -1013,7 +1121,7 @@ if ($params) {
                                         </div>
                                     </div>
                                 </td>
-                                <td>Rp <?php echo number_format($game['base_price'], 2); ?></td>
+                                <td>IDR <?php echo number_format($game['base_price'], 0, ',', '.'); ?></td>
                                 <td><?php echo $game['stock']; ?></td>
                                 <td>
                                     <span class="status-badge <?php echo ($game['stock'] > 0) ? 'status-active' : 'status-inactive'; ?>">
@@ -1035,9 +1143,9 @@ if ($params) {
                 
                 <!-- Pagination -->
                 <?php if ($total_pages > 1): ?>
-                <div style="margin-top: 20px; display: flex; justify-content: center;">
+                <div class="pagination">
                     <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-                        <a href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>" style="margin: 0 5px; padding: 5px 10px; background: <?php echo ($i == $page) ? '#6c5ce7' : '#f0f2f5'; ?>; color: <?php echo ($i == $page) ? 'white' : '#333'; ?>; border-radius: 3px; text-decoration: none;">
+                        <a href="?page=<?php echo $i; ?>&search=<?php echo urlencode($search); ?>" class="<?php echo ($i == $page) ? 'active' : ''; ?>">
                             <?php echo $i; ?>
                         </a>
                     <?php endfor; ?>
@@ -1161,6 +1269,7 @@ if ($params) {
         });
     </script>
 
+    <!-- Chatbot -->
     <div class="chatbot-container">
         <div class="chatbot-window" id="chatbotWindow">
             <div class="chatbot-header">
@@ -1244,3 +1353,4 @@ if ($params) {
     </script>
 </body>
 </html>
+

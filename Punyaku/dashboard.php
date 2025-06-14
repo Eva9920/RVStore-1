@@ -901,20 +901,21 @@ $sales_data = $conn->query("
         <!-- Sidebar Navigation -->
         <div class="sidebar">
             <div class="hamburger-toggle">
-            <i class='bx bx-menu'></i>
-        </div>
+                <i class='bx bx-menu'></i>
+            </div>
 
-        <script>
-            document.querySelector('.hamburger-toggle').addEventListener('click', function() {
-            document.querySelector('.sidebar').classList.toggle('active');
-            });
-        </script>
+            <script>
+                document.querySelector('.hamburger-toggle').addEventListener('click', function() {
+                    document.querySelector('.sidebar').classList.toggle('active');
+                });
+            </script>
+            
             <div class="logo-menu">
                 <h2 class="logo"><img src="RVS_LOGO.png" alt=""></h2>
             </div>
             <nav>
                 <ul class="list">
-                    <li class="list-item active">
+                    <li class="list-item">
                         <a href="dashboard.php">
                             <i class='bx bx-home-alt-2'></i>
                             <span class="link-name" style="--i:1;">Dashboard</span>
@@ -926,7 +927,7 @@ $sales_data = $conn->query("
                             <span class="link-name" style="--i:2;">Transaction History</span>
                         </a>
                     </li>
-                    <li class="list-item">
+                    <li class="list-item active">
                         <a href="manage_product.php">
                             <i class='bx bx-box'></i>
                             <span class="link-name" style="--i:3;">Manage Product</span>
@@ -953,31 +954,6 @@ $sales_data = $conn->query("
                 </ul>
             </nav>
         </div>
-
-        <script>
-            document.querySelector('.toggle-btn').addEventListener('click', function() {
-                const sidebar = document.querySelector('.sidebar');
-                sidebar.classList.toggle('active');
-                
-                // Tambahkan/remove class untuk overlay
-                if (sidebar.classList.contains('active')) {
-                    // Buat overlay jika belum ada
-                    if (!document.querySelector('.sidebar-overlay')) {
-                        const overlay = document.createElement('div');
-                        overlay.className = 'sidebar-overlay';
-                        overlay.addEventListener('click', function() {
-                            sidebar.classList.remove('active');
-                            overlay.remove();
-                        });
-                        document.body.appendChild(overlay);
-                    }
-                } else {
-                    // Hapus overlay jika ada
-                    const overlay = document.querySelector('.sidebar-overlay');
-                    if (overlay) overlay.remove();
-                }
-            });
-        </script>
 
         <!-- Main Content Area -->
         <div class="main-content">
@@ -1227,82 +1203,64 @@ $sales_data = $conn->query("
     </div>
 
     <script>
-    // Chatbot Toggle Function
-    function toggleChatbot() {
-        const chatbotWindow = document.getElementById('chatbotWindow');
-        chatbotWindow.classList.toggle('active');
-    }
-    
-    // Send Message Function
-    function sendMessage() {
-        const input = document.getElementById('chatbotInput');
-        const message = input.value.trim();
-        
-        if (message === '') return;
-        
-        // Add user message
-        addMessage(message, 'user-message');
-        input.value = '';
-        
-        // Show typing indicator
-        showTypingIndicator();
-        
-        // Simulate bot response after delay
-        setTimeout(() => {
-            removeTypingIndicator();
-            const response = getBotResponse();
-            addMessage(response, 'bot-message');
-            scrollToBottom();
-        }, 1500);
-    }
-    
-    // Helper Functions
-    function addMessage(text, className) {
-        const messagesContainer = document.getElementById('chatbotMessages');
-        const messageElement = document.createElement('div');
-        messageElement.className = `message ${className}`;
-        messageElement.textContent = text;
-        messagesContainer.appendChild(messageElement);
-        scrollToBottom();
-    }
-    
-    function showTypingIndicator() {
-        const messagesContainer = document.getElementById('chatbotMessages');
-        const typingIndicator = document.createElement('div');
-        typingIndicator.className = 'message typing-indicator';
-        typingIndicator.innerHTML = '<span></span><span></span><span></span>';
-        typingIndicator.id = 'typingIndicator';
-        messagesContainer.appendChild(typingIndicator);
-        scrollToBottom();
-    }
-    
-    function removeTypingIndicator() {
-        const indicator = document.getElementById('typingIndicator');
-        if (indicator) indicator.remove();
-    }
-    
-    function getBotResponse() {
-        const responses = [
-            "I can help you with your questions about our products and services.",
-            "For order inquiries, please check the Transaction History page.",
-            "Our support team is available 24/7 to assist you.",
-            "You can find more information in our FAQ section.",
-            "Is there anything else I can help you with?"
-        ];
-        return responses[Math.floor(Math.random() * responses.length)];
-    }
-    
-    function scrollToBottom() {
-        const messagesContainer = document.getElementById('chatbotMessages');
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-    
-    // Handle Enter key press
-    document.getElementById('chatbotInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            sendMessage();
+        function toggleChatbot() {
+            const chatbotWindow = document.getElementById('chatbotWindow');
+            chatbotWindow.classList.toggle('active');
         }
-    });
-</script>
+        
+        function sendMessage() {
+            const input = document.getElementById('chatbotInput');
+            const message = input.value.trim();
+            
+            if (message === '') return;
+            
+            // Add user message (right aligned)
+            addMessage(message, 'user-message');
+            input.value = '';
+            
+            // Show typing indicator (left aligned)
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'message typing-indicator';
+            typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+            document.getElementById('chatbotMessages').appendChild(typingIndicator);
+            
+            // Scroll to bottom
+            scrollToBottom();
+            
+            // Simulate bot response (left aligned)
+            setTimeout(() => {
+                // Remove typing indicator
+                const indicator = document.querySelector('.typing-indicator');
+                if (indicator) indicator.remove();
+                
+                // Add bot response
+                const responses = [
+                    "I can help you with your questions about our products and services.",
+                    "For order inquiries, please check the Transaction History page.",
+                    "Our support team is available 24/7 to assist you.",
+                    "You can find more information in our FAQ section.",
+                    "Is there anything else I can help you with?"
+                ];
+                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                addMessage(randomResponse, 'bot-message');
+                
+                // Scroll to bottom again after response
+                scrollToBottom();
+            }, 1500);
+        }
+        
+        function addMessage(text, className) {
+            const messagesContainer = document.getElementById('chatbotMessages');
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${className}`;
+            messageElement.textContent = text;
+            messagesContainer.appendChild(messageElement);
+        }
+        
+        function scrollToBottom() {
+            const messagesContainer = document.getElementById('chatbotMessages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    </script>
 </body>
 </html>

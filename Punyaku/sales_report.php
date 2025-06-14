@@ -3,8 +3,8 @@ require_once 'config.php';
 requireAuth();
 
 // Get date range (default to last 30 days)
-$date_from = isset($_GET['date_from']) ? $_GET['date_from'] : date('');
-$date_to = isset($_GET['date_to']) ? $_GET['date_to'] : date('');
+$date_from = isset($_GET['date_from']) ? $_GET['date_from'] : date('Y-m-d', strtotime('-30 days'));
+$date_to = isset($_GET['date_to']) ? $_GET['date_to'] : date('Y-m-d');
 
 // Get sales summary
 $summary_stmt = $conn->prepare("
@@ -60,7 +60,6 @@ $pm_result = $pm_stmt->get_result();
 $sales_by_payment_method = $pm_result->fetch_all(MYSQLI_ASSOC);
 $pm_stmt->close();
 
-
 // Sales data for chart (daily sales for selected range)
 $chartLabels = [];
 $chartData = [];
@@ -99,15 +98,19 @@ while ($current_date <= $end_date) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sales Report</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         :root {
-            --primary-color: #6c5ce7;
-            --dark-color: #2d3436;
-            --light-color: #f7f7f7;
-            --sidebar-width: 250px;
-            --transition: all 0.3s ease;
+            --primary-gradient: linear-gradient(135deg, #2a0845 0%, #6441a5 100%);
+            --accent-gradient: linear-gradient(135deg, #ff1493 0%, #6441a5 100%);
+            --card-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.95) 100%);
+            --background-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --border-radius: 20px;
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         * {
@@ -117,19 +120,23 @@ while ($current_date <= $end_date) {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
-        
         body {
-            background-color: #f5f7fa;
-            color: #333;
+            background: var(--background-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
         }
-    
 
         img {
             width: 105px;
             height: 65px;
             margin-top: 20px;
-            margin-bottom: 17px;
+            margin-bottom: 15px;
             margin-left: 55px;
+        }
+        
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
         }
 
         /* Sidebar Styles */
@@ -139,18 +146,17 @@ while ($current_date <= $end_date) {
             left: 0;
             width: 80px;
             height: 100%;
-            background: linear-gradient(135deg, #2a0845 0%, #6441a5 100%);
+            background: var(--primary-gradient);
             backdrop-filter: blur(40px);
-            border-right: 2px solid rgba(255, 20, 147, 0.3); /* Pink magenta border */
-            box-shadow: 0 0 20px rgba(139, 0, 139, 0.5); /* Dark purple shadow */
+            border-right: 2px solid rgba(255, 20, 147, 0.3);
+            box-shadow: 0 0 30px rgba(139, 0, 139, 0.5);
             padding: 6px 14px;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: var(--transition);
             z-index: 100;
         }
 
         .sidebar.active {
             width: 260px;
-            background: linear-gradient(135deg, #1a052e 0%, #4b2a8a 100%);
         }
 
         .sidebar .logo-menu {
@@ -158,16 +164,16 @@ while ($current_date <= $end_date) {
             align-items: center;
             width: 100%;
             height: 70px;
-            border-bottom: 1px solid rgba(255, 20, 147, 0.2); /* Pink magenta subtle divider */
+            border-bottom: 1px solid rgba(255, 20, 147, 0.2);
         }
 
         .sidebar .logo-menu .logo {
             font-size: 25px;
-            color: #ff1493; /* Pink magenta */
+            color: #ff1493;
             font-weight: 600;
             pointer-events: none;
             opacity: 0;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             text-shadow: 0 0 10px rgba(255, 20, 147, 0.5);
         }
 
@@ -183,11 +189,11 @@ while ($current_date <= $end_date) {
             width: 40px;
             height: 40px;
             font-size: 30px;
-            color: #ff1493; /* Pink magenta */
+            color: #ff1493;
             text-align: center;
             line-height: 40px;
             cursor: pointer;
-            transition: all 0.5s ease;
+            transition: var(--transition);
             background: rgba(106, 13, 173, 0.3);
             border-radius: 50%;
         }
@@ -198,8 +204,9 @@ while ($current_date <= $end_date) {
         }
 
         .sidebar .logo-menu .toggle-btn:hover {
-            color: #ff69b4; /* Lighter pink */
+            color: #ff69b4;
             background: rgba(255, 20, 147, 0.3);
+            transform: translateX(-50%) scale(1.1);
         }
 
         .sidebar .list {
@@ -207,7 +214,7 @@ while ($current_date <= $end_date) {
         }
 
         .list .list-item {
-            list-style: ;
+            list-style: none;
             width: 100%;
             height: 50px;
             margin: 10px 0;
@@ -217,21 +224,21 @@ while ($current_date <= $end_date) {
         .list .list-item a {
             display: flex;
             align-items: center;
-            text-align: none;
-            font-size: 18px;
-            color: #e2b4ff; /* Light purple text */
             text-decoration: none;
-            border-radius: 6px;
+            font-size: 18px;
+            color: #e2b4ff;
+            border-radius: 12px;
             white-space: nowrap;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             padding: 0 10px;
         }
 
         .list .list-item.active a,
         .list .list-item a:hover {
-            background: linear-gradient(90deg, rgba(255, 20, 147, 0.3) 0%, rgba(106, 13, 173, 0.3) 100%);
+            background: var(--accent-gradient);
             color: #fff;
-            box-shadow: 0 5px 15px rgba(139, 0, 139, 0.4);
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
+            transform: translateX(5px);
         }
 
         .list .list-item a i {
@@ -239,298 +246,137 @@ while ($current_date <= $end_date) {
             height: 50px;
             text-align: center;
             line-height: 50px;
-            color: #ff1493; /* Pink magenta icons */
+            color: #ff1493;
             font-size: 22px;
         }
 
         .list .list-item.active a i,
         .list .list-item a:hover i {
-            color: #ff69b4; /* Lighter pink on hover/active */
+            color: #fff;
         }
 
         .sidebar .link-name {
             opacity: 0;
             pointer-events: none;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             font-weight: 500;
+            margin-left: 8px;
         }
 
         .sidebar.active .link-name {
-            margin-left: 8px;
             opacity: 1;
             pointer-events: auto;
             transition-delay: calc(0.1s * var(--i));
         }
 
+        /* Main Content */
         .main-content {
             margin-left: 80px;
             padding: 20px;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            background-color: #f8f9fc;
+            transition: var(--transition);
+            width: calc(100% - 80px);
+            min-height: 100vh;
         }
 
         .sidebar.active + .main-content {
             margin-left: 260px;
+            width: calc(100% - 260px);
         }
 
-        /* Add glowing effect on active/hover */
-        @keyframes glow {
-            0% { box-shadow: 0 0 5px rgba(255, 20, 147, 0.5); }
-            50% { box-shadow: 0 0 20px rgba(255, 20, 147, 0.8); }
-            100% { box-shadow: 0 0 5px rgba(255, 20, 147, 0.5); }
-        }
-
-        .list .list-item.active a {
-            animation: glow 2s infinite;
-        }
-
-        .main-content {
-            margin-left: 80px;
-            padding: 20px;
-            transition: .5s;
-        }
-
-        .sidebar.active + .main-content {
-            margin-left: 260px;
-        }
-
-        .main-content {
-            margin-left: 80px;
-            padding: 20px;
-            transition: .5s;
-        }
-
-        .sidebar.active + .main-content {
-            margin-left: 260px;
-        }
-
-        .main-content {
-            margin-left: var(--sidebar-width);
-            flex-grow: 1;
-            padding: 20px;
-            width: calc(100% - var(--sidebar-width));
-            min-width: 0;
-        }
-        .header {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .header h1 {
-            margin: 0;
-            color: #333;
-            font-size: 2rem;
-        }
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .user-info .avatar {
-            width: 40px;
-            height: 40px;
-            background-color: #ccc;
+       /* Hamburger Toggle Button */
+       .sidebar .hamburger-toggle {
+            position: absolute;
+            top: 15px;
+            right: -70px; /* Posisi di luar sidebar sebelah kanan */
+            width: 50px;
+            height: 50px;
+            background: var(--accent-gradient);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            color: #fff;
-            font-size: 1.2em;
-        }
-        .card {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
-        .card-header {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #555;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .table-responsive {
-            overflow-x: auto;
-        }
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        .table th, .table td {
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
-        .table th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-            color: #333;
-        }
-        .table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        .table tr:hover {
-            background-color: #f1f1f1;
-        }
-        .badge {
-            display: inline-block;
-            padding: .35em .65em;
-            font-size: .75em;
-            font-weight: 700;
-            line-height: 1;
-            text-align: center;
-            white-space: nowrap;
-            vertical-align: baseline;
-            border-radius: .375rem;
-        }
-        .badge-success { background-color: #28a745; color: white; }
-        .badge-danger { background-color: #dc3545; color: white; }
-        .badge-warning { background-color: #ffc107; color: #333; }
-        .badge-info { background-color: #17a2b8; color: white; }
-        .filter-section {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            align-items: flex-end;
-            flex-wrap: wrap;
-        }
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-        }
-        .filter-group label {
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #555;
-        }
-        .filter-group input[type="date"] {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .filter-group button {
-            padding: 10px 15px;
-            background-color: #4e73df;
-            color: white;
-            border: none;
-            border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1001;
+            transition: var(--transition);
         }
-        .filter-group button:hover {
-            background-color: #2e59d9;
-        }
-        .summary-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        .summary-card {
-            background-color: #e9f0f9;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            text-align: center;
-        }
-        .summary-card .title {
-            font-size: 1em;
-            color: #666;
-            margin-bottom: 10px;
-        }
-        .summary-card .value {
-            font-size: 1.8em;
-            font-weight: bold;
-            color: #4e73df;
-        }
-        .top-selling {
-            margin-top: 30px;
-        }
-        .top-selling h3 {
-            margin-bottom: 10px;
-        }
-      
-        .chart-container {
-            margin-top: 30px;
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.05);
-        }
-        .download-btn {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #6c5ce7 0%, #4834d4 100%);
-            color: #fff;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: background 0.3s;
-        }
-        .download-btn:hover {
-            background: linear-gradient(135deg, #4834d4 0%, #6c5ce7 100%);
-        }
-        
 
-        /* Topbar Styles */
+        .sidebar.active .hamburger-toggle {
+            right: 20px; /* Saat sidebar aktif, posisi di dalam kanan atas */
+        }
+
+        .sidebar .hamburger-toggle i {
+            color: white;
+            font-size: 20px;
+        }
+
+        /* Sidebar Adjustment */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -260px;
+            width: 260px;
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        /* Topbar */
         .topbar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 15px 25px;
-            background: white;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            margin-bottom: 25px;
-            border-radius: 10px;
-            position: sticky;
-            top: 0;
-            z-index: 10;
+            padding: 20px 30px;
+            background: var(--card-gradient);
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .topbar h2 {
-            font-weight: 600;
-            color: #1a237e;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 28px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .search-container {
             position: relative;
-            width: 300px;
+            width: 350px;
         }
 
         .search-container input {
             width: 100%;
-            padding: 10px 15px 10px 40px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
+            padding: 15px 20px 15px 50px;
+            border: 2px solid rgba(255, 20, 147, 0.2);
+            border-radius: 25px;
             font-size: 14px;
-            transition: all 0.3s;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
         }
 
         .search-container input:focus {
-            border-color: var(--primary-color);
+            border-color: #ff1493;
             outline: none;
-            box-shadow: 0 0 0 3px rgba(92, 107, 192, 0.2);
+            box-shadow: 0 0 20px rgba(255, 20, 147, 0.3);
+            background: rgba(255, 255, 255, 0.95);
         }
 
         .search-container i {
             position: absolute;
-            left: 15px;
+            left: 18px;
             top: 50%;
             transform: translateY(-50%);
-            color: #777;
+            color: #ff1493;
+            font-size: 18px;
         }
 
         .topbar-icons {
@@ -539,295 +385,428 @@ while ($current_date <= $end_date) {
         }
 
         .topbar-icons i {
-            font-size: 20px;
-            color: #5c6bc0;
+            font-size: 24px;
+            color: #6441a5;
             cursor: pointer;
-            transition: color 0.3s;
+            transition: var(--transition);
+            padding: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
         }
 
         .topbar-icons i:hover {
-            color: #1a237e;
+            color: #ff1493;
+            background: rgba(255, 20, 147, 0.1);
+            transform: scale(1.1);
         }
 
-        /* Improved Chatbot Styles */
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: var(--card-gradient);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--accent-gradient);
+        }
+
+        .stat-card h3 {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card p {
+            font-size: 32px;
+            font-weight: 800;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .stat-icon {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 40px;
+            color: rgba(255, 20, 147, 0.2);
+        }
+
+        /* Content Cards */
+        .content-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .content-card {
+            background: var(--card-gradient);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
+        }
+
+        .content-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.12);
+        }
+
+        .content-card.wide {
+            grid-column: span 2;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 20, 147, 0.1);
+        }
+
+        .card-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .period-select {
+            padding: 10px 15px;
+            border: 2px solid rgba(255, 20, 147, 0.2);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+
+        .period-select:focus {
+            border-color: #ff1493;
+            outline: none;
+            box-shadow: 0 0 15px rgba(255, 20, 147, 0.2);
+        }
+
+        /* Chart Styles */
+        .chart-placeholder {
+            height: 350px;
+            position: relative;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        /* Filter Section */
+        .filter-section {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--text-secondary);
+        }
+
+        .filter-group input[type="date"] {
+            padding: 12px 15px;
+            border: 2px solid rgba(255, 20, 147, 0.2);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .filter-group input[type="date"]:focus {
+            border-color: #ff1493;
+            outline: none;
+            box-shadow: 0 0 15px rgba(255, 20, 147, 0.2);
+        }
+
+        .filter-group button {
+            padding: 12px 20px;
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
+        }
+
+        .filter-group button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 20, 147, 0.4);
+        }
+
+        /* Table Styles */
+        .transaction-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .transaction-table th,
+        .transaction-table td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 20, 147, 0.1);
+        }
+
+        .transaction-table th {
+            background: var(--accent-gradient);
+            color: white;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .transaction-table tr:hover {
+            background: rgba(255, 20, 147, 0.05);
+        }
+
+        .view-all {
+            text-align: right;
+            margin-top: 20px;
+        }
+
+        .view-all a {
+            color: #ff1493;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 16px;
+            transition: var(--transition);
+            padding: 10px 20px;
+            border: 2px solid rgba(255, 20, 147, 0.3);
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .view-all a:hover {
+            background: var(--accent-gradient);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.3);
+        }
+
+        .download-btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background: var(--accent-gradient);
+            color: white;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 700;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.4);
+        }
+
+        /* Chatbot Styles */
         .chatbot-container {
             position: fixed;
             bottom: 30px;
             left: 50px;
             z-index: 999;
         }
-        
+
         .chatbot-toggle {
             width: 70px;
             height: 70px;
-            background: linear-gradient(135deg, #6c5ce7 0%, #4834d4 100%);
+            background: var(--accent-gradient);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.4);
+            transition: var(--transition);
         }
-        
+
         .chatbot-toggle:hover {
             transform: scale(1.1);
+            box-shadow: 0 15px 40px rgba(255, 20, 147, 0.5);
         }
-        
+
         .chatbot-toggle i {
             color: white;
             font-size: 28px;
         }
-        
+
         .chatbot-window {
             width: 400px;
             height: 550px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            background: var(--card-gradient);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
             overflow: hidden;
             display: none;
             flex-direction: column;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
+
         .chatbot-window.active {
             display: flex;
             animation: fadeInUp 0.3s ease;
         }
-        
-        .chatbot-header {
-            background: linear-gradient(135deg, #6c5ce7 0%, #4834d4 100%);
-            color: white;
-            padding: 15px;
-            text-align: center;
-        }
-        
-        .chatbot-header h3 {
-            margin: 0;
-            font-size: 18px;
-        }
-        
-        .chatbot-header i {
-            position: absolute;
-            right: 15px;
-            cursor: pointer;
-        }
-        
-        .chatbot-messages {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            background: #f5f7fb;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .message {
-            max-width: 80%;
-            padding: 10px 15px;
-            margin-bottom: 15px;
-            border-radius: 18px;
-            position: relative;
-            word-wrap: break-word;
-        }
-        
-        .bot-message {
-            background: white;
-            border-bottom-left-radius: 5px;
-            align-self: flex-start;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-            margin-right: auto;
-        }
-        
-        .user-message {
-            background: #6c5ce7;
-            color: white;
-            border-bottom-right-radius: 5px;
-            align-self: flex-end;
-            margin-left: auto;
-        }
-        
-        .chatbot-input {
-            display: flex;
-            padding: 15px;
-            background: white;
-            border-top: 1px solid #eee;
-        }
-        
-        .chatbot-input input {
-            flex: 1;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 30px;
-            outline: none;
-        }
-        
-        .chatbot-input button {
-            background: #6c5ce7;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 45px;
-            height: 45px;
-            margin-left: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .chatbot-input button:hover {
-            background: #4834d4;
-        }
-        
+
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(30px);
             }
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-        
-        .typing-indicator {
-            display: flex;
-            padding: 10px 15px;
-            background: white;
-            border-radius: 18px;
-            border-bottom-left-radius: 5px;
-            align-self: flex-start;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-            margin-bottom: 15px;
-            margin-right: auto;
-        }
-        
-        .typing-indicator span {
-            height: 8px;
-            width: 8px;
-            background: #6c5ce7;
-            border-radius: 50%;
-            display: inline-block;
-            margin: 0 2px;
-            animation: bounce 1.5s infinite ease-in-out;
-        }
-        
-        .typing-indicator span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-        
-        .typing-indicator span:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-        
-        @keyframes bounce {
-            0%, 60%, 100% {
-                transform: translateY(0);
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stats-container {
+                grid-template-columns: 1fr;
             }
-            30% {
-                transform: translateY(-5px);
+            
+            .content-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-container {
+                width: 250px;
+            }
+            
+            .topbar h2 {
+                font-size: 22px;
+            }
+            
+            .filter-section {
+                flex-direction: column;
+                align-items: stretch;
             }
         }
-        
     </style>
 </head>
 <body>
-    <div class="sidebar">
-                    <div class="logo-menu">
-                        <h2 class="logo"><img src="RVS_LOGO.png" alt=""></h2>
-                        <i class='bx bx-menu toggle-btn'></i>
-                    </div>
-                    <nav>
-                        <ul class="list">
-                            <li class="list-item active">
-                                <a href="dashboard.php">
-                                    <i class='bx bx-home-alt-2'></i>
-                                    <span class="link-name" style="--i:1;">Dashboard</span>
-                                </a>
-                            </li>
-                            <li class="list-item">
-                                <a href="transaction_history.php">
-                                    <i class='bx bx-history'></i>
-                                    <span class="link-name" style="--i:2;">Transaction History</span>
-                                </a>
-                            </li>
-                            <li class="list-item">
-                                <a href="manage_product.php">
-                                    <i class='bx bx-box'></i>
-                                    <span class="link-name" style="--i:3;">Manage Product</span>
-                                </a>
-                            </li>
-                            <li class="list-item">
-                                <a href="sales_report.php">
-                                    <i class='bx bx-bar-chart-alt-2'></i>
-                                    <span class="link-name" style="--i:4;">Sales Report</span>
-                                </a>
-                            </li>
-                            <li class="list-item">
-                                <a href="accounts.php">
-                                    <i class='bx bx-user'></i>
-                                    <span class="link-name" style="--i:5;">Manage Accounts</span>
-                                </a>
-                            </li>
-                            <li class="list-item">
-                                <a href="logout.php">
-                                    <i class='bx bx-log-out'></i>
-                                    <span class="link-name" style="--i:6;">Logout</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </nav>
-                </div>
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="hamburger-toggle">
+                <i class='bx bx-menu'></i>
+            </div>
 
-                <script>
-                    const sidebar = document.querySelector('.sidebar');
-                    const toggleBtn = document.querySelector('.toggle-btn');
-                    const mainContent = document.querySelector('.main-content');
+            <script>
+                document.querySelector('.hamburger-toggle').addEventListener('click', function() {
+                    document.querySelector('.sidebar').classList.toggle('active');
+                });
+            </script>
+            
+            <div class="logo-menu">
+                <h2 class="logo"><img src="RVS_LOGO.png" alt=""></h2>
+            </div>
+            <nav>
+                <ul class="list">
+                    <li class="list-item">
+                        <a href="dashboard.php">
+                            <i class='bx bx-home-alt-2'></i>
+                            <span class="link-name" style="--i:1;">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <a href="transaction_history.php">
+                            <i class='bx bx-history'></i>
+                            <span class="link-name" style="--i:2;">Transaction History</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <a href="manage_product.php">
+                            <i class='bx bx-box'></i>
+                            <span class="link-name" style="--i:3;">Manage Product</span>
+                        </a>
+                    </li>
+                    <li class="list-item active">
+                        <a href="sales_report.php">
+                            <i class='bx bx-bar-chart-alt-2'></i>
+                            <span class="link-name" style="--i:4;">Sales Report</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <a href="accounts.php">
+                            <i class='bx bx-user'></i>
+                            <span class="link-name" style="--i:5;">Manage Accounts</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <a href="logout.php">
+                            <i class='bx bx-log-out'></i>
+                            <span class="link-name" style="--i:6;">Logout</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
 
-                    // Cek state sidebar dari localStorage saat halaman dimuat
-                    document.addEventListener('DOMContentLoaded', function() {
-                        // Set active menu item based on current page
-                        const currentPage = window.location.pathname.split('/').pop();
-                        const menuItems = document.querySelectorAll('.list-item');
-                        
-                        menuItems.forEach(item => {
-                            item.classList.remove('active');
-                            const link = item.querySelector('a').getAttribute('href');
-                            if (link === currentPage) {
-                                item.classList.add('active');
-                            }
-                        });
-
-                        // Cek state sidebar dari localStorage
-                        const sidebarState = localStorage.getItem('sidebarState');
-                        if (sidebarState === 'active') {
-                            sidebar.classList.add('active');
-                            mainContent.style.marginLeft = '260px';
-                            mainContent.style.width = 'calc(100% - 260px)';
-                        }
-                    });
-
-                    // Toggle sidebar dan simpan state ke localStorage
-                    toggleBtn.addEventListener('click', () => {
-                        sidebar.classList.toggle('active');
-                        
-                        if (sidebar.classList.contains('active')) {
-                            localStorage.setItem('sidebarState', 'active');
-                            mainContent.style.marginLeft = '260px';
-                            mainContent.style.width = 'calc(100% - 260px)';
-                        } else {
-                            localStorage.setItem('sidebarState', 'inactive');
-                            mainContent.style.marginLeft = '80px';
-                            mainContent.style.width = 'calc(100% - 80px)';
-                        }
-                    });
-                </script>
-                
-    <div class="main-content">
-        <!-- Topbar -->
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Topbar -->
             <div class="topbar">
                 <h2>Sales Report</h2>
                 <form method="GET" class="search-container">
-                    <input type="text" name="search" placeholder="Search product..." value="<?php echo isset($_GET['search']) ? $_GET['search'] : ''; ?>">
+                    <input type="text" name="search" placeholder="Search product..." value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
                     <i class="fas fa-search"></i>
                 </form>
                 <div class="topbar-icons">
@@ -836,256 +815,241 @@ while ($current_date <= $end_date) {
                     <i class="fas fa-user-circle"></i>
                 </div>
             </div>
-        <div class="card">
-            <div class="card-header">
-                <span>Sales Overview</span>
+
+            <!-- Filter Section -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2>Sales Overview</h2>
+                </div>
+                <form method="GET" action="" class="filter-section">
+                    <div class="filter-group">
+                        <label for="date_from">Date From</label>
+                        <input type="date" id="date_from" name="date_from" value="<?php echo htmlspecialchars($date_from); ?>">
+                    </div>
+                    <div class="filter-group">
+                        <label for="date_to">Date To</label>
+                        <input type="date" id="date_to" name="date_to" value="<?php echo htmlspecialchars($date_to); ?>">
+                    </div>
+                    <div class="filter-group">
+                        <button type="submit">Apply Filter</button>
+                    </div>
+                    <div class="filter-group">
+                        <button type="button" onclick="window.location.href='sales_report.php'">Reset Dates</button>
+                    </div>
+                </form>
             </div>
-            <form method="GET" action="" class="filter-section">
-                <div class="filter-group">
-                    <label for="date_from">Date From</label>
-                    <input type="date" id="date_from" name="date_from" value="<?php echo htmlspecialchars($date_from); ?>">
+
+            <!-- Stats Cards -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <h3>Total Transactions</h3>
+                    <p><?php echo number_format($summary['total_transactions'] ?? 0, 0, ',', '.'); ?></p>
                 </div>
-                <div class="filter-group">
-                    <label for="date_to">Date To</label>
-                    <input type="date" id="date_to" name="date_to" value="<?php echo htmlspecialchars($date_to); ?>">
+                <div class="stat-card">
+                    <h3>Total Sales</h3>
+                    <p>IDR <?php echo number_format($summary['total_sales'] ?? 0, 0, ',', '.'); ?></p>
                 </div>
-                <div class="filter-group">
-                    <button type="submit" class="btn">Apply Filter</button>
-                </div>
-                <div class="filter-group">
-                    <button type="button" class="btn" onclick="window.location.href='sales_report.php'">Reset Dates</button>
-                </div>
-            </form>
-            <div class="summary-cards">
-                <div class="summary-card">
-                    <div class="title">Total Transactions</div>
-                    <div class="value"><?php echo number_format($summary['total_transactions']); ?></div>
-                </div>
-                <div class="summary-card">
-                    <div class="title">Total Sales</div>
-                    <div class="value"><?php echo formatCurrency($summary['total_sales']); ?></div>
-                </div>
-                <div class="summary-card">
-                    <div class="title">Average Sale</div>
-                    <div class="value"><?php echo formatCurrency($summary['average_sale']); ?></div>
+                <div class="stat-card">
+                    <h3>Average Sale</h3>
+                    <p>IDR <?php echo number_format($summary['average_sale'] ?? 0, 0, ',', '.'); ?></p>
                 </div>
             </div>
-        </div>
-        <div class="card">
-            <div class="card-header">
-            <span>Daily Sales Chart</span>
+
+            <!-- Sales Chart -->
+            <div class="content-card wide">
+                <div class="card-header">
+                    <h2>Daily Sales Chart</h2>
+                </div>
+                <div class="chart-placeholder">
+                    <canvas id="salesChart"></canvas>
+                </div>
             </div>
-            <canvas id="salesChart" style="max-height: 400px; width: 100%;"></canvas>
-            <script>
-            // Initialize line chart with dummy data
-            const salesCtx = document.getElementById('salesChart').getContext('2d');
-            new Chart(salesCtx, {
-                type: 'line',
-                data: {
-                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                datasets: [{
-                    label: 'Daily Sales (Rp)',
-                    data: [250000, 320000, 280000, 450000, 380000, 520000, 480000],
-                    borderColor: 'rgb(75, 192, 192)',
-                    tension: 0.1,
-                    fill: false
-                }]
-                },
-                options: {
-                responsive: true,
-                scales: {
-                    y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                        return 'Rp' + value.toLocaleString();
-                        }
-                    }
-                    }
-                }
-                }
-            });
-            </script>
-        </div>
-        <div class="card">
-            <div class="card-header">
-                <span>Sales By Game</span>
-            </div>
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Game Name</th>
-                            <th>Transactions</th>
-                            <th>Total Sales</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (empty($sales_by_game)): ?>
-                            <tr>
-                                <td colspan="3" class="text-center">No sales by game found for this period.</td>
-                            </tr>
-                        <?php else: ?>
-                            <?php foreach ($sales_by_game as $sale) : ?>
+
+            <!-- Sales Tables -->
+            <div class="content-row">
+                <!-- Sales by Game -->
+                <div class="content-card">
+                    <div class="card-header">
+                        <h2>Sales By Game</h2>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="transaction-table">
+                            <thead>
                                 <tr>
-                                    <td><?php echo htmlspecialchars($sale['game_name']); ?></td>
-                                    <td><?php echo $sale['transaction_count']; ?></td>
-                                    <td><?php echo formatCurrency($sale['total_sales']); ?></td>
+                                    <th>Game Name</th>
+                                    <th>Transactions</th>
+                                    <th>Total Sales</th>
                                 </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div class="card">
-            <div class="card-header">
-                <span>Sales By Payment Method</span>
-            </div>
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Payment Method</th>
-                            <th>Transactions</th>
-                            <th>Total Sales</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (empty($sales_by_payment_method)): ?>
-                            <tr>
-                                <td colspan="3" class="text-center">No sales by payment method found for this period.</td>
-                            </tr>
-                        <?php else: ?>
-                            <?php foreach ($sales_by_payment_method as $sale) : ?>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($sales_by_game)): ?>
+                                    <tr>
+                                        <td colspan="3">No sales by game found for this period.</td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php foreach ($sales_by_game as $sale): ?>
+                                        <tr>
+                                            <td><?php echo htmlspecialchars($sale['game_name']); ?></td>
+                                            <td><?php echo number_format($sale['transaction_count'], 0, ',', '.'); ?></td>
+                                            <td>IDR <?php echo number_format($sale['total_sales'], 0, ',', '.'); ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Sales by Payment Method -->
+                <div class="content-card">
+                    <div class="card-header">
+                        <h2>Sales By Payment Method</h2>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="transaction-table">
+                            <thead>
                                 <tr>
-                                    <td><?php echo htmlspecialchars($sale['payment_method_name']); ?></td>
-                                    <td><?php echo $sale['transaction_count']; ?></td>
-                                    <td><?php echo formatCurrency($sale['total_sales']); ?></td>
+                                    <th>Payment Method</th>
+                                    <th>Transactions</th>
+                                    <th>Total Sales</th>
                                 </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($sales_by_payment_method)): ?>
+                                    <tr>
+                                        <td colspan="3">No sales by payment method found for this period.</td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php foreach ($sales_by_payment_method as $sale): ?>
+                                        <tr>
+                                            <td><?php echo htmlspecialchars($sale['payment_method_name']); ?></td>
+                                            <td><?php echo number_format($sale['transaction_count'], 0, ',', '.'); ?></td>
+                                            <td>IDR <?php echo number_format($sale['total_sales'], 0, ',', '.'); ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="card top-selling"> <h3>Top 5 Selling</h3>
-            
-            <div class="table-responsive">
-                <table id="topSellingTable" class="table">
-                    <thead>
-                        <tr><th>#</th><th>Title</th><th>Price</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>01.</td><td>Roblox</td><td>Rp150.000,00</td></tr>
-                        <tr><td>02.</td><td>Free Fire</td><td>Rp150.000,00</td></tr>
-                        <tr><td>03.</td><td>Mobile Legends</td><td>Rp300.000,00</td></tr>
-                        <tr><td>04.</td><td>PUBG</td><td>Rp150.000,00</td></tr>
-                        <tr><td>05.</td><td>CODM</td><td>Rp200.000,00</td></tr>
-                    </tbody>
-                </table>
+
+            <!-- Download Button -->
+            <div class="view-all">
+                <button class="download-btn" onclick="downloadPDF()">
+                    <i class="fas fa-download"></i> Download Report
+                </button>
             </div>
-        </div>
-        <div class="chart-container">
-            <h3 style="margin-bottom:10px;">Top Selling Bar Chart</h3>
-            <canvas id="topSellingChart" height="120"></canvas>
-        </div>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script>
-            // Initialize the bar chart
-            const ctx = document.getElementById('topSellingChart').getContext('2d');
-            new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Roblox', 'Free Fire', 'Mobile Legends', 'PUBG', 'CODM'],
-                datasets: [{
-                label: 'Sales Amount (Rp)',
-                data: [150000, 150000, 300000, 150000, 200000],
-                backgroundColor: [
-                    'rgba(78, 115, 223, 0.8)',
-                    'rgba(54, 185, 204, 0.8)',
-                    'rgba(28, 200, 138, 0.8)', 
-                    'rgba(246, 194, 62, 0.8)',
-                    'rgba(231, 74, 59, 0.8)'
-                ],
-                borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                    callback: function(value) {
-                        return 'Rp' + value.toLocaleString();
-                    }
-                    }
-                }
-                }
-            }
-            });
-        </script>
-        
-        <div style="text-align:right;">
-            <a href="#" class="download-btn" onclick="downloadPDF()">Download Report</a>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
-   
-    // Add HTML2PDF library script in the head section
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
-    document.head.appendChild(script);
-
-    // PDF Download function
-    function downloadPDF() {
-        const element = document.querySelector('.main-content');
-        const opt = {
-            margin: 1,
-            filename: 'sales-report.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-        };
-
-        // Show loading state
-        const downloadBtn = document.querySelector('.download-btn');
-        downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
-        downloadBtn.style.pointerEvents = 'none';
-
-        // Generate PDF
-        html2pdf().set(opt).from(element).save().then(() => {
-            // Reset button state
-            downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download Report';
-            downloadBtn.style.pointerEvents = 'auto';
-        });
-    }
-
-    // Initialize charts and other functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        // Your existing chart initialization code here
-        const ctx = document.getElementById('topSellingChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
+        // Sales Chart
+        const salesCtx = document.getElementById('salesChart').getContext('2d');
+        const salesChart = new Chart(salesCtx, {
+            type: 'line',
             data: {
-                labels: ['Roblox', 'Free Fire', 'Mobile Legends', 'PUBG', 'CODM'],
+                labels: <?php echo json_encode($chartLabels); ?>,
                 datasets: [{
-                    label: 'Sales Amount',
-                    data: [150000, 150000, 300000, 150000, 200000],
-                    backgroundColor: '#4e73df'
+                    label: 'Sales (IDR)',
+                    data: <?php echo json_encode($chartData); ?>,
+                    backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                    borderColor: 'rgba(78, 115, 223, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(78, 115, 223, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverRadius: 5,
+                    pointHoverBackgroundColor: 'rgba(78, 115, 223, 1)',
+                    pointHoverBorderColor: '#fff',
+                    pointHitRadius: 10,
+                    pointBorderWidth: 2,
+                    tension: 0.3,
+                    fill: true
                 }]
             },
             options: {
-                responsive: true,
+                maintainAspectRatio: false,
                 scales: {
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'IDR ' + value + 'M';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'IDR ' + (context.raw * 1000000).toLocaleString();
+                            }
+                        }
                     }
                 }
             }
         });
-    });
+
+        // PDF Download function
+        function downloadPDF() {
+            const element = document.querySelector('.main-content');
+            const opt = {
+                margin: 1,
+                filename: 'sales-report.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            // Show loading state
+            const downloadBtn = document.querySelector('.download-btn');
+            const originalText = downloadBtn.innerHTML;
+            downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+            downloadBtn.disabled = true;
+
+            // Generate PDF
+            html2pdf().set(opt).from(element).save().then(() => {
+                // Reset button state
+                downloadBtn.innerHTML = originalText;
+                downloadBtn.disabled = false;
+            });
+        }
+
+        // Sidebar toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleBtn = document.querySelector('.toggle-btn');
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+
+            // Check sidebar state from localStorage
+            const sidebarState = localStorage.getItem('sidebarState');
+            if (sidebarState === 'active') {
+                sidebar.classList.add('active');
+                mainContent.style.marginLeft = '260px';
+                mainContent.style.width = 'calc(100% - 260px)';
+            }
+
+            // Toggle sidebar and save state
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                
+                if (sidebar.classList.contains('active')) {
+                    localStorage.setItem('sidebarState', 'active');
+                    mainContent.style.marginLeft = '260px';
+                    mainContent.style.width = 'calc(100% - 260px)';
+                } else {
+                    localStorage.setItem('sidebarState', 'inactive');
+                    mainContent.style.marginLeft = '80px';
+                    mainContent.style.width = 'calc(100% - 80px)';
+                }
+            });
+        });
     </script>
 
     <div class="chatbot-container">
