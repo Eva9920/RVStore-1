@@ -99,6 +99,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
       box-sizing: border-box;
     }
 
+    
+
     .video-bg {
       position: fixed;
       top: 0;
@@ -303,6 +305,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             margin-bottom: 2rem;
         }
 
+        .logo-container img {
+            width: 100px;
+            height: 60px;
+            filter: drop-shadow(0 0 7px  #38b6ff);
+        }
+
         /* Alert styles */
         .alert {
             padding: 12px 16px;
@@ -369,14 +377,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
 </head>
 <body>
  <video class="hero-video" autoplay loop muted playsinline>
-    <source src="VIDEO.mp4" type="video/mp4">
+        <source src="VIDEO.mp4" type="video/mp4">
     </video>
     <div class="auth-container">
         <div id="authContainer" class="glass-effect max-w-xs w-full space-y-4 p-6 rounded-2xl">
             <!-- Logo dan Judul -->
             <div class="logo-container">
                 <div class="logo-placeholder">
-                    <img src="RVS_LOGO.png" alt="RVS Logo" class="w-16 h-16 rounded-full">
+                    <img src="RVS_LOGO.png" alt="Logo">
                 </div>
                 <div class="space-y-1 text-center">
                     <h1 class="text-white text-2xl font-bold">Reli Vault Store</h1>

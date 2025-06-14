@@ -707,7 +707,7 @@ if ($params) {
         .chatbot-container {
             position: fixed;
             bottom: 30px;
-            left: 50px;
+            right: 50px;
             z-index: 999;
         }
 
@@ -926,10 +926,62 @@ if ($params) {
                 font-size: 22px;
             }
         }
+
+        /* Bottom Icons Styles */
+        .bottom-icons {
+            position: fixed;
+            bottom: 20px;
+            left: 11px;
+            width: 100%;
+            padding: 0 14px;
+        }
+
+        .bottom-icons .list-item {
+            margin: 20px 0;
+        }
+
+        .bottom-icons .list-item a {
+            padding: 0 10px;
+        }
+
+        .bottom-icons .list-item a i {
+            color:rgb(255, 255, 255);
+            font-size: 26px;
+        }
+
+        .bottom-icons .list-item a:hover i {
+            color: #fff;
+        }
+
+        .bottom-icons .list-item a:hover {
+            background: var(--accent-gradient);
+            color: #fff;
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
+            transform: translateX(5px);
+        }
+
+        .bottom-icons .list-item.active a {
+            background: var(--accent-gradient);
+            color: #fff;
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
+        }
+
+        .bottom-icons .list-item {
+            width: 55px;
+            height: 55px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.4);
+            transition: var(--transition);
+        }
     </style>
 </head>
 <body>
-    <div class="dashboard-container">
+    <div class="transactionhistory-container">
         <!-- Sidebar Navigation -->
         <div class="sidebar">
             <div class="hamburger-toggle">
@@ -996,6 +1048,24 @@ if ($params) {
                     <input type="text" name="search" placeholder="Search product..." value="<?php echo htmlspecialchars($search); ?>">
                     <i class="fas fa-search"></i>
                 </form>
+            </div>
+
+            <div class="bottom-icons">
+                <div class="list-item">
+                    <a href="profile.php">
+                        <i class='bx bx-user-circle'></i>
+                    </a>
+                </div>
+                <div class="list-item">
+                    <a href="notifications.php">
+                        <i class='bx bx-bell'></i>
+                    </a>
+                </div>
+                <div class="list-item">
+                    <a href="settings.php">
+                        <i class='bx bx-cog'></i>
+                    </a>
+                </div>
             </div>
 
             <!-- Filters Section -->

@@ -3,8 +3,8 @@ require_once 'config.php';
 requireAuth();
 
 // Get date range (default to last 30 days)
-$date_from = isset($_GET['date_from']) ? $_GET['date_from'] : date('Y-m-d', strtotime('-30 days'));
-$date_to = isset($_GET['date_to']) ? $_GET['date_to'] : date('Y-m-d');
+$date_from = isset($_GET['date_from']) ? $_GET['date_from'] : date('');
+$date_to = isset($_GET['date_to']) ? $_GET['date_to'] : date('');
 
 // Get sales summary
 $summary_stmt = $conn->prepare("
@@ -660,7 +660,7 @@ while ($current_date <= $end_date) {
         .chatbot-container {
             position: fixed;
             bottom: 30px;
-            left: 50px;
+            right: 50px;
             z-index: 999;
         }
 
@@ -739,10 +739,62 @@ while ($current_date <= $end_date) {
                 align-items: stretch;
             }
         }
+
+        /* Bottom Icons Styles */
+        .bottom-icons {
+            position: fixed;
+            bottom: 20px;
+            left: 11px;
+            width: 100%;
+            padding: 0 14px;
+        }
+
+        .bottom-icons .list-item {
+            margin: 20px 0;
+        }
+
+        .bottom-icons .list-item a {
+            padding: 0 10px;
+        }
+
+        .bottom-icons .list-item a i {
+            color:rgb(255, 255, 255);
+            font-size: 26px;
+        }
+
+        .bottom-icons .list-item a:hover i {
+            color: #fff;
+        }
+
+        .bottom-icons .list-item a:hover {
+            background: var(--accent-gradient);
+            color: #fff;
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
+            transform: translateX(5px);
+        }
+
+        .bottom-icons .list-item.active a {
+            background: var(--accent-gradient);
+            color: #fff;
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
+        }
+
+        .bottom-icons .list-item {
+            width: 55px;
+            height: 55px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.4);
+            transition: var(--transition);
+        }
     </style>
 </head>
 <body>
-    <div class="dashboard-container">
+    <div class="salesreport-container">
         <!-- Sidebar Navigation -->
         <div class="sidebar">
             <div class="hamburger-toggle">
@@ -809,10 +861,23 @@ while ($current_date <= $end_date) {
                     <input type="text" name="search" placeholder="Search product..." value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
                     <i class="fas fa-search"></i>
                 </form>
-                <div class="topbar-icons">
-                    <i class="fas fa-cog"></i>
-                    <i class="fas fa-bell"></i>
-                    <i class="fas fa-user-circle"></i>
+            </div>
+
+            <div class="bottom-icons">
+                <div class="list-item">
+                    <a href="profile.php">
+                        <i class='bx bx-user-circle'></i>
+                    </a>
+                </div>
+                <div class="list-item">
+                    <a href="notifications.php">
+                        <i class='bx bx-bell'></i>
+                    </a>
+                </div>
+                <div class="list-item">
+                    <a href="settings.php">
+                        <i class='bx bx-cog'></i>
+                    </a>
                 </div>
             </div>
 
