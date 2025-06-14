@@ -133,9 +133,9 @@ if ($params) {
             width: 105px;
             height: 65px;
             margin-top: 20px;
-            margin-bottom: -10px;
-            margin-left: 65px;
-        }        
+            margin-bottom: 17px;
+            margin-left: 55px;
+        }      
 
         /* Sidebar Styles */
         .sidebar {

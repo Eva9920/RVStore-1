@@ -32,7 +32,7 @@ $top_games = $conn->query("
     ORDER BY transaction_count DESC 
     LIMIT 5
 ");
-//aaaaaaaaaaaaaaaaaaaaaaaa
+
 $sales_data = $conn->query("
     SELECT 
         DATE_FORMAT(transaction_time, '%Y-%m') as month,
@@ -50,16 +50,20 @@ $sales_data = $conn->query("
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard </title>
+    <title>Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         :root {
-            --primary-color: #6c5ce7;
-            --dark-color: #2d3436;
-            --light-color: #f7f7f7;
-            --sidebar-width: 250px;
-            --transition: all 0.3s ease;
+            --primary-gradient: linear-gradient(135deg, #2a0845 0%, #6441a5 100%);
+            --accent-gradient: linear-gradient(135deg, #ff1493 0%, #6441a5 100%);
+            --card-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.95) 100%);
+            --background-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --border-radius: 20px;
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         * {
@@ -69,14 +73,9 @@ $sales_data = $conn->query("
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
-        
         body {
-            background-color: #f5f7fa;
-            color: #333;
-        }
-        
-        .dashboard-container {
-            display: flex;
+            background: var(--background-gradient);
+            color: var(--text-primary);
             min-height: 100vh;
         }
 
@@ -84,8 +83,13 @@ $sales_data = $conn->query("
             width: 105px;
             height: 65px;
             margin-top: 20px;
-            margin-bottom: 17px;
+            margin-bottom: 15px;
             margin-left: 55px;
+        }
+        
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
         }
 
         /* Sidebar Styles */
@@ -95,18 +99,17 @@ $sales_data = $conn->query("
             left: 0;
             width: 80px;
             height: 100%;
-            background: linear-gradient(135deg, #2a0845 0%, #6441a5 100%);
+            background: var(--primary-gradient);
             backdrop-filter: blur(40px);
-            border-right: 2px solid rgba(255, 20, 147, 0.3); /* Pink magenta border */
-            box-shadow: 0 0 20px rgba(139, 0, 139, 0.5); /* Dark purple shadow */
+            border-right: 2px solid rgba(255, 20, 147, 0.3);
+            box-shadow: 0 0 30px rgba(139, 0, 139, 0.5);
             padding: 6px 14px;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: var(--transition);
             z-index: 100;
         }
 
         .sidebar.active {
             width: 260px;
-            background: linear-gradient(135deg, #1a052e 0%, #4b2a8a 100%);
         }
 
         .sidebar .logo-menu {
@@ -114,16 +117,16 @@ $sales_data = $conn->query("
             align-items: center;
             width: 100%;
             height: 70px;
-            border-bottom: 1px solid rgba(255, 20, 147, 0.2); /* Pink magenta subtle divider */
+            border-bottom: 1px solid rgba(255, 20, 147, 0.2);
         }
 
         .sidebar .logo-menu .logo {
             font-size: 25px;
-            color: #ff1493; /* Pink magenta */
+            color: #ff1493;
             font-weight: 600;
             pointer-events: none;
             opacity: 0;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             text-shadow: 0 0 10px rgba(255, 20, 147, 0.5);
         }
 
@@ -139,11 +142,11 @@ $sales_data = $conn->query("
             width: 40px;
             height: 40px;
             font-size: 30px;
-            color: #ff1493; /* Pink magenta */
+            color: #ff1493;
             text-align: center;
             line-height: 40px;
             cursor: pointer;
-            transition: all 0.5s ease;
+            transition: var(--transition);
             background: rgba(106, 13, 173, 0.3);
             border-radius: 50%;
         }
@@ -154,8 +157,9 @@ $sales_data = $conn->query("
         }
 
         .sidebar .logo-menu .toggle-btn:hover {
-            color: #ff69b4; /* Lighter pink */
+            color: #ff69b4;
             background: rgba(255, 20, 147, 0.3);
+            transform: translateX(-50%) scale(1.1);
         }
 
         .sidebar .list {
@@ -163,7 +167,7 @@ $sales_data = $conn->query("
         }
 
         .list .list-item {
-            list-style: ;
+            list-style: none;
             width: 100%;
             height: 50px;
             margin: 10px 0;
@@ -173,21 +177,21 @@ $sales_data = $conn->query("
         .list .list-item a {
             display: flex;
             align-items: center;
-            text-align: none;
-            font-size: 18px;
-            color: #e2b4ff; /* Light purple text */
             text-decoration: none;
-            border-radius: 6px;
+            font-size: 18px;
+            color: #e2b4ff;
+            border-radius: 12px;
             white-space: nowrap;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             padding: 0 10px;
         }
 
         .list .list-item.active a,
         .list .list-item a:hover {
-            background: linear-gradient(90deg, rgba(255, 20, 147, 0.3) 0%, rgba(106, 13, 173, 0.3) 100%);
+            background: var(--accent-gradient);
             color: #fff;
-            box-shadow: 0 5px 15px rgba(139, 0, 139, 0.4);
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
+            transform: translateX(5px);
         }
 
         .list .list-item a i {
@@ -195,114 +199,138 @@ $sales_data = $conn->query("
             height: 50px;
             text-align: center;
             line-height: 50px;
-            color: #ff1493; /* Pink magenta icons */
+            color: #ff1493;
             font-size: 22px;
         }
 
         .list .list-item.active a i,
         .list .list-item a:hover i {
-            color: #ff69b4; /* Lighter pink on hover/active */
+            color: #fff;
         }
 
         .sidebar .link-name {
             opacity: 0;
             pointer-events: none;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             font-weight: 500;
+            margin-left: 8px;
         }
 
         .sidebar.active .link-name {
-            margin-left: 8px;
             opacity: 1;
             pointer-events: auto;
             transition-delay: calc(0.1s * var(--i));
         }
 
+        /* Main Content */
         .main-content {
             margin-left: 80px;
             padding: 20px;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            background-color: #f8f9fc;
+            transition: var(--transition);
+            width: calc(100% - 80px);
+            min-height: 100vh;
         }
 
         .sidebar.active + .main-content {
             margin-left: 260px;
+            width: calc(100% - 260px);
         }
 
-        /* Add glowing effect on active/hover */
-        @keyframes glow {
-            0% { box-shadow: 0 0 5px rgba(255, 20, 147, 0.5); }
-            50% { box-shadow: 0 0 20px rgba(255, 20, 147, 0.8); }
-            100% { box-shadow: 0 0 5px rgba(255, 20, 147, 0.5); }
+       /* Hamburger Toggle Button */
+       .sidebar .hamburger-toggle {
+            position: absolute;
+            top: 15px;
+            right: -70px; /* Posisi di luar sidebar sebelah kanan */
+            width: 50px;
+            height: 50px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1001;
+            transition: var(--transition);
         }
 
-        .list .list-item.active a {
-            animation: glow 2s infinite;
+        .sidebar.active .hamburger-toggle {
+            right: 20px; /* Saat sidebar aktif, posisi di dalam kanan atas */
         }
 
-        .main-content {
-            margin-left: 80px;
-            padding: 20px;
-            transition: .5s;
+        .sidebar .hamburger-toggle i {
+            color: white;
+            font-size: 20px;
         }
 
-        .sidebar.active + .main-content {
-            margin-left: 260px;
+        /* Sidebar Adjustment */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -260px;
+            width: 260px;
+            z-index: 1000;
+            transition: var(--transition);
         }
-        
-        /* Main Content Styles */
-        .main-content {
-            margin-left: 250px;
-            width: calc(100% - 250px);
-            padding: 20px;
+
+        .sidebar.active {
+            left: 0;
         }
-        
-        /* Topbar Styles */
+
+
+        /* Topbar */
         .topbar {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 15px 25px;
-            background: white;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            margin-bottom: 25px;
-            border-radius: 10px;
-            position: sticky;
-            top: 0;
-            z-index: 10;
+            padding: 20px 30px;
+            background: var(--card-gradient);
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .topbar h2 {
-            font-weight: 600;
-            color: #1a237e;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 28px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .search-container {
             position: relative;
-            width: 300px;
+            width: 350px;
         }
 
         .search-container input {
             width: 100%;
-            padding: 10px 15px 10px 40px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
+            padding: 15px 20px 15px 50px;
+            border: 2px solid rgba(255, 20, 147, 0.2);
+            border-radius: 25px;
             font-size: 14px;
-            transition: all 0.3s;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
         }
 
         .search-container input:focus {
-            border-color: var(--primary-color);
+            border-color: #ff1493;
             outline: none;
-            box-shadow: 0 0 0 3px rgba(92, 107, 192, 0.2);
+            box-shadow: 0 0 20px rgba(255, 20, 147, 0.3);
+            background: rgba(255, 255, 255, 0.95);
         }
 
         .search-container i {
             position: absolute;
-            left: 15px;
+            left: 18px;
             top: 50%;
             transform: translateY(-50%);
-            color: #777;
+            color: #ff1493;
+            font-size: 18px;
         }
 
         .topbar-icons {
@@ -311,133 +339,234 @@ $sales_data = $conn->query("
         }
 
         .topbar-icons i {
-            font-size: 20px;
-            color: #5c6bc0;
+            font-size: 24px;
+            color: #6441a5;
             cursor: pointer;
-            transition: color 0.3s;
+            transition: var(--transition);
+            padding: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
         }
 
         .topbar-icons i:hover {
-            color: #1a237e;
+            color: #ff1493;
+            background: rgba(255, 20, 147, 0.1);
+            transform: scale(1.1);
         }
-        
+
         /* Stats Cards */
         .stats-container {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
         }
-        
+
         .stat-card {
-            background-color: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            border-left: 4px solid var(--primary);
+            background: var(--card-gradient);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
         }
-        
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--accent-gradient);
+        }
+
         .stat-card h3 {
-            font-size: 14px;
-            color: var(--secondary);
-            margin-bottom: 10px;
-            text-transform: uppercase;
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        
+
         .stat-card p {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--dark);
+            font-size: 32px;
+            font-weight: 800;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
         }
-        
-        /* Content Rows */
+
+        .stat-card .stat-icon {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 40px;
+            color: rgba(255, 20, 147, 0.2);
+        }
+
+        /* Content Cards */
         .content-row {
             display: grid;
             grid-template-columns: 2fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
+            gap: 30px;
+            margin-bottom: 30px;
         }
-        
+
         .content-card {
-            background-color: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            background: var(--card-gradient);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
         }
-        
+
+        .content-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.12);
+        }
+
         .content-card.wide {
             grid-column: span 2;
         }
-        
+
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(255, 20, 147, 0.1);
         }
-        
+
         .card-header h2 {
-            font-size: 18px;
-            color: var(--dark);
+            font-size: 22px;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        
+
         .period-select {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background-color: white;
+            padding: 10px 15px;
+            border: 2px solid rgba(255, 20, 147, 0.2);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.8);
             font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            transition: var(--transition);
         }
-        
-        /* Chart Placeholder */
+
+        .period-select:focus {
+            border-color: #ff1493;
+            outline: none;
+            box-shadow: 0 0 15px rgba(255, 20, 147, 0.2);
+        }
+
+        /* Chart Styles */
         .chart-placeholder {
-            height: 300px;
+            height: 350px;
             position: relative;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            padding: 20px;
         }
-        
-        /* Game Distribution */
+
+        /* Progress Bars */
         .game-distribution {
             margin-top: 20px;
         }
-        
+
         .game-item {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            transition: var(--transition);
         }
-        
+
+        .game-item:hover {
+            background: rgba(255, 255, 255, 0.5);
+            transform: translateX(5px);
+        }
+
         .game-item span {
             display: block;
-            margin-bottom: 5px;
-            font-size: 14px;
+            margin-bottom: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
         }
-        
+
         .progress-bar {
-            height: 10px;
-            background-color: var(--primary);
-            border-radius: 5px;
+            height: 12px;
+            background: var(--accent-gradient);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
         }
-        
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
         /* Country List */
         .country-list {
             list-style: none;
         }
-        
+
         .country-list li {
             display: flex;
             justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 20, 147, 0.1);
+            transition: var(--transition);
         }
-        
+
+        .country-list li:hover {
+            background: rgba(255, 20, 147, 0.05);
+            padding-left: 10px;
+            border-radius: 8px;
+        }
+
         .country-list li:last-child {
             border-bottom: none;
         }
-        
+
         .percentage {
-            font-weight: 600;
-            color: var(--dark);
+            font-weight: 700;
+            font-size: 18px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        
+
         /* Activity Chart */
         .activity-chart {
             display: flex;
@@ -445,356 +574,410 @@ $sales_data = $conn->query("
             height: 200px;
             gap: 20px;
             margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
         }
-        
+
         .activity-bar {
             flex: 1;
-            background-color: var(--primary);
-            border-radius: 5px;
+            background: var(--accent-gradient);
+            border-radius: 8px 8px 0 0;
             position: relative;
+            transition: var(--transition);
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
         }
-        
-        .time-labels {
-            position: absolute;
-            bottom: -25px;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: space-between;
+
+        .activity-bar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
         }
-        
-        /* Recent Transactions */
-        .recent-transactions {
-            margin-top: 20px;
-        }
-        
+
+        /* Table Styles */
         .transaction-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 14px;
-        }
-        
-        .transaction-table th, .transaction-table td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .transaction-table th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-            color: var(--dark);
-        }
-        
-        .status-badge {
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-            text-transform: uppercase;
-            display: inline-block;
-        }
-        
-        .status-badge.pending {
-            background-color: #FFF3CD;
-            color: #856404;
-        }
-        
-        .status-badge.success {
-            background-color: #D4EDDA;
-            color: #155724;
-        }
-        
-        .status-badge.failed {
-            background-color: #F8D7DA;
-            color: #721C24;
-        }
-        
-        .view-all {
-            text-align: right;
-            margin-top: 15px;
-        }
-        
-        .view-all a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 14px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            overflow: hidden;
         }
 
-        /* Improved Chatbot Styles */
+        .transaction-table th,
+        .transaction-table td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 20, 147, 0.1);
+        }
+
+        .transaction-table th {
+            background: var(--accent-gradient);
+            color: white;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .transaction-table tr:hover {
+            background: rgba(255, 20, 147, 0.05);
+        }
+
+        .status-badge {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: inline-block;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge.pending {
+            background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+            color: white;
+        }
+
+        .status-badge.success {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc70 100%);
+            color: white;
+        }
+
+        .status-badge.failed {
+            background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
+            color: white;
+        }
+
+        .view-all {
+            text-align: right;
+            margin-top: 20px;
+        }
+
+        .view-all a {
+            color: #ff1493;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 16px;
+            transition: var(--transition);
+            padding: 10px 20px;
+            border: 2px solid rgba(255, 20, 147, 0.3);
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .view-all a:hover {
+            background: var(--accent-gradient);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.3);
+        }
+
+        /* Chatbot Styles */
         .chatbot-container {
             position: fixed;
             bottom: 30px;
             left: 50px;
             z-index: 999;
         }
-        
+
         .chatbot-toggle {
             width: 70px;
             height: 70px;
-            background: linear-gradient(135deg, #6c5ce7 0%, #4834d4 100%);
+            background: var(--accent-gradient);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 20, 147, 0.4);
+            transition: var(--transition);
         }
-        
+
         .chatbot-toggle:hover {
             transform: scale(1.1);
+            box-shadow: 0 15px 40px rgba(255, 20, 147, 0.5);
         }
-        
+
         .chatbot-toggle i {
             color: white;
             font-size: 28px;
         }
-        
+
         .chatbot-window {
             width: 400px;
             height: 550px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            background: var(--card-gradient);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
             overflow: hidden;
             display: none;
             flex-direction: column;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
+
         .chatbot-window.active {
             display: flex;
             animation: fadeInUp 0.3s ease;
         }
-        
+
         .chatbot-header {
-            background: linear-gradient(135deg, #6c5ce7 0%, #4834d4 100%);
+            background: var(--accent-gradient);
             color: white;
-            padding: 15px;
+            padding: 20px;
             text-align: center;
+            position: relative;
         }
-        
+
         .chatbot-header h3 {
             margin: 0;
             font-size: 18px;
+            font-weight: 700;
         }
-        
+
         .chatbot-header i {
             position: absolute;
-            right: 15px;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
             cursor: pointer;
+            font-size: 20px;
+            transition: var(--transition);
         }
-        
+
+        .chatbot-header i:hover {
+            transform: translateY(-50%) scale(1.2);
+        }
+
         .chatbot-messages {
             flex: 1;
-            padding: 15px;
+            padding: 20px;
             overflow-y: auto;
-            background: #f5f7fb;
+            background: rgba(255, 255, 255, 0.1);
             display: flex;
             flex-direction: column;
         }
-        
+
         .message {
             max-width: 80%;
-            padding: 10px 15px;
+            padding: 12px 18px;
             margin-bottom: 15px;
-            border-radius: 18px;
+            border-radius: 20px;
             position: relative;
             word-wrap: break-word;
+            font-size: 14px;
+            line-height: 1.5;
         }
-        
+
         .bot-message {
-            background: white;
-            border-bottom-left-radius: 5px;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--text-primary);
+            border-bottom-left-radius: 8px;
             align-self: flex-start;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             margin-right: auto;
         }
-        
+
         .user-message {
-            background: #6c5ce7;
+            background: var(--accent-gradient);
             color: white;
-            border-bottom-right-radius: 5px;
+            border-bottom-right-radius: 8px;
             align-self: flex-end;
             margin-left: auto;
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
         }
-        
+
         .chatbot-input {
             display: flex;
-            padding: 15px;
-            background: white;
-            border-top: 1px solid #eee;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-top: 1px solid rgba(255, 20, 147, 0.2);
         }
-        
+
         .chatbot-input input {
             flex: 1;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 30px;
+            padding: 12px 18px;
+            border: 2px solid rgba(255, 20, 147, 0.2);
+            border-radius: 25px;
             outline: none;
+            font-size: 14px;
+            transition: var(--transition);
         }
-        
+
+        .chatbot-input input:focus {
+            border-color: #ff1493;
+            box-shadow: 0 0 15px rgba(255, 20, 147, 0.2);
+        }
+
         .chatbot-input button {
-            background: #6c5ce7;
+            background: var(--accent-gradient);
             color: white;
             border: none;
             border-radius: 50%;
-            width: 45px;
-            height: 45px;
+            width: 50px;
+            height: 50px;
             margin-left: 10px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: var(--transition);
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
         }
-        
+
         .chatbot-input button:hover {
-            background: #4834d4;
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
         }
-        
+
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(30px);
             }
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-        
+
         .typing-indicator {
             display: flex;
-            padding: 10px 15px;
-            background: white;
-            border-radius: 18px;
-            border-bottom-left-radius: 5px;
+            padding: 12px 18px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            border-bottom-left-radius: 8px;
             align-self: flex-start;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             margin-bottom: 15px;
             margin-right: auto;
         }
-        
+
         .typing-indicator span {
             height: 8px;
             width: 8px;
-            background: #6c5ce7;
+            background: #ff1493;
             border-radius: 50%;
             display: inline-block;
             margin: 0 2px;
             animation: bounce 1.5s infinite ease-in-out;
         }
-        
+
         .typing-indicator span:nth-child(2) {
             animation-delay: 0.2s;
         }
-        
+
         .typing-indicator span:nth-child(3) {
             animation-delay: 0.4s;
         }
-        
+
         @keyframes bounce {
             0%, 60%, 100% {
                 transform: translateY(0);
             }
             30% {
-                transform: translateY(-5px);
+                transform: translateY(-8px);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .content-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-container {
+                width: 250px;
+            }
+            
+            .topbar h2 {
+                font-size: 22px;
             }
         }
     </style>
-    </head>
-        <body>
-            <div class="dashboard-container">
-                <!-- Sidebar Navigation -->
-                <div class="sidebar">
-                    <div class="logo-menu">
-                        <h2 class="logo"><img src="RVS_LOGO.png" alt=""></h2>
-                        <i class='bx bx-menu toggle-btn'></i>
-                    </div>
-                    <nav>
-                        <ul class="list">
-                            <li class="list-item active">
-                                <a href="dashboard.php">
-                                    <i class='bx bx-home-alt-2'></i>
-                                    <span class="link-name" style="--i:1;">Dashboard</span>
-                                </a>
-                            </li>
-                            <li class="list-item">
-                                <a href="transaction_history.php">
-                                    <i class='bx bx-history'></i>
-                                    <span class="link-name" style="--i:2;">Transaction History</span>
-                                </a>
-                            </li>
-                            <li class="list-item">
-                                <a href="manage_product.php">
-                                    <i class='bx bx-box'></i>
-                                    <span class="link-name" style="--i:3;">Manage Product</span>
-                                </a>
-                            </li>
-                            <li class="list-item">
-                                <a href="sales_report.php">
-                                    <i class='bx bx-bar-chart-alt-2'></i>
-                                    <span class="link-name" style="--i:4;">Sales Report</span>
-                                </a>
-                            </li>
-                            <li class="list-item">
-                                <a href="accounts.php">
-                                    <i class='bx bx-user'></i>
-                                    <span class="link-name" style="--i:5;">Manage Accounts</span>
-                                </a>
-                            </li>
-                            <li class="list-item">
-                                <a href="logout.php">
-                                    <i class='bx bx-log-out'></i>
-                                    <span class="link-name" style="--i:6;">Logout</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </nav>
-                </div>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="hamburger-toggle">
+            <i class='bx bx-menu'></i>
+        </div>
 
-                <script>
-                    const sidebar = document.querySelector('.sidebar');
-                    const toggleBtn = document.querySelector('.toggle-btn');
-                    const mainContent = document.querySelector('.main-content');
+        <script>
+            document.querySelector('.hamburger-toggle').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            });
+        </script>
+            <div class="logo-menu">
+                <h2 class="logo"><img src="RVS_LOGO.png" alt=""></h2>
+            </div>
+            <nav>
+                <ul class="list">
+                    <li class="list-item active">
+                        <a href="dashboard.php">
+                            <i class='bx bx-home-alt-2'></i>
+                            <span class="link-name" style="--i:1;">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <a href="transaction_history.php">
+                            <i class='bx bx-history'></i>
+                            <span class="link-name" style="--i:2;">Transaction History</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <a href="manage_product.php">
+                            <i class='bx bx-box'></i>
+                            <span class="link-name" style="--i:3;">Manage Product</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <a href="sales_report.php">
+                            <i class='bx bx-bar-chart-alt-2'></i>
+                            <span class="link-name" style="--i:4;">Sales Report</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <a href="accounts.php">
+                            <i class='bx bx-user'></i>
+                            <span class="link-name" style="--i:5;">Manage Accounts</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <a href="logout.php">
+                            <i class='bx bx-log-out'></i>
+                            <span class="link-name" style="--i:6;">Logout</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
 
-                    // Cek state sidebar dari localStorage saat halaman dimuat
-                    document.addEventListener('DOMContentLoaded', function() {
-                        // Set active menu item based on current page
-                        const currentPage = window.location.pathname.split('/').pop();
-                        const menuItems = document.querySelectorAll('.list-item');
-                        
-                        menuItems.forEach(item => {
-                            item.classList.remove('active');
-                            const link = item.querySelector('a').getAttribute('href');
-                            if (link === currentPage) {
-                                item.classList.add('active');
-                            }
+        <script>
+            document.querySelector('.toggle-btn').addEventListener('click', function() {
+                const sidebar = document.querySelector('.sidebar');
+                sidebar.classList.toggle('active');
+                
+                // Tambahkan/remove class untuk overlay
+                if (sidebar.classList.contains('active')) {
+                    // Buat overlay jika belum ada
+                    if (!document.querySelector('.sidebar-overlay')) {
+                        const overlay = document.createElement('div');
+                        overlay.className = 'sidebar-overlay';
+                        overlay.addEventListener('click', function() {
+                            sidebar.classList.remove('active');
+                            overlay.remove();
                         });
-
-                        // Cek state sidebar dari localStorage
-                        const sidebarState = localStorage.getItem('sidebarState');
-                        if (sidebarState === 'active') {
-                            sidebar.classList.add('active');
-                            mainContent.style.marginLeft = '260px';
-                            mainContent.style.width = 'calc(100% - 260px)';
-                        }
-                    });
-
-                    // Toggle sidebar dan simpan state ke localStorage
-                    toggleBtn.addEventListener('click', () => {
-                        sidebar.classList.toggle('active');
-                        
-                        if (sidebar.classList.contains('active')) {
-                            localStorage.setItem('sidebarState', 'active');
-                            mainContent.style.marginLeft = '260px';
-                            mainContent.style.width = 'calc(100% - 260px)';
-                        } else {
-                            localStorage.setItem('sidebarState', 'inactive');
-                            mainContent.style.marginLeft = '80px';
-                            mainContent.style.width = 'calc(100% - 80px)';
-                        }
-                    });
-                </script>
+                        document.body.appendChild(overlay);
+                    }
+                } else {
+                    // Hapus overlay jika ada
+                    const overlay = document.querySelector('.sidebar-overlay');
+                    if (overlay) overlay.remove();
+                }
+            });
+        </script>
 
         <!-- Main Content Area -->
         <div class="main-content">
@@ -1022,7 +1205,7 @@ $sales_data = $conn->query("
         });
     </script>
 
-        <div class="chatbot-container">
+    <div class="chatbot-container">
         <div class="chatbot-window" id="chatbotWindow">
             <div class="chatbot-header">
                 <h3>RVStore AI Assistant</h3>
@@ -1044,64 +1227,82 @@ $sales_data = $conn->query("
     </div>
 
     <script>
-        function toggleChatbot() {
-            const chatbotWindow = document.getElementById('chatbotWindow');
-            chatbotWindow.classList.toggle('active');
-        }
+    // Chatbot Toggle Function
+    function toggleChatbot() {
+        const chatbotWindow = document.getElementById('chatbotWindow');
+        chatbotWindow.classList.toggle('active');
+    }
+    
+    // Send Message Function
+    function sendMessage() {
+        const input = document.getElementById('chatbotInput');
+        const message = input.value.trim();
         
-        function sendMessage() {
-            const input = document.getElementById('chatbotInput');
-            const message = input.value.trim();
-            
-            if (message === '') return;
-            
-            // Add user message (right aligned)
-            addMessage(message, 'user-message');
-            input.value = '';
-            
-            // Show typing indicator (left aligned)
-            const typingIndicator = document.createElement('div');
-            typingIndicator.className = 'message typing-indicator';
-            typingIndicator.innerHTML = '<span></span><span></span><span></span>';
-            document.getElementById('chatbotMessages').appendChild(typingIndicator);
-            
-            // Scroll to bottom
+        if (message === '') return;
+        
+        // Add user message
+        addMessage(message, 'user-message');
+        input.value = '';
+        
+        // Show typing indicator
+        showTypingIndicator();
+        
+        // Simulate bot response after delay
+        setTimeout(() => {
+            removeTypingIndicator();
+            const response = getBotResponse();
+            addMessage(response, 'bot-message');
             scrollToBottom();
-            
-            // Simulate bot response (left aligned)
-            setTimeout(() => {
-                // Remove typing indicator
-                const indicator = document.querySelector('.typing-indicator');
-                if (indicator) indicator.remove();
-                
-                // Add bot response
-                const responses = [
-                    "I can help you with your questions about our products and services.",
-                    "For order inquiries, please check the Transaction History page.",
-                    "Our support team is available 24/7 to assist you.",
-                    "You can find more information in our FAQ section.",
-                    "Is there anything else I can help you with?"
-                ];
-                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-                addMessage(randomResponse, 'bot-message');
-                
-                // Scroll to bottom again after response
-                scrollToBottom();
-            }, 1500);
+        }, 1500);
+    }
+    
+    // Helper Functions
+    function addMessage(text, className) {
+        const messagesContainer = document.getElementById('chatbotMessages');
+        const messageElement = document.createElement('div');
+        messageElement.className = `message ${className}`;
+        messageElement.textContent = text;
+        messagesContainer.appendChild(messageElement);
+        scrollToBottom();
+    }
+    
+    function showTypingIndicator() {
+        const messagesContainer = document.getElementById('chatbotMessages');
+        const typingIndicator = document.createElement('div');
+        typingIndicator.className = 'message typing-indicator';
+        typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+        typingIndicator.id = 'typingIndicator';
+        messagesContainer.appendChild(typingIndicator);
+        scrollToBottom();
+    }
+    
+    function removeTypingIndicator() {
+        const indicator = document.getElementById('typingIndicator');
+        if (indicator) indicator.remove();
+    }
+    
+    function getBotResponse() {
+        const responses = [
+            "I can help you with your questions about our products and services.",
+            "For order inquiries, please check the Transaction History page.",
+            "Our support team is available 24/7 to assist you.",
+            "You can find more information in our FAQ section.",
+            "Is there anything else I can help you with?"
+        ];
+        return responses[Math.floor(Math.random() * responses.length)];
+    }
+    
+    function scrollToBottom() {
+        const messagesContainer = document.getElementById('chatbotMessages');
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    // Handle Enter key press
+    document.getElementById('chatbotInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
         }
-        
-        function addMessage(text, className) {
-            const messagesContainer = document.getElementById('chatbotMessages');
-            const messageElement = document.createElement('div');
-            messageElement.className = `message ${className}`;
-            messageElement.textContent = text;
-            messagesContainer.appendChild(messageElement);
-        }
-        
-        function scrollToBottom() {
-            const messagesContainer = document.getElementById('chatbotMessages');
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-    </script>
+    });
+</script>
 </body>
 </html>
