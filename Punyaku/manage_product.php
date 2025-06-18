@@ -1139,7 +1139,7 @@ if ($params) {
                 <table class="product-table">
                     <thead>
                         <tr>
-                            <th>Product</th>
+                          <th>Product</th>
                             <th>Price</th>
                             <th>Stock</th>
                             <th>Status</th>
