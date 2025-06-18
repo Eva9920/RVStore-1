@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Legends Product Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2a0845;
+            --accent-color: #ff1493;
+            --secondary-color: #6441a5;
+            --background-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --border-radius: 12px;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: var(--background-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo img {
+            height: 50px;
+            margin-right: 15px;
+        }
+        
+        .logo h1 {
+            font-size: 24px;
+            color: white;
+            background: linear-gradient(135deg, #ff1493 0%, #6441a5 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 20px;
+        }
+        
+        .sidebar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+        
+        .sidebar-nav li {
+            list-style: none;
+            margin-bottom: 15px;
+        }
+        
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: white;
+            padding: 10px;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+        
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background: rgba(255, 20, 147, 0.3);
+            color: white;
+        }
+        
+        .sidebar-nav i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .section-header h2 {
+            font-size: 24px;
+            color: var(--primary-color);
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #ff1493 0%, #6441a5 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.4);
+        }
+        
+        .search-bar {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .search-bar input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid rgba(100, 65, 165, 0.2);
+            border-radius: var(--border-radius) 0 0 var(--border-radius);
+            font-size: 14px;
+            outline: none;
+        }
+        
+        .search-bar button {
+            padding: 0 20px;
+            background: linear-gradient(135deg, #ff1493 0%, #6441a5 100%);
+            color: white;
+            border: none;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            cursor: pointer;
+        }
+        
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .product-image {
+            height: 150px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .product-image img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        
+        .product-info {
+            padding: 20px;
+        }
+        
+        .product-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        
+        .product-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .price-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .price {
+            font-weight: 700;
+            color: var(--secondary-color);
+        }
+        
+        .profit {
+            font-size: 12px;
+            background: rgba(0, 200, 83, 0.1);
+            color: #00c853;
+            padding: 3px 8px;
+            border-radius: 10px;
+        }
+        
+        .product-actions {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .action-btn {
+            padding: 8px 15px;
+            border-radius: var(--border-radius);
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+        
+        .edit-btn {
+            background: rgba(25, 118, 210, 0.1);
+            color: #1976d2;
+        }
+        
+        .delete-btn {
+            background: rgba(211, 47, 47, 0.1);
+            color: #d32f2f;
+        }
+        
+        .edit-btn:hover, .delete-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: var(--border-radius);
+            width: 500px;
+            max-width: 90%;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #ff1493 0%, #6441a5 100%);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            font-size: 20px;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+        }
+        
+        .form-control:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+        }
+        
+        .modal-footer {
+            padding: 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            border-top: 1px solid #eee;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .product-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Mobile_Legends_Bang_Bang_Logo.png" alt="Mobile Legends Logo">
+                <h1>Mobile Legends Manager</h1>
+            </div>
+            <div class="user-profile">
+                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User Profile">
+                <span>Admin</span>
+            </div>
+        </header>
+        
+        <div class="dashboard">
+            <aside class="sidebar">
+                <nav class="sidebar-nav">
+                    <ul>
+                        <li><a href="#" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a href="#"><i class="fas fa-gamepad"></i> Products</a></li>
+                        <li><a href="#"><i class="fas fa-shopping-cart"></i> Orders</a></li>
+                        <li><a href="#"><i class="fas fa-chart-line"></i> Sales Report</a></li>
+                        <li><a href="#"><i class="fas fa-users"></i> Customers</a></li>
+                        <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+                    </ul>
+                </nav>
+            </aside>
+            
+            <main class="main-content">
+                <div class="section-header">
+                    <h2>Diamond Packages</h2>
+                    <button class="btn btn-primary" id="addProductBtn">
+                        <i class="fas fa-plus"></i> Add Package
+                    </button>
+                </div>
+                
+                <div class="search-bar">
+                    <input type="text" placeholder="Search diamond packages...">
+                    <button><i class="fas fa-search"></i></button>
+                </div>
+                
+                <div class="product-grid">
+                    <!-- Product Card 1 -->
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="https://via.placeholder.com/300x150?text=5+Diamonds" alt="5 Diamonds">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">5 Diamonds</h3>
+                            <p class="product-description">Basic diamond package for small in-game purchases</p>
+                            <div class="price-container">
+                                <span class="price">Rp1.500</span>
+                                <span class="profit">Rp500 profit</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="action-btn edit-btn" onclick="editProduct(1)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="action-btn delete-btn" onclick="deleteProduct(1)">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Card 2 -->
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="https://via.placeholder.com/300x150?text=9%2B1+Diamonds" alt="9+1 Diamonds">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">9+1 Diamonds</h3>
+                            <p class="product-description">Bonus diamond package with extra diamond</p>
+                            <div class="price-container">
+                                <span class="price">Rp2.850</span>
+                                <span class="profit">Rp950 profit</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="action-btn edit-btn" onclick="editProduct(2)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="action-btn delete-btn" onclick="deleteProduct(2)">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Card 3 -->
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="https://via.placeholder.com/300x150?text=16%2B2+Diamonds" alt="16+2 Diamonds">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">16+2 Diamonds</h3>
+                            <p class="product-description">Popular package with 2 bonus diamonds</p>
+                            <div class="price-container">
+                                <span class="price">Rp2.750</span>
+                                <span class="profit">Rp750 profit</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="action-btn edit-btn" onclick="editProduct(3)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="action-btn delete-btn" onclick="deleteProduct(3)">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Card 4 -->
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="https://via.placeholder.com/300x150?text=32%2B4+Diamonds" alt="32+4 Diamonds">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">32+4 Diamonds</h3>
+                            <p class="product-description">Great value package with 4 bonus diamonds</p>
+                            <div class="price-container">
+                                <span class="price">Rp3.500</span>
+                                <span class="profit">Rp1.000 profit</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="action-btn edit-btn" onclick="editProduct(4)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="action-btn delete-btn" onclick="deleteProduct(4)">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Card 5 -->
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="https://via.placeholder.com/300x150?text=Weekly+Pass" alt="Weekly Diamond Pass">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">Weekly Diamond Pass</h3>
+                            <p class="product-description">Premium weekly subscription with daily diamonds</p>
+                            <div class="price-container">
+                                <span class="price">Rp25.000</span>
+                                <span class="profit">Rp5.000 profit</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="action-btn edit-btn" onclick="editProduct(5)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="action-btn delete-btn" onclick="deleteProduct(5)">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Card 6 -->
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="https://via.placeholder.com/300x150?text=195%2B27+Diamonds" alt="195+27 Diamonds">
+                        </div>
+                        <div class="product-info">
+                            <h3 class="product-title">195+27 Diamonds</h3>
+                            <p class="product-description">Large package with 27 bonus diamonds</p>
+                            <div class="price-container">
+                                <span class="price">Rp95.000</span>
+                                <span class="profit">Rp15.000 profit</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="action-btn edit-btn" onclick="editProduct(6)">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="action-btn delete-btn" onclick="deleteProduct(6)">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Add/Edit Product Modal -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Add New Diamond Package</h3>
+                <button class="close-modal" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="productForm">
+                    <div class="form-group">
+                        <label for="packageName">Package Name</label>
+                        <input type="text" id="packageName" class="form-control" placeholder="e.g. 5 Diamonds">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="diamondAmount">Diamond Amount</label>
+                        <input type="text" id="diamondAmount" class="form-control" placeholder="e.g. 5 or 9+1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="packagePrice">Price (Rp)</label>
+                        <input type="number" id="packagePrice" class="form-control" placeholder="e.g. 1500">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="purchasePrice">Purchase Price (Rp)</label>
+                        <input type="number" id="purchasePrice" class="form-control" placeholder="e.g. 1000">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="packageDescription">Description</label>
+                        <textarea id="packageDescription" class="form-control" rows="3" placeholder="Package description"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="packageImage">Image URL</label>
+                        <input type="text" id="packageImage" class="form-control" placeholder="https://example.com/image.jpg">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveBtn">Save Package</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Modal functionality
+        const modal = document.getElementById("productModal");
+        const addBtn = document.getElementById("addProductBtn");
+        const closeBtn = document.getElementById("closeModal");
+        const cancelBtn = document.getElementById("cancelBtn");
+        const saveBtn = document.getElementById("saveBtn");
+        const modalTitle = document.getElementById("modalTitle");
+        
+        // Open modal for adding new product
+        addBtn.addEventListener("click", () => {
+            modalTitle.textContent = "Add New Diamond Package";
+            document.getElementById("productForm").reset();
+            modal.classList.add("active");
+        });
+        
+        // Close modal
+        function closeModal() {
+            modal.classList.remove("active");
+        }
+        
+        closeBtn.addEventListener("click", closeModal);
+        cancelBtn.addEventListener("click", closeModal);
+        
+        // Close modal when clicking outside
+        window.addEventListener("click", (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+        
+        // Edit product function
+        function editProduct(id) {
+            modalTitle.textContent = "Edit Diamond Package";
+            
+            // In a real app, you would fetch the product data from your database
+            // Here we're just simulating with sample data
+            const sampleData = {
+                1: {
+                    name: "5 Diamonds",
+                    amount: "5",
+                    price: "1500",
+                    purchasePrice: "1000",
+                    description: "Basic diamond package for small in-game purchases",
+                    image: "https://via.placeholder.com/300x150?text=5+Diamonds"
+                },
+                2: {
+                    name: "9+1 Diamonds",
+                    amount: "9+1",
+                    price: "2850",
+                    purchasePrice: "1900",
+                    description: "Bonus diamond package with extra diamond",
+                    image: "https://via.placeholder.com/300x150?text=9%2B1+Diamonds"
+                },
+                // Add more sample data for other products...
+            };
+            
+            if (sampleData[id]) {
+                document.getElementById("packageName").value = sampleData[id].name;
+                document.getElementById("diamondAmount").value = sampleData[id].amount;
+                document.getElementById("packagePrice").value = sampleData[id].price;
+                document.getElementById("purchasePrice").value = sampleData[id].purchasePrice;
+                document.getElementById("packageDescription").value = sampleData[id].description;
+                document.getElementById("packageImage").value = sampleData[id].image;
+                
+                modal.classList.add("active");
+            }
+        }
+        
+        // Delete product function
+        function deleteProduct(id) {
+            if (confirm("Are you sure you want to delete this diamond package?")) {
+                // In a real app, you would send a request to your server to delete the product
+                alert("Package deleted successfully!");
+            }
+        }
+        
+        // Save product
+        saveBtn.addEventListener("click", () => {
+            // In a real app, you would validate the form and send the data to your server
+            alert("Package saved successfully!");
+            closeModal();
+        });
+    </script>
+</body>
+</html>
