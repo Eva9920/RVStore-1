@@ -477,7 +477,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                                 </div>
                             </div>
                         </div>
-
+/
                        
                         
                         <button type="submit" name="register" class="auth-btn w-full py-3 text-white font-medium">

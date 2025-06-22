@@ -97,6 +97,7 @@ if ($params) {
 } else {
     $transactions = $conn->query($transactions_query);
 }
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -107,7 +108,6 @@ if ($params) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
-        /* Copy all CSS from dashboard.php */
         :root {
             --primary-gradient: linear-gradient(135deg, #2a0845 0%, #6441a5 100%);
             --accent-gradient: linear-gradient(135deg, #ff1493 0%, #6441a5 100%);

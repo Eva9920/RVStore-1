@@ -1,6 +1,12 @@
 <?php
-require_once 'config2.php';
-requireAuth(); // Ensure user is logged in
+require_once 'config.php';
+requireAuth();
+
+// Only admin can access this page
+if ($_SESSION['role'] !== 'admin') {
+    header('Location: dashboard.php');
+    exit;
+}
 
 // Handle form submissions
 $message = '';
@@ -8,33 +14,32 @@ $messageType = '';
 
 // Add new user
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'add_user') {
-    $username = trim($_POST['username']);
+    $nama_lengkap = trim($_POST['nama_lengkap']);
     $password = $_POST['password'];
     $email = trim($_POST['email']);
     $role = $_POST['role'];
-    $full_name = trim($_POST['full_name']);
     
-    if (empty($username) || empty($password) || empty($email) || empty($role) || empty($full_name)) {
+    if (empty($nama_lengkap) || empty($password) || empty($email) || empty($role)) {
         $message = "All fields are required for adding a user!";
         $messageType = "error";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $message = "Invalid email format!";
         $messageType = "error";
     } else {
-        // Check if username or email already exists
-        $check_stmt = $conn->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
-        $check_stmt->bind_param("ss", $username, $email);
+        // Check if email already exists
+        $check_stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
+        $check_stmt->bind_param("s", $email);
         $check_stmt->execute();
         $check_result = $check_stmt->get_result();
         
         if ($check_result->num_rows > 0) {
-            $message = "Username or Email already exists!";
+            $message = "Email already exists!";
             $messageType = "error";
         } else {
             // Hash password and insert user
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $insert_stmt = $conn->prepare("INSERT INTO users (username, password, email, role, full_name, created_at, status) VALUES (?, ?, ?, ?, ?, NOW(), 'active')");
-            $insert_stmt->bind_param("sssss", $username, $hashed_password, $email, $role, $full_name);
+            $insert_stmt = $conn->prepare("INSERT INTO users (nama_lengkap, email, password, role, status, created_at) VALUES (?, ?, ?, ?, 'active', NOW())");
+            $insert_stmt->bind_param("ssss", $nama_lengkap, $email, $hashed_password, $role);
             
             if ($insert_stmt->execute()) {
                 $message = "User added successfully!";
@@ -97,16 +102,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['a
 
 // Fetch all users with search functionality
 $search = isset($_GET['search']) ? $_GET['search'] : '';
-$users_query = $conn->prepare("SELECT id, username, email, role, full_name, status, created_at FROM users 
-                              WHERE username LIKE ? OR email LIKE ? OR full_name LIKE ? 
+$users_query = $conn->prepare("SELECT id, nama_lengkap, email, role, status, created_at FROM users 
+                              WHERE nama_lengkap LIKE ? OR email LIKE ? 
                               ORDER BY created_at DESC");
 $search_param = "%$search%";
-$users_query->bind_param("sss", $search_param, $search_param, $search_param);
+$users_query->bind_param("ss", $search_param, $search_param);
 $users_query->execute();
 $users_result = $users_query->get_result();
 $users = $users_result->fetch_all(MYSQLI_ASSOC);
 $users_query->close();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -913,7 +919,6 @@ $users_query->close();
                             <tr>
                                 <th>ID</th>
                                 <th>Full Name</th>
-                                <th>Username</th>
                                 <th>Email</th>
                                 <th>Role</th>
                                 <th>Status</th>
@@ -925,8 +930,7 @@ $users_query->close();
                             <?php foreach ($users as $user): ?>
                                 <tr>
                                     <td><?php echo $user['id']; ?></td>
-                                    <td><?php echo htmlspecialchars($user['full_name']); ?></td>
-                                    <td><?php echo htmlspecialchars($user['username']); ?></td>
+                                    <td><?php echo htmlspecialchars($user['nama_lengkap']); ?></td>
                                     <td><?php echo htmlspecialchars($user['email']); ?></td>
                                     <td><?php echo htmlspecialchars($user['role']); ?></td>
                                     <td>

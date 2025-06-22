@@ -2,46 +2,113 @@
 require_once 'config.php';
 requireAuth();
 
+// Get dashboard stats
 $stats = [];
-$result = $conn->query("SELECT COUNT(*) as total_orders, SUM(amount) as total_sales FROM transactions WHERE status = 'success'");
-$stats = $result->fetch_assoc();
+$result = $conn->query("SELECT SUM(final_amount) as total_transactions FROM transactions WHERE status='success'");
+$stats['total_transactions'] = $result->fetch_assoc()['total_transactions'];
 
-$result = $conn->query("SELECT COUNT(DISTINCT user_id) as total_customers FROM transactions");
-$stats['total_customers'] = $result->fetch_assoc()['total_customers'];
+$result = $conn->query("SELECT SUM(amount - cost_price) as net_income FROM transactions WHERE status='success'");
+$stats['net_income'] = $result->fetch_assoc()['net_income'];
 
-$result = $conn->query("SELECT SUM(stock) as total_stock FROM games");
-$stats['total_stock'] = $result->fetch_assoc()['total_stock'];
+// Get target from database or default
+$result = $conn->query("SELECT value FROM settings WHERE name='annual_target'");
+$target_row = $result->fetch_assoc();
+$stats['annual_target'] = $target_row ? $target_row['value'] : 50000000;
 
-// Get recent transactions
-$transactions = $conn->query("
-    SELECT t.id, g.name as game_name, t.amount, pm.name as payment_method, t.transaction_time, t.status 
-    FROM transactions t
-    JOIN games g ON t.game_id = g.id
-    JOIN payment_methods pm ON t.payment_method_id = pm.id
-    ORDER BY t.transaction_time DESC 
-    LIMIT 5
-");
-
-// Get top games
-$top_games = $conn->query("
-    SELECT g.name, COUNT(t.id) as transaction_count 
-    FROM transactions t
-    JOIN games g ON t.game_id = g.id
-    GROUP BY g.name 
-    ORDER BY transaction_count DESC 
-    LIMIT 5
-");
-
-$sales_data = $conn->query("
+// Get package sales data with date filter
+$date_filter = isset($_GET['date_filter']) ? $_GET['date_filter'] : 'monthly';
+$package_sales_query = "
     SELECT 
-        DATE_FORMAT(transaction_time, '%Y-%m') as month,
-        SUM(amount) as total_sales
-    FROM transactions
-    WHERE status = 'success'
-    GROUP BY DATE_FORMAT(transaction_time, '%Y-%m')
-    ORDER BY month DESC
-    LIMIT 12
-");
+        g.name as game_name,
+        tp.package_name,
+        COUNT(t.id) as transaction_count,
+        SUM(t.final_amount) as total_sales,
+        SUM(t.profit) as total_profit
+    FROM transactions t
+    JOIN topup_packages tp ON t.package_id = tp.id
+    JOIN games g ON t.game_id = g.id
+    WHERE t.status = 'success'
+";
+
+if ($date_filter == 'daily') {
+    $package_sales_query .= " AND DATE(t.transaction_time) = CURDATE()";
+} elseif ($date_filter == 'yearly') {
+    $package_sales_query .= " AND YEAR(t.transaction_time) = YEAR(CURDATE())";
+} else {
+    // Default monthly
+    $package_sales_query .= " AND MONTH(t.transaction_time) = MONTH(CURDATE()) AND YEAR(t.transaction_time) = YEAR(CURDATE())";
+}
+
+$package_sales_query .= " GROUP BY g.name, tp.package_name ORDER BY g.name, total_sales DESC";
+$package_sales = $conn->query($package_sales_query);
+
+// Get profit data per game for charts
+$games = $conn->query("SELECT id, name FROM games");
+$game_profit_data = [];
+while($game = $games->fetch_assoc()) {
+    $result = $conn->query("
+        SELECT 
+            DATE_FORMAT(transaction_time, '%Y-%m') as month,
+            SUM(profit) as total_profit
+        FROM transactions
+        WHERE status = 'success' AND game_id = {$game['id']}
+        GROUP BY DATE_FORMAT(transaction_time, '%Y-%m')
+        ORDER BY month DESC
+        LIMIT 12
+    ");
+    
+    $game_profit_data[$game['id']] = [
+        'name' => $game['name'],
+        'data' => []
+    ];
+    
+    while($row = $result->fetch_assoc()) {
+        $game_profit_data[$game['id']]['data'][] = $row;
+    }
+}
+
+// Get top games with customer count and date filter
+$top_games_query = "
+    SELECT 
+        g.name, 
+        COUNT(DISTINCT t.user_id) as customer_count 
+    FROM transactions t
+    JOIN games g ON t.game_id = g.id
+    WHERE t.status = 'success'
+";
+
+if ($date_filter == 'daily') {
+    $top_games_query .= " AND DATE(t.transaction_time) = CURDATE()";
+} elseif ($date_filter == 'yearly') {
+    $top_games_query .= " AND YEAR(t.transaction_time) = YEAR(CURDATE())";
+} else {
+    // Default monthly
+    $top_games_query .= " AND MONTH(t.transaction_time) = MONTH(CURDATE()) AND YEAR(t.transaction_time) = YEAR(CURDATE())";
+}
+
+$top_games_query .= " GROUP BY g.name ORDER BY customer_count DESC LIMIT 5";
+$top_games = $conn->query($top_games_query);
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && ($_SESSION['role'] == 'admin' || $_SESSION['role'] == 'manager')) {
+        $target = intval($_POST['target']);
+        
+        // Validate target is multiple of 50,000,000
+        if ($target % 50000000 !== 0) {
+            http_response_code(400);
+            die('Invalid target value');
+        }
+        
+        // Update or insert target
+        $stmt = $conn->prepare("INSERT INTO settings (name, value) VALUES ('annual_target', ?) 
+                               ON DUPLICATE KEY UPDATE value = ?");
+        $stmt->bind_param("ii", $target, $target);
+        $stmt->execute();
+        
+        echo 'OK';
+    } else {
+        http_response_code(403);
+        echo 'Forbidden';
+    }
 ?>
 
 <!DOCTYPE html>
@@ -1010,144 +1077,121 @@ $sales_data = $conn->query("
                 </div>
             </div>
 
-            <!-- Stats Cards -->
-            <div class="stats-container">
+            <!-- Stats Cards - Modified -->
+             <div class="stats-container">
                 <div class="stat-card">
-                    <h3>Total Sales</h3>
-                    <p>IDR <?php echo number_format($stats['total_sales'] ?? 0, 0, ',', '.'); ?></p>
+                    <h3>Total Transactions</h3>
+                    <p>IDR <?php echo number_format($stats['total_transactions'] ?? 0, 0, ',', '.'); ?></p>
                 </div>
+                
                 <div class="stat-card">
-                    <h3>Total Orders</h3>
-                    <p><?php echo number_format($stats['total_orders'] ?? 0, 0, ',', '.'); ?></p>
+                    <h3>Net Income</h3>
+                    <p>IDR <?php echo number_format($stats['net_income'] ?? 0, 0, ',', '.'); ?></p>
                 </div>
-                <div class="stat-card">
-                    <h3>Total Customers</h3>
-                    <p><?php echo number_format($stats['total_customers'] ?? 0, 0, ',', '.'); ?></p>
-                </div>
-                <div class="stat-card">
-                    <h3>Total Stock</h3>
-                    <p><?php echo number_format($stats['total_stock'] ?? 0, 0, ',', '.'); ?></p>
+                
+                <div class="stat-card" id="targetCard">
+                    <h3>Annual Target</h3>
+                    <p>IDR <span id="targetValue"><?php echo number_format($stats['annual_target'], 0, ',', '.'); ?></span></p>
+                    <?php if ($_SESSION['role'] == 'admin' || $_SESSION['role'] == 'manager'): ?>
+                        <button onclick="editTarget()" style="background: none; border: none; cursor: pointer;">
+                            <i class="fas fa-edit" style="color: #ff1493;"></i>
+                        </button>
+                    <?php endif; ?>
                 </div>
             </div>
 
-            <!-- Recent Transactions Section -->
+            <!-- Package Sales Section -->
             <div class="content-card wide">
-                <h2>Recent Transactions</h2>
+                <div class="card-header">
+                    <h2>Package Sales Report</h2>
+                    <div>
+                        <select class="period-select" id="dateFilter" onchange="updateDateFilter()">
+                            <option value="daily" <?php echo $date_filter == 'daily' ? 'selected' : ''; ?>>Daily</option>
+                            <option value="monthly" <?php echo $date_filter == 'monthly' ? 'selected' : ''; ?>>Monthly</option>
+                            <option value="yearly" <?php echo $date_filter == 'yearly' ? 'selected' : ''; ?>>Yearly</option>
+                        </select>
+                    </div>
+                </div>
                 <div class="table-responsive">
                     <table class="transaction-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
                                 <th>Game</th>
-                                <th>Amount</th>
-                                <th>Payment Method</th>
-                                <th>Time</th>
-                                <th>Status</th>
+                                <th>Package</th>
+                                <th>Transactions</th>
+                                <th>Total Sales</th>
+                                <th>Total Profit</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if ($transactions->num_rows > 0): ?>
-                                <?php while($row = $transactions->fetch_assoc()): ?>
+                            <?php if ($package_sales->num_rows > 0): ?>
+                                <?php while($row = $package_sales->fetch_assoc()): ?>
                                     <tr>
-                                        <td><?php echo htmlspecialchars($row['id']); ?></td>
                                         <td><?php echo htmlspecialchars($row['game_name']); ?></td>
-                                        <td>IDR <?php echo number_format($row['amount'], 0, ',', '.'); ?></td>
-                                        <td><?php echo htmlspecialchars($row['payment_method']); ?></td>
-                                        <td><?php echo date('d M Y H:i', strtotime($row['transaction_time'])); ?></td>
-                                        <td><span class="status-badge <?php echo htmlspecialchars($row['status']); ?>"><?php echo ucfirst($row['status']); ?></span></td>
+                                        <td><?php echo htmlspecialchars($row['package_name']); ?></td>
+                                        <td><?php echo number_format($row['transaction_count'], 0, ',', '.'); ?></td>
+                                        <td>IDR <?php echo number_format($row['total_sales'], 0, ',', '.'); ?></td>
+                                        <td>IDR <?php echo number_format($row['total_profit'], 0, ',', '.'); ?></td>
                                     </tr>
                                 <?php endwhile; ?>
                             <?php else: ?>
-                                <tr><td colspan="6">No recent transactions</td></tr>
+                                <tr><td colspan="5">No package sales data available</td></tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
-                <div class="view-all">
-                    <a href="transaction_history.php">View All Transactions →</a>
+            </div>
+
+            <!-- Game Profit Analysis Section -->
+            <div class="content-card wide">
+                <h2>Game Profit Analysis (Monthly)</h2>
+                <div class="game-charts-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px;">
+                    <?php foreach ($game_profit_data as $game_id => $game_data): ?>
+                        <?php if (!empty($game_data['data'])): ?>
+                            <div class="game-chart">
+                                <h3><?php echo htmlspecialchars($game_data['name']); ?></h3>
+                                <div class="chart-placeholder">
+                                    <canvas id="gameChart_<?php echo $game_id; ?>"></canvas>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
                 </div>
             </div>
 
-            <!-- Main Content Sections -->
-            <div class="content-row">
-                <!-- Sales Report Section -->
-                <div class="content-card">
-                    <div class="card-header">
-                        <h2>Sales Report</h2>
-                        <select class="period-select">
-                            <option>Last 12 Months</option>
-                            <option>Last 6 Months</option>
-                            <option>Last 3 Months</option>
+            <!-- Top Games Section -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2>Top Games by Customers</h2>
+                    <div>
+                        <select class="period-select" id="customerDateFilter" onchange="updateCustomerDateFilter()">
+                            <option value="daily" <?php echo $date_filter == 'daily' ? 'selected' : ''; ?>>Daily</option>
+                            <option value="monthly" <?php echo $date_filter == 'monthly' ? 'selected' : ''; ?>>Monthly</option>
+                            <option value="yearly" <?php echo $date_filter == 'yearly' ? 'selected' : ''; ?>>Yearly</option>
                         </select>
                     </div>
-                    <div class="chart-placeholder">
-                        <canvas id="salesChart"></canvas>
-                    </div>
                 </div>
-
-                <!-- Game Distribution Section -->
-                <div class="content-card">
-                    <h2>Top Games</h2>
-                    <div class="game-distribution">
-                        <?php if ($top_games->num_rows > 0): ?>
-                            <?php 
-                            $max_count = 0;
-                            $top_games_data = [];
-                            while($game = $top_games->fetch_assoc()) {
-                                $top_games_data[] = $game;
-                                if ($game['transaction_count'] > $max_count) {
-                                    $max_count = $game['transaction_count'];
-                                }
+                <div class="game-distribution">
+                    <?php if ($top_games->num_rows > 0): ?>
+                        <?php 
+                        $max_count = 0;
+                        $top_games_data = [];
+                        while($game = $top_games->fetch_assoc()) {
+                            $top_games_data[] = $game;
+                            if ($game['customer_count'] > $max_count) {
+                                $max_count = $game['customer_count'];
                             }
-                            ?>
-                            <?php foreach ($top_games_data as $game): ?>
-                                <div class="game-item">
-                                    <span><?php echo htmlspecialchars($game['name']); ?></span>
-                                    <div class="progress-bar" style="width: <?php echo ($game['transaction_count'] / $max_count) * 100; ?>%"></div>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <p>No game data available</p>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-
-            <div class="content-row">
-                <!-- Users by Country Section -->
-                <div class="content-card">
-                    <h2>Users by Country</h2>
-                    <ul class="country-list">
-                        <li>
-                            <span>Indonesia</span>
-                            <span class="percentage">65%</span>
-                        </li>
-                        <li>
-                            <span>Malaysia</span>
-                            <span class="percentage">20%</span>
-                        </li>
-                        <li>
-                            <span>Singapore</span>
-                            <span class="percentage">15%</span>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Activity Section -->
-                <div class="content-card">
-                    <h2>Activity</h2>
-                    <div class="activity-chart">
-                        <div class="activity-bar" style="height: 60%"></div>
-                        <div class="activity-bar" style="height: 30%"></div>
-                        <div class="activity-bar" style="height: 45%"></div>
-                        <div class="activity-bar" style="height: 20%"></div>
-                        <div class="time-labels">
-                            <span>00</span>
-                            <span>06</span>
-                            <span>12</span>
-                            <span>18</span>
-                        </div>
-                    </div>
+                        }
+                        ?>
+                        <?php foreach ($top_games_data as $game): ?>
+                            <div class="game-item">
+                                <span><?php echo htmlspecialchars($game['name']); ?> (<?php echo $game['customer_count']; ?> customers)</span>
+                                <div class="progress-bar" style="width: <?php echo ($game['customer_count'] / $max_count) * 100; ?>%"></div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <p>No game data available</p>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -1155,69 +1199,100 @@ $sales_data = $conn->query("
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Sales Chart
-        const salesCtx = document.getElementById('salesChart').getContext('2d');
-        const salesChart = new Chart(salesCtx, {
-            type: 'line',
-            data: {
-                labels: [
-                    <?php 
-                    $sales_data_array = [];
-                    while($row = $sales_data->fetch_assoc()) {
-                        $sales_data_array[] = $row;
-                        echo "'" . date('M Y', strtotime($row['month'] . '-01')) . "',";
-                    }
-                    ?>
-                ].reverse(),
-                datasets: [{
-                    label: 'Sales (IDR)',
-                    data: [
-                        <?php 
-                        foreach (array_reverse($sales_data_array) as $row) {
-                            echo ($row['total_sales'] / 1000000) . ",";
-                        }
-                        ?>
-                    ],
-                    backgroundColor: 'rgba(78, 115, 223, 0.05)',
-                    borderColor: 'rgba(78, 115, 223, 1)',
-                    borderWidth: 2,
-                    pointBackgroundColor: 'rgba(78, 115, 223, 1)',
-                    pointBorderColor: '#fff',
-                    pointHoverRadius: 5,
-                    pointHoverBackgroundColor: 'rgba(78, 115, 223, 1)',
-                    pointHoverBorderColor: '#fff',
-                    pointHitRadius: 10,
-                    pointBorderWidth: 2,
-                    tension: 0.3,
-                    fill: true
-                }]
-            },
-            options: {
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return 'IDR ' + value + 'M';
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return 'IDR ' + (context.raw * 1000000).toLocaleString();
-                            }
-                        }
-                    }
+        // Function to update date filter
+        function updateDateFilter() {
+            const filter = document.getElementById('dateFilter').value;
+            window.location.href = `?date_filter=${filter}`;
+        }
+        
+        function updateCustomerDateFilter() {
+            const filter = document.getElementById('customerDateFilter').value;
+            window.location.href = `?date_filter=${filter}`;
+        }
+        
+        // Function to edit target
+        function editTarget() {
+            const currentTarget = document.getElementById('targetValue').innerText.replace(/\./g, '');
+            const newTarget = prompt('Enter new annual target (multiple of 50,000,000):', currentTarget);
+            
+            if (newTarget !== null) {
+                const targetValue = parseInt(newTarget.replace(/\D/g, ''));
+                
+                if (targetValue % 50000000 !== 0) {
+                    alert('Target must be a multiple of 50,000,000');
+                    return;
                 }
+                
+                // Update via AJAX
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', 'update_target.php', true);
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                xhr.onload = function() {
+                    if (this.status === 200) {
+                        document.getElementById('targetValue').innerText = 
+                            new Intl.NumberFormat('id-ID').format(targetValue);
+                    } else {
+                        alert('Error updating target');
+                    }
+                };
+                xhr.send(`target=${targetValue}`);
             }
-        });
+        }
+        
+        // Create charts for each game
+        <?php foreach ($game_profit_data as $game_id => $game_data): ?>
+            <?php if (!empty($game_data['data'])): ?>
+                const ctx_<?php echo $game_id; ?> = document.getElementById('gameChart_<?php echo $game_id; ?>').getContext('2d');
+                const chart_<?php echo $game_id; ?> = new Chart(ctx_<?php echo $game_id; ?>, {
+                    type: 'line',
+                    data: {
+                        labels: [
+                            <?php foreach (array_reverse($game_data['data']) as $row): ?>
+                                '<?php echo date('M Y', strtotime($row['month'] . '-01')); ?>',
+                            <?php endforeach; ?>
+                        ],
+                        datasets: [{
+                            label: 'Profit (IDR)',
+                            data: [
+                                <?php foreach (array_reverse($game_data['data']) as $row): ?>
+                                    <?php echo ($row['total_profit'] / 1000); ?>,
+                                <?php endforeach; ?>
+                            ],
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return 'IDR ' + value + 'K';
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return 'IDR ' + (context.raw * 1000).toLocaleString();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            <?php endif; ?>
+        <?php endforeach; ?>
     </script>
 
     <div class="chatbot-container">
