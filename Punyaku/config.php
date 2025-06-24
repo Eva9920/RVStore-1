@@ -8,7 +8,7 @@ if (session_status() === PHP_SESSION_NONE) {
 $servername = "localhost";
 $username = "root";
 $password = "";
-$dbname = "game_topup_mis";
+$dbname = "game_topup_management";
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
@@ -178,6 +178,59 @@ function login($username, $password, $remember = false) {
         }
     }
     return false;
+}
+
+// Get user settings
+function getUserSettings($user_id) {
+    $sql = "SELECT * FROM user_settings WHERE user_id = ?";
+    $settings = selectSingle($sql, [$user_id], 'i');
+    
+    if (!$settings) {
+        // Create default settings if none exist
+        $defaultSettings = [
+            'email_notifications' => 1,
+            'push_notifications' => 1,
+            'timezone' => 'Asia/Jakarta',
+            'theme' => 'Light',
+            'language' => 'Indonesia'
+        ];
+        
+        $sql = "INSERT INTO user_settings (user_id, email_notifications, push_notifications, timezone, theme, language) 
+                VALUES (?, ?, ?, ?, ?, ?)";
+        insertQuery($sql, [
+            $user_id, 
+            $defaultSettings['email_notifications'],
+            $defaultSettings['push_notifications'],
+            $defaultSettings['timezone'],
+            $defaultSettings['theme'],
+            $defaultSettings['language']
+        ], 'iisss');
+        
+        return $defaultSettings;
+    }
+    
+    return $settings;
+}
+
+// Update user settings
+function updateUserSettings($user_id, $settings) {
+    $sql = "UPDATE user_settings SET 
+            email_notifications = ?,
+            push_notifications = ?,
+            timezone = ?,
+            theme = ?,
+            language = ?,
+            updated_at = NOW()
+            WHERE user_id = ?";
+    
+    return modifyQuery($sql, [
+        $settings['email_notifications'],
+        $settings['push_notifications'],
+        $settings['timezone'],
+        $settings['theme'],
+        $settings['language'],
+        $user_id
+    ], 'iisssi');
 }
 
 // Logout function
@@ -442,25 +495,25 @@ function handleImageUpload($file) {
     return null;
 }
 
-function getUnreadNotificationsCount($user_id) {
-    global $conn;
-    $sql = "SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-    return $row['count'];
-}
+// function getUnreadNotificationsCount($user_id) {
+//     global $conn;
+//     $sql = "SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0";
+//     $stmt = $conn->prepare($sql);
+//     $stmt->bind_param("i", $user_id);
+//     $stmt->execute();
+//     $result = $stmt->get_result();
+//     $row = $result->fetch_assoc();
+//     return $row['count'];
+// }
 
-function createNotification($user_id, $title, $message) {
-    global $conn;
-    $sql = "INSERT INTO notifications (user_id, title, message, is_read, created_at) 
-            VALUES (?, ?, ?, 0, NOW())";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("iss", $user_id, $title, $message);
-    return $stmt->execute();
-}
+// function createNotification($user_id, $title, $message) {
+//     global $conn;
+//     $sql = "INSERT INTO notifications (user_id, title, message, is_read, created_at) 
+//             VALUES (?, ?, ?, 0, NOW())";
+//     $stmt = $conn->prepare($sql);
+//     $stmt->bind_param("iss", $user_id, $title, $message);
+//     return $stmt->execute();
+// }
 ?>
 
 
