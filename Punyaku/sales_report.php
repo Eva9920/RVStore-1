@@ -98,8 +98,12 @@ while ($current_date <= $end_date) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sales Report</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         :root {
             --primary-gradient: linear-gradient(135deg, #2a0845 0%, #6441a5 100%);
@@ -133,8 +137,8 @@ while ($current_date <= $end_date) {
             margin-bottom: 15px;
             margin-left: 55px;
         }
-        
-        .dashboard-container {
+
+        .salesreport-container {
             display: flex;
             min-height: 100vh;
         }
@@ -211,6 +215,7 @@ while ($current_date <= $end_date) {
 
         .sidebar .list {
             margin-top: 30px;
+            padding: 0;
         }
 
         .list .list-item {
@@ -776,12 +781,10 @@ while ($current_date <= $end_date) {
 </head>
 <body>
     <div class="salesreport-container">
-        <!-- Sidebar Navigation -->
         <div class="sidebar">
             <div class="hamburger-toggle">
-                <i class='bx bx-menu'></i>
+                <i class="fas fa-bars"></i>
             </div>
-
             <script>
                 document.querySelector('.hamburger-toggle').addEventListener('click', function() {
                     document.querySelector('.sidebar').classList.toggle('active');
@@ -795,37 +798,37 @@ while ($current_date <= $end_date) {
                 <ul class="list">
                     <li class="list-item">
                         <a href="dashboard.php">
-                            <i class='bx bx-home-alt-2'></i>
+                            <i class="fas fa-home"></i>
                             <span class="link-name" style="--i:1;">Dashboard</span>
                         </a>
                     </li>
                     <li class="list-item">
                         <a href="transaction_history.php">
-                            <i class='bx bx-history'></i>
+                            <i class="fas fa-history"></i>
                             <span class="link-name" style="--i:2;">Transaction History</span>
                         </a>
                     </li>
                     <li class="list-item">
                         <a href="manage_product.php">
-                            <i class='bx bx-box'></i>
+                            <i class="fas fa-box-open"></i>
                             <span class="link-name" style="--i:3;">Manage Product</span>
                         </a>
                     </li>
                     <li class="list-item active">
                         <a href="sales_report.php">
-                            <i class='bx bx-bar-chart-alt-2'></i>
+                            <i class="fas fa-chart-bar"></i>
                             <span class="link-name" style="--i:4;">Sales Report</span>
                         </a>
                     </li>
                     <li class="list-item">
                         <a href="accounts.php">
-                            <i class='bx bx-user'></i>
+                            <i class="fas fa-users-cog"></i>
                             <span class="link-name" style="--i:5;">Manage Accounts</span>
                         </a>
                     </li>
                     <li class="list-item">
                         <a href="logout.php">
-                            <i class='bx bx-log-out'></i>
+                            <i class="fas fa-sign-out-alt"></i>
                             <span class="link-name" style="--i:6;">Logout</span>
                         </a>
                     </li>
@@ -839,7 +842,7 @@ while ($current_date <= $end_date) {
             <div class="topbar">
                 <h2>Sales Report</h2>
                 <form method="GET" class="search-container">
-                    <input type="text" name="search" placeholder="Search product..." value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
+                    <input type="text" name="search" placeholder="Search users..." value="<?php echo htmlspecialchars($search); ?>">
                     <i class="fas fa-search"></i>
                 </form>
             </div>
@@ -847,13 +850,13 @@ while ($current_date <= $end_date) {
             <!-- Bottom Icons -->
             <div class="bottom-icons">
                 <div class="bottom-icon" onclick="window.location.href='profile.php'">
-                    <i class='bx bx-user'></i>
+                    <i class="fas fa-user"></i>
                 </div>
                 <div class="bottom-icon" onclick="window.location.href='notifications.php'">
-                    <i class='bx bx-bell'></i>
+                    <i class="fas fa-bell"></i>
                 </div>
                 <div class="bottom-icon" onclick="window.location.href='settings.php'">
-                    <i class='bx bx-cog'></i>
+                    <i class="fas fa-cog"></i>
                 </div>
             </div>
 
@@ -984,8 +987,6 @@ while ($current_date <= $end_date) {
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
         // Sales Chart
         const salesCtx = document.getElementById('salesChart').getContext('2d');
@@ -1091,7 +1092,7 @@ while ($current_date <= $end_date) {
                 }
             });
         });
-    </script>
+    </>
 
     <div class="chatbot-container">
         <div class="chatbot-window" id="chatbotWindow">
