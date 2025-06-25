@@ -1,0 +1,388 @@
+<?php
+require_once 'config.php';
+requireAuth();
+
+// Get game ID from URL
+$game_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
+// Fetch game details from database
+$game = null;
+if ($game_id > 0) {
+    $stmt = $conn->prepare("SELECT * FROM games WHERE id = ?");
+    $stmt->bind_param("i", $game_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $game = $result->fetch_assoc();
+}
+
+if (!$game) {
+    header("Location: manage_product.php");
+    exit();
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo htmlspecialchars($game['name']); ?> - Diamond Packages</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #6441a5;
+        }
+        
+        .package-container {
+            display: inline-block;
+            width: 180px;
+            background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 12px;
+            margin: 8px;
+            vertical-align: top;
+            transition: transform 0.2s;
+        }
+        
+        .package-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .package-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #333;
+        }
+        
+        .package-description {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+        
+        .price {
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #6441a5;
+            margin-bottom: 2px;
+        }
+        
+        .profit {
+            font-size: 0.75rem;
+            color: #00a854;
+            margin-bottom: 2px;
+        }
+        
+        .loss {
+            font-size: 0.75rem;
+            color: #d32f2f;
+            margin-bottom: 2px;
+        }
+        
+        .margin {
+            font-size: 0.7rem;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .dimensions {
+            font-size: 0.7rem;
+            color: #999;
+            margin-top: 8px;
+            border-top: 1px dashed #ddd;
+            padding-top: 6px;
+        }
+        
+        .chart-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .summary {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .summary-label {
+            font-weight: 600;
+        }
+        
+        .summary-value {
+            font-weight: 600;
+        }
+        
+        .total-profit {
+            color: #00a854;
+        }
+        
+        .total-loss {
+            color: #d32f2f;
+        }
+        
+        .chart-title {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #6441a5;
+            font-weight: 600;
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #6441a5;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .back-btn:hover {
+            background-color: #4e2d8a;
+        }
+    </style>
+</head>
+<body>
+    <a href="manage_product.php" class="back-btn">Back to Products</a>
+    
+    <div class="header">
+        <h1><?php echo htmlspecialchars($game['name']); ?> Diamond Packages</h1>
+        <p>Profit/Loss Analysis Dashboard</p>
+    </div>
+    
+    <div style="text-align: center;">
+        <div class="package-container">
+            <div class="package-title">5 Diamonds</div>
+            <div class="package-description">Basic diamond package for small in-game purchases</div>
+            <div class="price">Rp1.500</div>
+            <div class="profit">+Rp500 profit</div>
+            <div class="margin">50% margin</div>
+            <div class="dimensions">537 × 189 pixels</div>
+        </div>
+        
+        <div class="package-container">
+            <div class="package-title">9+1 Diamonds</div>
+            <div class="package-description">Bonus diamond package with extra diamond</div>
+            <div class="price">Rp2.850</div>
+            <div class="profit">+Rp950 profit</div>
+            <div class="margin">50% margin</div>
+            <div class="dimensions">537 × 189 pixels</div>
+        </div>
+        
+        <div class="package-container">
+            <div class="package-title">16+2 Diamonds</div>
+            <div class="package-description">Popular package with 2 bonus diamonds</div>
+            <div class="price">Rp5.500</div>
+            <div class="profit">+Rp1.500 profit</div>
+            <div class="margin">37.5% margin</div>
+            <div class="dimensions">537 × 189 pixels</div>
+        </div>
+        
+        <div class="package-container">
+            <div class="package-title">32+4 Diamonds</div>
+            <div class="package-description">Great value package with 4 bonus diamonds</div>
+            <div class="price">Rp10.500</div>
+            <div class="profit">+Rp3.000 profit</div>
+            <div class="margin">40% margin</div>
+            <div class="dimensions">537 × 189 pixels</div>
+        </div>
+        
+        <div class="package-container">
+            <div class="package-title">Weekly Diamond Pass</div>
+            <div class="package-description">Premium weekly subscription with daily diamonds</div>
+            <div class="price">Rp25.000</div>
+            <div class="loss">-Rp5.000 loss</div>
+            <div class="margin">-20% margin</div>
+            <div class="dimensions">537 × 189 pixels</div>
+        </div>
+        
+        <div class="package-container">
+            <div class="package-title">195+27 Diamonds</div>
+            <div class="package-description">Large package with 27 bonus diamonds</div>
+            <div class="price">Rp95.000</div>
+            <div class="profit">+Rp15.000 profit</div>
+            <div class="margin">18.75% margin</div>
+            <div class="dimensions">537 × 189 pixels</div>
+        </div>
+    </div>
+    
+    <div class="summary">
+        <h3>Financial Summary</h3>
+        <div class="summary-item">
+            <span class="summary-label">Total Revenue:</span>
+            <span class="summary-value">Rp140,350</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">Total Cost:</span>
+            <span class="summary-value">Rp110,350</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label total-profit">Total Profit:</span>
+            <span class="summary-value total-profit">+Rp30,000</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">Profit Margin:</span>
+            <span class="summary-value">21.36%</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label">Most Profitable Package:</span>
+            <span class="summary-value">195+27 Diamonds (+Rp15,000)</span>
+        </div>
+        <div class="summary-item">
+            <span class="summary-label total-loss">Only Loss Package:</span>
+            <span class="summary-value total-loss">Weekly Diamond Pass (-Rp5,000)</span>
+        </div>
+    </div>
+    
+    <div class="chart-container">
+        <h3 class="chart-title">Profit/Loss by Package</h3>
+        <canvas id="profitChart"></canvas>
+    </div>
+    
+    <div class="chart-container" style="margin-top: 20px;">
+        <h3 class="chart-title">Profit Margin Comparison</h3>
+        <canvas id="marginChart"></canvas>
+    </div>
+    
+    <script>
+        // Profit/Loss Bar Chart
+        const profitCtx = document.getElementById('profitChart').getContext('2d');
+        const profitChart = new Chart(profitCtx, {
+            type: 'bar',
+            data: {
+                labels: ['5 Diamonds', '9+1 Diamonds', '16+2 Diamonds', '32+4 Diamonds', 'Weekly Pass', '195+27 Diamonds'],
+                datasets: [{
+                    label: 'Profit/Loss (Rp)',
+                    data: [500, 950, 1500, 3000, -5000, 15000],
+                    backgroundColor: [
+                        'rgba(0, 200, 83, 0.7)',
+                        'rgba(0, 200, 83, 0.7)',
+                        'rgba(0, 200, 83, 0.7)',
+                        'rgba(0, 200, 83, 0.7)',
+                        'rgba(211, 47, 47, 0.7)',
+                        'rgba(0, 200, 83, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(0, 200, 83, 1)',
+                        'rgba(0, 200, 83, 1)',
+                        'rgba(0, 200, 83, 1)',
+                        'rgba(0, 200, 83, 1)',
+                        'rgba(211, 47, 47, 1)',
+                        'rgba(0, 200, 83, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'Amount (Rp)'
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.raw >= 0) {
+                                    label += 'Rp' + context.raw.toLocaleString() + ' profit';
+                                } else {
+                                    label += 'Rp' + Math.abs(context.raw).toLocaleString() + ' loss';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Profit Margin Doughnut Chart
+        const marginCtx = document.getElementById('marginChart').getContext('2d');
+        const marginChart = new Chart(marginCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['5 Diamonds (50%)', '9+1 Diamonds (50%)', '16+2 Diamonds (37.5%)', '32+4 Diamonds (40%)', 'Weekly Pass (-20%)', '195+27 Diamonds (18.75%)'],
+                datasets: [{
+                    data: [50, 50, 37.5, 40, -20, 18.75],
+                    backgroundColor: [
+                        'rgba(0, 200, 83, 0.7)',
+                        'rgba(0, 200, 83, 0.7)',
+                        'rgba(0, 200, 83, 0.7)',
+                        'rgba(0, 200, 83, 0.7)',
+                        'rgba(211, 47, 47, 0.7)',
+                        'rgba(0, 200, 83, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(0, 200, 83, 1)',
+                        'rgba(0, 200, 83, 1)',
+                        'rgba(0, 200, 83, 1)',
+                        'rgba(0, 200, 83, 1)',
+                        'rgba(211, 47, 47, 1)',
+                        'rgba(0, 200, 83, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    const value = context.raw;
+                                    if (value >= 0) {
+                                        label += ' (' + value + '% profit margin)';
+                                    } else {
+                                        label += ' (' + Math.abs(value) + '% loss margin)';
+                                    }
+                                }
+                                return label;
+                            }
+                        }
+                    },
+                    legend: {
+                        position: 'right',
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
