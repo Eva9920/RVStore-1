@@ -6,105 +6,101 @@ requireAuth();
 $message = '';
 $messageType = '';
 
-// Add new user
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'add_user') {
-    $nama_lengkap = trim($_POST['nama_lengkap']);
-    $password = $_POST['password'];
-    $email = trim($_POST['email']);
-    $role = $_POST['role'];
+// Update order status
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'update_status') {
+    $order_id = (int)$_POST['order_id'];
+    $new_status = $_POST['new_status'];
     
-    if (empty($nama_lengkap) || empty($password) || empty($email) || empty($role)) {
-        $message = "All fields are required for adding a user!";
-        $messageType = "error";
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $message = "Invalid email format!";
-        $messageType = "error";
+    $stmt = $conn->prepare("UPDATE orders SET status = ?, updated_at = NOW() WHERE id = ?");
+    $stmt->bind_param("si", $new_status, $order_id);
+    if ($stmt->execute()) {
+        $message = "Order status updated successfully!";
+        $messageType = "success";
     } else {
-        // Check if email already exists
-        $check_stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
-        $check_stmt->bind_param("s", $email);
-        $check_stmt->execute();
-        $check_result = $check_stmt->get_result();
-        
-        if ($check_result->num_rows > 0) {
-            $message = "Email already exists!";
-            $messageType = "error";
-        } else {
-            // Hash password and insert user
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $insert_stmt = $conn->prepare("INSERT INTO users (nama_lengkap, email, password, role, status, created_at) VALUES (?, ?, ?, ?, 'active', NOW())");
-            $insert_stmt->bind_param("ssss", $nama_lengkap, $email, $hashed_password, $role);
-            
-            if ($insert_stmt->execute()) {
-                $message = "User added successfully!";
-                $messageType = "success";
-            } else {
-                $message = "Error adding user: " . $conn->error;
-                $messageType = "error";
-            }
-            $insert_stmt->close();
-        }
-        $check_stmt->close();
+        $message = "Error updating order status: " . $conn->error;
+        $messageType = "error";
     }
+    $stmt->close();
 }
 
-// Update user status (Activate/Deactivate)
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'toggle_status') {
-    $user_id = (int)$_POST['user_id'];
-    $current_status = $_POST['current_status'];
-    $new_status = ($current_status == 'active') ? 'inactive' : 'active';
-
-    // Prevent current logged-in admin from deactivating themselves
-    if ($user_id == $_SESSION['user_id']) {
-        $message = "You cannot change your own status!";
-        $messageType = "error";
+// Process order (complete the topup)
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'process_order') {
+    $order_id = (int)$_POST['order_id'];
+    
+    $stmt = $conn->prepare("UPDATE orders SET status = 'completed', processed_at = NOW(), updated_at = NOW() WHERE id = ?");
+    $stmt->bind_param("i", $order_id);
+    if ($stmt->execute()) {
+        $message = "Order processed successfully!";
+        $messageType = "success";
     } else {
-        $stmt = $conn->prepare("UPDATE users SET status = ? WHERE id = ?");
-        $stmt->bind_param("si", $new_status, $user_id);
-        if ($stmt->execute()) {
-            $message = "User status updated successfully!";
-            $messageType = "success";
-        } else {
-            $message = "Error updating user status: " . $conn->error;
-            $messageType = "error";
-        }
-        $stmt->close();
+        $message = "Error processing order: " . $conn->error;
+        $messageType = "error";
     }
+    $stmt->close();
 }
 
-// Delete user
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'delete_user') {
-    $user_id = (int)$_POST['user_id'];
-
-    // Prevent current logged-in admin from deleting themselves
-    if ($user_id == $_SESSION['user_id']) {
-        $message = "You cannot delete your own account!";
-        $messageType = "error";
-    } else {
-        $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
-        $stmt->bind_param("i", $user_id);
-        if ($stmt->execute()) {
-            $message = "User deleted successfully!";
-            $messageType = "success";
-        } else {
-            $message = "Error deleting user: " . $conn->error;
-            $messageType = "error";
-        }
-        $stmt->close();
-    }
-}
-
-// Fetch all users with search functionality
+// Fetch orders with search and filter functionality
 $search = isset($_GET['search']) ? $_GET['search'] : '';
-$users_query = $conn->prepare("SELECT id, nama_lengkap, email, role, status, created_at FROM users 
-                              WHERE nama_lengkap LIKE ? OR email LIKE ? 
-                              ORDER BY created_at DESC");
-$search_param = "%$search%";
-$users_query->bind_param("ss", $search_param, $search_param);
-$users_query->execute();
-$users_result = $users_query->get_result();
-$users = $users_result->fetch_all(MYSQLI_ASSOC);
-$users_query->close();
+$status_filter = isset($_GET['status']) ? $_GET['status'] : '';
+$game_filter = isset($_GET['game']) ? $_GET['game'] : '';
+
+$where_conditions = [];
+$params = [];
+$param_types = '';
+
+if (!empty($search)) {
+    $where_conditions[] = "(o.customer_name LIKE ? OR o.game_id LIKE ? OR o.customer_email LIKE ?)";
+    $search_param = "%$search%";
+    $params[] = $search_param;
+    $params[] = $search_param;
+    $params[] = $search_param;
+    $param_types .= 'sss';
+}
+
+if (!empty($status_filter)) {
+    $where_conditions[] = "o.status = ?";
+    $params[] = $status_filter;
+    $param_types .= 's';
+}
+
+if (!empty($game_filter)) {
+    $where_conditions[] = "o.game_name = ?";
+    $params[] = $game_filter;
+    $param_types .= 's';
+}
+
+$where_clause = !empty($where_conditions) ? 'WHERE ' . implode(' AND ', $where_conditions) : '';
+
+$orders_query = $conn->prepare("SELECT o.id, o.customer_name, o.customer_email, o.game_name, o.game_id, 
+                               o.package_name, o.amount, o.price, o.status, o.payment_method, 
+                               o.created_at, o.processed_at, o.updated_at
+                               FROM orders o 
+                               $where_clause 
+                               ORDER BY o.created_at DESC");
+
+if (!empty($params)) {
+    $orders_query->bind_param($param_types, ...$params);
+}
+
+$orders_query->execute();
+$orders_result = $orders_query->get_result();
+$orders = $orders_result->fetch_all(MYSQLI_ASSOC);
+$orders_query->close();
+
+// Get statistics
+$stats_query = $conn->query("SELECT 
+    COUNT(*) as total_orders,
+    COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_orders,
+    COUNT(CASE WHEN status = 'processing' THEN 1 END) as processing_orders,
+    COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_orders,
+    COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_orders,
+    SUM(CASE WHEN status = 'completed' THEN price ELSE 0 END) as total_revenue
+    FROM orders");
+$stats = $stats_query->fetch_assoc();
+
+// Get unique games for filter
+$games_query = $conn->query("SELECT DISTINCT game_name FROM orders ORDER BY game_name");
+$games = $games_query->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -112,7 +108,7 @@ $users_query->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Accounts - Admin Panel</title>
+    <title>Orders Management - Admin Panel</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -153,7 +149,7 @@ $users_query->close();
             margin-left: 55px;
         }
 
-        .manageaccount-container {
+        .orders-container {
             display: flex;
             min-height: 100vh;
         }
@@ -307,7 +303,7 @@ $users_query->close();
        .sidebar .hamburger-toggle {
             position: absolute;
             top: 15px;
-            right: -70px; /* Posisi di luar sidebar sebelah kanan */
+            right: -70px;
             width: 50px;
             height: 50px;
             background: var(--accent-gradient);
@@ -322,7 +318,7 @@ $users_query->close();
         }
 
         .sidebar.active .hamburger-toggle {
-            right: 20px; /* Saat sidebar aktif, posisi di dalam kanan atas */
+            right: 20px;
         }
 
         .sidebar .hamburger-toggle i {
@@ -330,7 +326,6 @@ $users_query->close();
             font-size: 20px;
         }
 
-        /* Sidebar Adjustment */
         .sidebar {
             position: fixed;
             top: 0;
@@ -367,14 +362,20 @@ $users_query->close();
             -webkit-text-fill-color: transparent;
         }
 
+        .search-filter-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
         .search-container {
             position: relative;
-            width: 350px;
+            width: 300px;
         }
 
         .search-container input {
             width: 100%;
-            padding: 15px 20px 15px 50px;
+            padding: 12px 20px 12px 45px;
             border: 2px solid rgba(255, 20, 147, 0.2);
             border-radius: 25px;
             font-size: 14px;
@@ -392,11 +393,74 @@ $users_query->close();
 
         .search-container i {
             position: absolute;
-            left: 18px;
+            left: 15px;
             top: 50%;
             transform: translateY(-50%);
             color: #ff1493;
-            font-size: 18px;
+            font-size: 16px;
+        }
+
+        .filter-select {
+            padding: 12px 15px;
+            border: 2px solid rgba(255, 20, 147, 0.2);
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .filter-select:focus {
+            border-color: #ff1493;
+            outline: none;
+            box-shadow: 0 0 20px rgba(255, 20, 147, 0.3);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: var(--card-gradient);
+            backdrop-filter: blur(20px);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.12);
+        }
+
+        .stat-card .stat-icon {
+            font-size: 35px;
+            margin-bottom: 10px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-card .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .stat-card .stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         /* Content Card */
@@ -441,7 +505,7 @@ $users_query->close();
         .table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 14px;
+            font-size: 13px;
             background: rgba(255, 255, 255, 0.3);
             border-radius: 15px;
             overflow: hidden;
@@ -449,9 +513,10 @@ $users_query->close();
 
         .table th,
         .table td {
-            padding: 15px 20px;
+            padding: 12px 15px;
             text-align: left;
             border-bottom: 1px solid rgba(255, 20, 147, 0.1);
+            vertical-align: middle;
         }
 
         .table th {
@@ -459,7 +524,8 @@ $users_query->close();
             color: white;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
+            font-size: 11px;
         }
 
         .table tr:hover {
@@ -468,14 +534,22 @@ $users_query->close();
 
         /* Badge Styles */
         .badge {
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 12px;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
             display: inline-block;
             letter-spacing: 0.5px;
             color: white;
+        }
+
+        .bg-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);
+        }
+
+        .bg-info {
+            background: linear-gradient(135deg, #17a2b8 0%, #007bff 100%);
         }
 
         .bg-success {
@@ -484,6 +558,66 @@ $users_query->close();
 
         .bg-danger {
             background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
+        }
+
+        /* Action Buttons */
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-block;
+            margin: 2px;
+        }
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc70 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Game Icon */
+        .game-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            background: var(--accent-gradient);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            margin-right: 8px;
+        }
+
+        /* Price styling */
+        .price {
+            font-weight: 700;
+            color: #00cc70;
         }
 
         /* Bottom Icons */
@@ -516,7 +650,7 @@ $users_query->close();
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(255, 20, 147, 0.5);
         }
- 
+
         .notification-badge {
             position: absolute;
             top: -5px;
@@ -532,8 +666,8 @@ $users_query->close();
             font-size: 12px;
             font-weight: bold;
         }
-        
-        /*Chatbot Container */
+
+        /* Chatbot Container */
         .chatbot-container {
             position: fixed;
             bottom: 30px;
@@ -564,39 +698,34 @@ $users_query->close();
             font-size: 28px;
         }
 
-        .chatbot-window {
-            width: 400px;
-            height: 550px;
-            background: var(--card-gradient);
-            backdrop-filter: blur(20px);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            display: none;
-            flex-direction: column;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .chatbot-window.active {
-            display: flex;
-            animation: fadeInUp 0.3s ease;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
+        /* Responsive */
+        @media (max-width: 768px) {
+            .search-filter-container {
+                flex-direction: column;
+                gap: 10px;
             }
-            to {
-                opacity: 1;
-                transform: translateY(0);
+            
+            .search-container {
+                width: 100%;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .table {
+                font-size: 11px;
+            }
+            
+            .table th,
+            .table td {
+                padding: 8px 10px;
             }
         }
-
     </style>
 </head>
 <body>
-    <div class="manageaccount-container">
+    <div class="orders-container">
         <div class="sidebar">
             <div class="hamburger-toggle">
                 <i class="fas fa-bars"></i>
@@ -629,7 +758,7 @@ $users_query->close();
                             <span class="link-name" style="--i:3;">Manage Product</span>
                         </a>
                     </li>
-                    <li class="list-item">
+                    <li class="list-item active">
                         <a href="orders.php">
                             <i class="bi bi-cart3"></i>
                             <span class="link-name" style="--i:3;">Orders</span>
@@ -641,7 +770,7 @@ $users_query->close();
                             <span class="link-name" style="--i:4;">Sales Report</span>
                         </a>
                     </li>
-                    <li class="list-item active">
+                    <li class="list-item">
                         <a href="accounts.php">
                             <i class="fas fa-users-cog"></i>
                             <span class="link-name" style="--i:5;">Manage Accounts</span>
@@ -661,10 +790,27 @@ $users_query->close();
         <div class="main-content">
             <!-- Topbar -->
             <div class="topbar">
-                <h2>Manage Accounts</h2>
-                <form method="GET" class="search-container">
-                    <input type="text" name="search" placeholder="Search users..." value="<?php echo htmlspecialchars($search); ?>">
-                    <i class="fas fa-search"></i>
+                <h2>Orders Management</h2>
+                <form method="GET" class="search-filter-container">
+                    <div class="search-container">
+                        <input type="text" name="search" placeholder="Search orders..." value="<?php echo htmlspecialchars($search); ?>">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <select name="status" class="filter-select" onchange="this.form.submit()">
+                        <option value="">All Status</option>
+                        <option value="pending" <?php echo $status_filter == 'pending' ? 'selected' : ''; ?>>Pending</option>
+                        <option value="processing" <?php echo $status_filter == 'processing' ? 'selected' : ''; ?>>Processing</option>
+                        <option value="completed" <?php echo $status_filter == 'completed' ? 'selected' : ''; ?>>Completed</option>
+                        <option value="failed" <?php echo $status_filter == 'failed' ? 'selected' : ''; ?>>Failed</option>
+                    </select>
+                    <select name="game" class="filter-select" onchange="this.form.submit()">
+                        <option value="">All Games</option>
+                        <?php foreach ($games as $game): ?>
+                            <option value="<?php echo htmlspecialchars($game['game_name']); ?>" <?php echo $game_filter == $game['game_name'] ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($game['game_name']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
                 </form>
             </div>
 
@@ -675,6 +821,9 @@ $users_query->close();
                 </div>
                 <div class="bottom-icon" onclick="window.location.href='notifications.php'">
                     <i class="fas fa-bell"></i>
+                    <?php if ($stats['pending_orders'] > 0): ?>
+                        <span class="notification-badge"><?php echo $stats['pending_orders']; ?></span>
+                    <?php endif; ?>
                 </div>
                 <div class="bottom-icon" onclick="window.location.href='settings.php'">
                     <i class="fas fa-cog"></i>
@@ -688,130 +837,82 @@ $users_query->close();
                 </div>
             <?php endif; ?>
 
+            <!-- Statistics Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-number"><?php echo number_format($stats['total_orders']); ?></div>
+                    <div class="stat-label">Total Orders</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-number"><?php echo number_format($stats['pending_orders']); ?></div>
+                    <div class="stat-label">Pending Orders</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div class="stat-number"><?php echo number_format($stats['completed_orders']); ?></div>
+                    <div class="stat-label">Completed Orders</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-times"></i>
+                    </div>
+                    <div class="stat-number"><?php echo number_format($stats['failed_orders']); ?></div>
+                    <div class="stat-label">Failed Orders</div>
+                </div>
+            </div>
+
+            <!-- Order List -->
             <div class="content-card">
-                <div class="card-header">
-                    <h2>All Users</h2>
+                <div class="results-info">
+                    Showing <?php echo $offset + 1; ?> to <?php echo min($offset + $per_page, $total); ?> of <?php echo $total; ?> orders
                 </div>
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Game</th>
+                            <th>Order Date</th>
+                            <th>Order Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($orders as $order): ?>
                             <tr>
-                                <th>ID</th>
-                                <th>Full Name</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Created At</th>
-                                <th>Actions</th>
+                                <td><?php echo htmlspecialchars($order['order_id']); ?></td>
+                                <td><?php echo htmlspecialchars($order['customer_name']); ?></td>
+                                <td><?php echo htmlspecialchars($order['game_name']); ?></td>
+                                <td><?php echo htmlspecialchars($order['order_date']); ?></td>
+                                <td><?php echo htmlspecialchars($order['order_status']); ?></td>
+                                <td>
+                                    <a href="order_details.php?order_id=<?php echo $order['order_id']; ?>">Details</a>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($users as $user): ?>
-                                <tr>
-                                    <td><?php echo $user['id']; ?></td>
-                                    <td><?php echo htmlspecialchars($user['nama_lengkap']); ?></td>
-                                    <td><?php echo htmlspecialchars($user['email']); ?></td>
-                                    <td><?php echo htmlspecialchars($user['role']); ?></td>
-                                    <td>
-                                        <span class="badge <?php echo $user['status'] == 'active' ? 'bg-success' : 'bg-danger'; ?>">
-                                            <?php echo ucfirst($user['status']); ?>
-                                        </span>
-                                    </td>
-                                    <td><?php echo date('d M Y', strtotime($user['created_at'])); ?></td>
-                                    <td>
-                                        <?php if ($user['id'] != $_SESSION['user_id']): ?>
-                                            <form method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to change status for this user?');">
-                                                <input type="hidden" name="action" value="toggle_status">
-                                                <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
-                                                <input type="hidden" name="current_status" value="<?php echo $user['status']; ?>">
-                                                <button type="submit" class="btn btn-sm <?php echo $user['status'] == 'active' ? 'btn-warning' : 'btn-success'; ?>" title="<?php echo $user['status'] == 'active' ? 'Deactivate User' : 'Activate User'; ?>">
-                                                    <i class="fas fa-<?php echo $user['status'] == 'active' ? 'pause' : 'play'; ?>"></i>
-                                                </button>
-                                            </form>
-                                            <form method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this user?');">
-                                                <input type="hidden" name="action" value="delete_user">
-                                                <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
-                                                <button type="submit" class="btn btn-sm btn-danger" title="Delete User">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
-                                        <?php else: ?>
-                                            <span class="text-muted">Current User</span>
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-    
-    <!-- Chatbot Toggle -->
-    <div class="chatbot-toggle" onclick="toggleChatbot()">
-        <i class="fas fa-robot"></i>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>&copy; 2023 Punyaku. All rights reserved.</p>
     </div>
-        
+
     <script>
-    function toggleChatbot() {
-        const chatbotWindow = document.getElementById('chatbotWindow');
-        chatbotWindow.classList.toggle('active');
-    }
-    
-    function sendMessage() {
-        const input = document.getElementById('chatbotInput');
-        const message = input.value.trim();
-        
-        if (message === '') return;
-        
-        // Add user message
-        addMessage(message, 'user-message');
-        input.value = '';
-        
-        // Show typing indicator
-        const typingIndicator = document.createElement('div');
-        typingIndicator.className = 'message typing-indicator';
-        typingIndicator.innerHTML = '<span></span><span></span><span></span>';
-        document.getElementById('chatbotMessages').appendChild(typingIndicator);
-        
-        // Scroll to bottom
-        scrollToBottom();
-        
-        // Simulate bot response
-        setTimeout(() => {
-            // Remove typing indicator
-            const indicator = document.querySelector('.typing-indicator');
-            if (indicator) indicator.remove();
-            
-            // Add bot response
-            const responses = [
-                "I can help you with account management questions.",
-                "For user management, you can add, edit, or deactivate accounts here.",
-                "Please contact admin if you need higher level access.",
-                "Is there anything else I can help you with regarding accounts?",
-                "You can search users using the search bar at the top."
-            ];
-            const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-            addMessage(randomResponse, 'bot-message');
-            
-            // Scroll to bottom again after response
-            scrollToBottom();
-        }, 1500);
-    }
-    
-    function addMessage(text, className) {
-        const messagesContainer = document.getElementById('chatbotMessages');
-        const messageElement = document.createElement('div');
-        messageElement.className = `message ${className}`;
-        messageElement.textContent = text;
-        messagesContainer.appendChild(messageElement);
-    }
-    
-    function scrollToBottom() {
-        const messagesContainer = document.getElementById('chatbotMessages');
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-</script>
+        function showOrderDetails(orderId) {
+            window.location.href = "order_details.php?order_id=" + orderId;
+        }
+    </script>
 </body>
 </html>

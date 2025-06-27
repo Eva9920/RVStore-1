@@ -525,6 +525,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['mark_read'])) {
                         </a>
                     </li>
                     <li class="list-item">
+                        <a href="orders.php">
+                            <i class="bi bi-cart3"></i>
+                            <span class="link-name" style="--i:3;">Orders</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
                         <a href="sales_report.php">
                             <i class='bx bx-bar-chart-alt-2'></i>
                             <span class="link-name" style="--i:4;">Sales Report</span>

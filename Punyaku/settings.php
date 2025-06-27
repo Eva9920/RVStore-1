@@ -619,6 +619,12 @@ $flash_message = getFlashMessage();
                         </a>
                     </li>
                     <li class="list-item">
+                        <a href="orders.php">
+                            <i class="bi bi-cart3"></i>
+                            <span class="link-name" style="--i:3;">Orders</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
                         <a href="sales_report.php">
                             <i class="fas fa-chart-bar"></i>
                             <span class="link-name" style="--i:4;">Sales Report</span>

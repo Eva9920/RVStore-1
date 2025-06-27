@@ -521,6 +521,7 @@ while($row = $result->fetch_assoc()) {
             box-shadow: var(--shadow);
             border: 1px solid rgba(255, 255, 255, 0.2);
             transition: var(--transition);
+            margin-bottom: 25px;
         }
 
         .content-card:hover {
@@ -1067,6 +1068,12 @@ while($row = $result->fetch_assoc()) {
                         <a href="manage_product.php">
                             <i class="fas fa-box-open"></i>
                             <span class="link-name" style="--i:3;">Manage Product</span>
+                        </a>
+                    </li>
+                    <li class="list-item">
+                        <a href="orders.php">
+                            <i class="bi bi-cart3"></i>
+                            <span class="link-name" style="--i:3;">Orders</span>
                         </a>
                     </li>
                     <li class="list-item">
