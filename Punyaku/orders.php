@@ -71,17 +71,49 @@ if (!empty($game_filter)) {
 
 $where_clause = !empty($where_conditions) ? 'WHERE ' . implode(' AND ', $where_conditions) : '';
 
-$orders_query = $conn->prepare("SELECT o.id, o.customer_name, o.customer_email, o.game_name, o.game_id, 
-                               o.package_name, o.amount, o.price, o.status, o.payment_method, 
-                               o.created_at, o.processed_at, o.updated_at
-                               FROM orders o 
-                               $where_clause 
-                               ORDER BY o.created_at DESC");
+// Pagination setup
+$per_page = 10;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $per_page;
 
+// Get total orders count
+$total_query = $conn->prepare("SELECT COUNT(*) as total FROM orders o $where_clause");
 if (!empty($params)) {
-    $orders_query->bind_param($param_types, ...$params);
+    $total_query->bind_param($param_types, ...$params);
 }
+$total_query->execute();
+$total_result = $total_query->get_result();
+$total_row = $total_result->fetch_assoc();
+$total = $total_row['total'];
+$total_pages = ceil($total / $per_page);
+$total_query->close();
 
+// Prepare for orders query (with pagination)
+$orders_params = $params;
+$orders_param_types = $param_types;
+$orders_params[] = $per_page;
+$orders_params[] = $offset;
+$orders_param_types .= 'ii';
+
+// Fetch orders with pagination
+$orders_query = $conn->prepare("SELECT 
+    o.id AS order_id, 
+    o.customer_name, 
+    o.customer_email, 
+    o.game_name, 
+    o.game_id, 
+    o.package_name, 
+    o.amount, 
+    o.price, 
+    o.status AS order_status, 
+    o.payment_method, 
+    o.created_at AS order_date
+    FROM orders o 
+    $where_clause 
+    ORDER BY o.created_at DESC
+    LIMIT ? OFFSET ?");
+
+$orders_query->bind_param($orders_param_types, ...$orders_params);
 $orders_query->execute();
 $orders_result = $orders_query->get_result();
 $orders = $orders_result->fetch_all(MYSQLI_ASSOC);
@@ -698,6 +730,42 @@ $games = $games_query->fetch_all(MYSQLI_ASSOC);
             font-size: 28px;
         }
 
+        /* Results Info */
+        .results-info {
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Pagination Styles */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+        }
+        
+        .pagination a {
+            padding: 8px 16px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.3);
+            color: var(--text-primary);
+        }
+        
+        .pagination a:hover {
+            background: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .pagination a.active {
+            background: var(--accent-gradient);
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .search-filter-container {
@@ -872,34 +940,63 @@ $games = $games_query->fetch_all(MYSQLI_ASSOC);
             <!-- Order List -->
             <div class="content-card">
                 <div class="results-info">
-                    Showing <?php echo $offset + 1; ?> to <?php echo min($offset + $per_page, $total); ?> of <?php echo $total; ?> orders
+                    Showing <?php echo min($offset + 1, $total); ?> to <?php echo min($offset + $per_page, $total); ?> of <?php echo $total; ?> orders
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Customer</th>
-                            <th>Game</th>
-                            <th>Order Date</th>
-                            <th>Order Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($orders as $order): ?>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
                             <tr>
-                                <td><?php echo htmlspecialchars($order['order_id']); ?></td>
-                                <td><?php echo htmlspecialchars($order['customer_name']); ?></td>
-                                <td><?php echo htmlspecialchars($order['game_name']); ?></td>
-                                <td><?php echo htmlspecialchars($order['order_date']); ?></td>
-                                <td><?php echo htmlspecialchars($order['order_status']); ?></td>
-                                <td>
-                                    <a href="order_details.php?order_id=<?php echo $order['order_id']; ?>">Details</a>
-                                </td>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Game</th>
+                                <th>Order Date</th>
+                                <th>Order Status</th>
+                                <th>Actions</th>
                             </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($orders as $order): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($order['order_id']); ?></td>
+                                    <td><?php echo htmlspecialchars($order['customer_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($order['game_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($order['order_date']); ?></td>
+                                    <td>
+                                        <span class="badge 
+                                            <?php 
+                                            switch($order['order_status']) {
+                                                case 'pending': echo 'bg-warning'; break;
+                                                case 'processing': echo 'bg-info'; break;
+                                                case 'completed': echo 'bg-success'; break;
+                                                case 'failed': echo 'bg-danger'; break;
+                                                default: echo '';
+                                            }
+                                            ?>">
+                                            <?php echo htmlspecialchars($order['order_status']); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="order_details.php?order_id=<?php echo $order['order_id']; ?>" class="btn btn-primary">
+                                            <i class="fas fa-eye"></i> Details
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <?php if ($total_pages > 1): ?>
+                <div class="pagination">
+                    <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                        <a href="?page=<?= $i ?>&search=<?= urlencode($search) ?>&status=<?= urlencode($status_filter) ?>&game=<?= urlencode($game_filter) ?>" 
+                           class="<?= ($i == $page) ? 'active' : '' ?>">
+                            <?= $i ?>
+                        </a>
+                    <?php endfor; ?>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -914,5 +1011,8 @@ $games = $games_query->fetch_all(MYSQLI_ASSOC);
             window.location.href = "order_details.php?order_id=" + orderId;
         }
     </script>
+    
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

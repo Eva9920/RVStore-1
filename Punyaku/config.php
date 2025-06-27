@@ -7,8 +7,8 @@ if (session_status() === PHP_SESSION_NONE) {
 // Database configuration
 $servername = "localhost";
 $username = "root";
-$password = "";
-$dbname = "game_topup_management";
+$password = "root";
+$dbname = "game_game_topup_management";
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);

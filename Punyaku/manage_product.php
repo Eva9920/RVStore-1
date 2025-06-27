@@ -1167,15 +1167,27 @@ if ($params) {
                                         </div>
                                     </div>
                                 </td>
-                                <td>IDR <?php echo number_format($game['base_price'], 0, ',', '.'); ?></td>
-                                <td><?php echo $game['stock']; ?></td>
+                                <td>IDR <?php 
+    $price = $game['base_price'] ?? 0; // Default to 0 if missing
+    echo number_format($price, 0, ',', '.'); 
+?></td>
+<td><?php echo $game['stock'] ?? 0; ?></td>
+<td>
+    <span class="status-badge <?php 
+        $stock = $game['stock'] ?? 0;
+        echo ($stock > 0) ? 'status-active' : 'status-inactive'; 
+    ?>">
+        <?php echo ($stock > 0) ? 'Active' : 'Inactive'; ?>
+    </span>
+</td>
                                 <td>
-                                    <span class="status-badge <?php echo ($game['stock'] > 0) ? 'status-active' : 'status-inactive'; ?>">
-                                        <?php echo ($game['stock'] > 0) ? 'Active' : 'Inactive'; ?>
-                                    </span>
-                                </td>
-                                <td>
-                                    <button class="action-btn edit" onclick="editProduct(<?php echo $game['id']; ?>, '<?php echo addslashes($game['name']); ?>', '<?php echo addslashes($game['description']); ?>', <?php echo $game['base_price']; ?>, <?php echo $game['stock']; ?>)" title="Edit">
+                                    <button class="action-btn edit" onclick="editProduct(
+    <?php echo $game['id']; ?>,
+    '<?php echo addslashes($game['name']); ?>',
+    '<?php echo addslashes($game['description']); ?>',
+    <?php echo $game['base_price'] ?? 0; ?>,
+    <?php echo $game['stock'] ?? 0; ?>
+)" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <button class="action-btn delete" onclick="confirmDelete(<?php echo $game['id']; ?>)" title="Delete">
