@@ -101,7 +101,19 @@ if ($params) {
 } else {
     $games = $conn->query($games_query);
 }
-?>
+
+// $game_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
+// // Query untuk mendapatkan data produk
+// $stmt = $conn->prepare("SELECT * FROM games WHERE id = ?");
+// $stmt->bind_param("i", $game_id);
+// $stmt->execute();
+// $game = $stmt->get_result()->fetch_assoc();
+
+// if (!$game) {
+//     die("Product not found");
+// }
+// ?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -1043,6 +1055,20 @@ if ($params) {
             padding: 5px;
             text-align: center;
         }
+
+        .action-btn.view {
+            color: #6a1b9a;
+            background: rgba(106, 27, 154, 0.1);
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .action-btn.view:hover {
+            background: rgba(106, 27, 154, 0.2);
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body>
@@ -1158,7 +1184,6 @@ if ($params) {
                           <th>Product</th>
                             <th>Price</th>
                             <th>Stock</th>
-                            <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -1182,26 +1207,21 @@ if ($params) {
                                 ?></td>
                                 <td><?php echo $game['stock'] ?? 0; ?></td>
                                 <td>
-                                    <span class="status-badge <?php 
-                                        $stock = $game['stock'] ?? 0;
-                                        echo ($stock > 0) ? 'status-active' : 'status-inactive'; 
-                                    ?>">
-                                        <?php echo ($stock > 0) ? 'Active' : 'Inactive'; ?>
-                                    </span>
-                                </td>
-                                                                <td>
-                                                                    <button class="action-btn edit" onclick="editProduct(
-                                    <?php echo $game['id']; ?>,
-                                    '<?php echo addslashes($game['name']); ?>',
-                                    '<?php echo addslashes($game['description']); ?>',
-                                    <?php echo $game['base_price'] ?? 0; ?>,
-                                    <?php echo $game['stock'] ?? 0; ?>
-                                )" title="Edit">
+                                    <button class="action-btn edit" onclick="editProduct(
+                                        <?php echo $game['id']; ?>,
+                                        '<?php echo addslashes($game['name']); ?>',
+                                        '<?php echo addslashes($game['description']); ?>',
+                                        <?php echo $game['base_price'] ?? 0; ?>,
+                                        <?php echo $game['stock'] ?? 0; ?>
+                                    )" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <button class="action-btn delete" onclick="confirmDelete(<?php echo $game['id']; ?>)" title="Delete">
                                         <i class="fas fa-trash"></i>
                                     </button>
+                                    <a href="sl_<?php echo strtolower(str_replace(' ', '_', $game['name'])); ?>.php?id=<?php echo $game['id']; ?>" class="action-btn view" title="View Report">
+                                        <i class="fas fa-chart-line"></i>
+                                    </a>
                                 </td>
                             </tr>
                         <?php endwhile; ?>
