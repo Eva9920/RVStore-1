@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameFlow Manager - Sistem Top Up Game</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* CSS Reset Modern */
+        :root {
+            --primary: #6c5ce7;
+            --primary-dark: #5649c0;
+            --secondary: #00cec9;
+            --dark: #2d3436;
+            --light: #f5f6fa;
+            --gray: #636e72;
+            --light-gray: #dfe6e9;
+            --white: #ffffff;
+            --black: #000000;
+            
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+            --shadow-xl: 0 20px 50px rgba(0,0,0,0.2);
+            
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 16px;
+            --radius-full: 9999px;
+            
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background: var(--white);
+        }
+
+        /* Horizontal Scroll Container */
+        .horizontal-scroll-wrapper {
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+            width: 500vw; /* 5 sections × 100vw */
+            transform: rotate(-90deg) translateY(-100vh);
+            transform-origin: right top;
+            overflow-x: hidden;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .horizontal-scroll-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Sections */
+        .section {
+            width: 100vw;
+            height: 100vh;
+            transform: rotate(90deg);
+            transform-origin: right top;
+            scroll-snap-align: start;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Header/Navigation */
+        header {
+            background: linear-gradient(135deg, var(--light) 0%, #f0f2f5 100%);
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .logo span {
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            font-weight: 500;
+            position: relative;
+            padding: 0.5rem 0;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: var(--transition);
+        }
+
+        .nav-links a.active::after,
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-left: 2rem;
+        }
+
+        .mobile-menu {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 1100;
+        }
+
+        /* Button Styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            transition: var(--transition);
+            border: 2px solid transparent;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--white);
+        }
+
+        .btn-secondary:hover {
+            background: #00b5b2;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Hero Section */
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: center;
+            gap: 3rem;
+            height: 100%;
+            padding-top: 5rem;
+        }
+
+        .hero-text h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, var(--dark), var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero-text p {
+            font-size: 1.25rem;
+            color: var(--gray);
+            margin-bottom: 2rem;
+            max-width: 90%;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .hero-image {
+            position: relative;
+        }
+
+        .hero-image img {
+            width: 100%;
+            height: auto;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            transform: perspective(1000px) rotateY(-10deg);
+            transition: var(--transition);
+        }
+
+        .hero-image:hover img {
+            transform: perspective(1000px) rotateY(0deg);
+        }
+
+        /* Features Section */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            background: var(--white);
+            border-radius: var(--radius-md);
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-0.5rem);
+            box-shadow: var(--shadow-lg);
+            border-color: rgba(108, 92, 231, 0.2);
+        }
+
+        .feature-icon {
+            width: 3.5rem;
+            height: 3.5rem;
+            background: rgba(108, 92, 231, 0.1);
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Pricing Section */
+        .pricing-cards {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .pricing-card {
+            flex: 1;
+            min-width: 300px;
+            max-width: 350px;
+            background: var(--white);
+            border-radius: var(--radius-md);
+            padding: 2.5rem 2rem;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .pricing-card.popular {
+            border: 2px solid var(--primary);
+            transform: translateY(-1rem);
+        }
+
+        .popular-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--primary);
+            color: var(--white);
+            padding: 0.25rem 1rem;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .pricing-card h3 {
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .price {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .price .currency {
+            font-size: 1.25rem;
+            vertical-align: top;
+        }
+
+        .price .amount {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        .price .period {
+            font-size: 1rem;
+            color: var(--gray);
+        }
+
+        .features-list {
+            margin-bottom: 2rem;
+        }
+
+        .features-list li {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .features-list i {
+            margin-right: 0.75rem;
+            color: var(--primary);
+        }
+
+        /* Testimonials */
+        .testimonials-slider {
+            position: relative;
+            max-width: 800px;
+            margin: 3rem auto 0;
+        }
+
+        .testimonial {
+            display: none;
+            background: var(--white);
+            border-radius: var(--radius-md);
+            padding: 2.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .testimonial.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .rating {
+            color: #ffc107;
+            margin-bottom: 1.5rem;
+            font-size: 1.25rem;
+        }
+
+        .testimonial p {
+            font-size: 1.125rem;
+            font-style: italic;
+            margin-bottom: 2rem;
+            color: var(--gray);
+            line-height: 1.7;
+        }
+
+        .author {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .author img {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: var(--radius-full);
+            object-fit: cover;
+            margin-right: 1rem;
+        }
+
+        .author-info h4 {
+            margin-bottom: 0.25rem;
+        }
+
+        .author-info span {
+            color: var(--gray);
+            font-size: 0.875rem;
+        }
+
+        .slider-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 2rem;
+            gap: 1rem;
+        }
+
+        .slider-btn {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            color: var(--gray);
+            cursor: pointer;
+            transition: var(--transition);
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slider-btn:hover {
+            background: rgba(0,0,0,0.05);
+            color: var(--primary);
+        }
+
+        .slider-dots {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .dot {
+            width: 0.75rem;
+            height: 0.75rem;
+            background: var(--light-gray);
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .dot.active {
+            background: var(--primary);
+            transform: scale(1.2);
+        }
+
+        /* Contact Section */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid var(--light-gray);
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+        }
+
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .info-item {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .info-icon {
+            width: 3rem;
+            height: 3rem;
+            background: rgba(108, 92, 231, 0.1);
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .info-content h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Section Titles */
+        .section-title {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+
+        .section-subtitle {
+            font-size: 1.125rem;
+            text-align: center;
+            color: var(--gray);
+            margin-bottom: 3rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 1024px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+                padding-top: 7rem;
+            }
+            
+            .hero-text p {
+                max-width: 100%;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            
+            .hero-buttons {
+                justify-content: center;
+            }
+            
+            .hero-image {
+                margin-top: 2rem;
+                max-width: 600px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links, .auth-buttons {
+                display: none;
+            }
+            
+            .mobile-menu {
+                display: block;
+            }
+            
+            .hero-text h1 {
+                font-size: 2.5rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .pricing-cards {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .pricing-card {
+                max-width: 100%;
+            }
+            
+            .pricing-card.popular {
+                transform: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-buttons {
+                flex-direction: column;
+            }
+            
+            .hero-text h1 {
+                font-size: 2rem;
+            }
+            
+            .section-title {
+                font-size: 1.75rem;
+            }
+            
+            .section-subtitle {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="horizontal-scroll-wrapper">
+        <!-- Header/Navigation -->
+        <header class="section" id="home">
+            <nav>
+                <div class="logo">
+                    <h1>Game<span>Flow</span>Manager</h1>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="#home" class="active">Home</a></li>
+                    <li><a href="#features">Fitur</a></li>
+                    <li><a href="#pricing">Harga</a></li>
+                    <li><a href="#testimonials">Testimoni</a></li>
+                    <li><a href="#contact">Kontak</a></li>
+                </ul>
+                <div class="auth-buttons">
+                    <a href="#" class="btn login">Masuk</a>
+                    <a href="#" class="btn register">Daftar</a>
+                </div>
+                <div class="mobile-menu">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </nav>
+            
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1>Kelola Bisnis Top Up Game Dengan Satu Sistem</h1>
+                    <p>Platform manajemen terintegrasi untuk bisnis top up game yang lebih efisien dan menguntungkan</p>
+                    <div class="hero-buttons">
+                        <a href="#" class="btn primary">Mulai Sekarang</a>
+                        <a href="#" class="btn secondary">Lihat Demo</a>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <img src="https://images.unsplash.com/photo-1633613286848-e6f43bbafb8d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="Dashboard GameFlow Manager">
+                </div>
+            </div>
+        </header>
+
+        <!-- Features Section -->
+        <section class="section" id="features">
+            <div class="section-container">
+                <h2 class="section-title">Fitur Unggulan</h2>
+                <p class="section-subtitle">Semua yang Anda butuhkan untuk mengembangkan bisnis top up game</p>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3>Proses Instan</h3>
+                        <p>Top up game selesai dalam hitungan detik dengan sistem otomatis kami.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <h3>Analisis Bisnis</h3>
+                        <p>Dashboard analitik lengkap untuk memantau perkembangan bisnis Anda.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h3>Auto Responder</h3>
+                        <p>Chatbot otomatis untuk menangani pertanyaan pelanggan 24/7.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <h3>Multi Pembayaran</h3>
+                        <p>Dukung berbagai metode pembayaran populer di Indonesia.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3>Aplikasi Mobile</h3>
+                        <p>Kelola bisnis dari mana saja dengan aplikasi kami.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3>Keamanan Data</h3>
+                        <p>Proteksi tingkat tinggi untuk data bisnis Anda.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing Section -->
+        <section class="section" id="pricing">
+            <div class="section-container">
+                <h2 class="section-title">Paket Harga</h2>
+                <p class="section-subtitle">Pilih paket yang sesuai dengan skala bisnis Anda</p>
+                
+                <div class="pricing-cards">
+                    <div class="pricing-card">
+                        <h3>Starter</h3>
+                        <div class="price">
+                            <span class="currency">Rp</span>
+                            <span class="amount">99,000</span>
+                            <span class="period">/bulan</span>
+                        </div>
+                        <ul class="features-list">
+                            <li><i class="fas fa-check"></i> 100 Transaksi/bulan</li>
+                            <li><i class="fas fa-check"></i> 5 Game Tersedia</li>
+                            <li><i class="fas fa-check"></i> Dukungan Email</li>
+                        </ul>
+                        <a href="#" class="btn outline">Pilih Paket</a>
+                    </div>
+                    <div class="pricing-card popular">
+                        <div class="popular-badge">POPULER</div>
+                        <h3>Professional</h3>
+                        <div class="price">
+                            <span class="currency">Rp</span>
+                            <span class="amount">249,000</span>
+                            <span class="period">/bulan</span>
+                        </div>
+                        <ul class="features-list">
+                            <li><i class="fas fa-check"></i> 500 Transaksi/bulan</li>
+                            <li><i class="fas fa-check"></i> 20 Game Tersedia</li>
+                            <li><i class="fas fa-check"></i> Dukungan Prioritas</li>
+                            <li><i class="fas fa-check"></i> Analitik Lengkap</li>
+                        </ul>
+                        <a href="#" class="btn primary">Pilih Paket</a>
+                    </div>
+                    <div class="pricing-card">
+                        <h3>Enterprise</h3>
+                        <div class="price">
+                            <span class="currency">Rp</span>
+                            <span class="amount">499,000</span>
+                            <span class="period">/bulan</span>
+                        </div>
+                        <ul class="features-list">
+                            <li><i class="fas fa-check"></i> Transaksi Unlimited</li>
+                            <li><i class="fas fa-check"></i> Semua Game Tersedia</li>
+                            <li><i class="fas fa-check"></i> Dukungan 24/7</li>
+                            <li><i class="fas fa-check"></i> API Integrasi</li>
+                        </ul>
+                        <a href="#" class="btn outline">Pilih Paket</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials Section -->
+        <section class="section" id="testimonials">
+            <div class="section-container">
+                <h2 class="section-title">Testimoni Pengguna</h2>
+                <p class="section-subtitle">Apa kata mereka tentang GameFlow Manager</p>
+                
+                <div class="testimonials-slider">
+                    <div class="testimonial active">
+                        <div class="testimonial-content">
+                            <div class="rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <p>"GameFlow Manager telah mengubah cara saya menjalankan bisnis top up. Sekarang semuanya otomatis dan mudah dikelola!"</p>
+                            <div class="author">
+                                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Andi Wijaya">
+                                <div class="author-info">
+                                    <h4>Andi Wijaya</h4>
+                                    <span>Pemilik TopUpGamesID</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="testimonial">
+                        <div class="testimonial-content">
+                            <div class="rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <p>"Dengan sistem ini, saya bisa mengelola bisnis dari mana saja. Aplikasi mobile-nya sangat membantu!"</p>
+                            <div class="author">
+                                <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Siti Rahma">
+                                <div class="author-info">
+                                    <h4>Siti Rahma</h4>
+                                    <span>Pemilik DiamondShop</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slider-controls">
+                        <button class="slider-prev"><i class="fas fa-chevron-left"></i></button>
+                        <div class="slider-dots">
+                            <span class="dot active"></span>
+                            <span class="dot"></span>
+                        </div>
+                        <button class="slider-next"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section class="section" id="contact">
+            <div class="section-container">
+                <div class="contact-content">
+                    <h2 class="section-title">Hubungi Kami</h2>
+                    <p class="section-subtitle">Punya pertanyaan? Tim kami siap membantu Anda</p>
+                    
+                    <form class="contact-form">
+                        <div class="form-group">
+                            <input type="text" placeholder="Nama Anda" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" placeholder="Email Anda" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" placeholder="Subjek">
+                        </div>
+                        <div class="form-group">
+                            <textarea placeholder="Pesan Anda" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn primary">Kirim Pesan</button>
+                    </form>
+                </div>
+                <div class="contact-info">
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="info-content">
+                            <h3>Alamat</h3>
+                            <p>Jl. Teknologi No. 123, Jakarta Selatan</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-phone-alt"></i>
+                        </div>
+                        <div class="info-content">
+                            <h3>Telepon</h3>
+                            <p>+62 21 1234 5678</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="info-content">
+                            <h3>Email</h3>
+                            <p>support@gameflowmanager.com</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="info-content">
+                            <h3>Jam Operasional</h3>
+                            <p>Senin - Minggu, 24 Jam</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize horizontal scroll
+            const wrapper = document.querySelector('.horizontal-scroll-wrapper');
+            const sections = document.querySelectorAll('.section');
+            const navLinks = document.querySelectorAll('.nav-links a');
+            
+            // Mobile menu toggle
+            const mobileMenuBtn = document.querySelector('.mobile-menu');
+            const nav = document.querySelector('nav');
+            
+            mobileMenuBtn.addEventListener('click', function() {
+                nav.classList.toggle('active');
+                mobileMenuBtn.classList.toggle('active');
+            });
+            
+            // Update active nav link based on scroll position
+            wrapper.addEventListener('scroll', function() {
+                const scrollPosition = wrapper.scrollTop;
+                const windowHeight = window.innerHeight;
+                
+                sections.forEach((section, index) => {
+                    const sectionTop = index * windowHeight;
+                    const sectionBottom = (index + 1) * windowHeight;
+                    
+                    if (scrollPosition >= sectionTop && scrollPosition < sectionBottom) {
+                        navLinks.forEach(link => link.classList.remove('active'));
+                        navLinks[index].classList.add('active');
+                    }
+                });
+            });
+            
+            // Smooth scroll to section when nav link is clicked
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href');
+                    const targetSection = document.querySelector(targetId);
+                    const sectionIndex = Array.from(sections).indexOf(targetSection);
+                    
+                    // Scroll to the section
+                    wrapper.scrollTo({
+                        top: sectionIndex * window.innerHeight,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Update active nav link
+                    navLinks.forEach(link => link.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Close mobile menu if open
+                    nav.classList.remove('active');
+                    mobileMenuBtn.classList.remove('active');
+                });
+            });
+            
+            // Testimonial slider
+            const testimonials = document.querySelectorAll('.testimonial');
+            const dots = document.querySelectorAll('.dot');
+            const prevBtn = document.querySelector('.slider-prev');
+            const nextBtn = document.querySelector('.slider-next');
+            let currentIndex = 0;
+            
+            function showTestimonial(index) {
+                testimonials.forEach(testimonial => testimonial.classList.remove('active'));
+                dots.forEach(dot => dot.classList.remove('active'));
+                
+                testimonials[index].classList.add('active');
+                dots[index].classList.add('active');
+                currentIndex = index;
+            }
+            
+            dots.forEach((dot, index) => {
+                dot.addEventListener('click', () => showTestimonial(index));
+            });
+            
+            prevBtn.addEventListener('click', () => {
+                let newIndex = currentIndex - 1;
+                if (newIndex < 0) newIndex = testimonials.length - 1;
+                showTestimonial(newIndex);
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                let newIndex = currentIndex + 1;
+                if (newIndex >= testimonials.length) newIndex = 0;
+                showTestimonial(newIndex);
+            });
+            
+            // Auto-rotate testimonials
+            let testimonialInterval = setInterval(() => {
+                let newIndex = currentIndex + 1;
+                if (newIndex >= testimonials.length) newIndex = 0;
+                showTestimonial(newIndex);
+            }, 5000);
+            
+            // Pause auto-rotation on hover
+            const testimonialSlider = document.querySelector('.testimonials-slider');
+            testimonialSlider.addEventListener('mouseenter', () => {
+                clearInterval(testimonialInterval);
+            });
+            
+            testimonialSlider.addEventListener('mouseleave', () => {
+                testimonialInterval = setInterval(() => {
+                    let newIndex = currentIndex + 1;
+                    if (newIndex >= testimonials.length) newIndex = 0;
+                    showTestimonial(newIndex);
+                }, 5000);
+            });
+            
+            // Form submission handling
+            const contactForm = document.querySelector('.contact-form');
+            if (contactForm) {
+                contactForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Get form values
+                    const formData = new FormData(contactForm);
+                    const data = {};
+                    formData.forEach((value, key) => {
+                        data[key] = value;
+                    });
+                    
+                    // Here you would typically send the data to a server
+                    console.log('Form submitted:', data);
+                    
+                    // Show success message
+                    alert('Terima kasih! Pesan Anda telah terkirim. Kami akan segera menghubungi Anda.');
+                    contactForm.reset();
+                });
+            }
+            
+            // Initialize first section as active
+            navLinks[0].classList.add('active');
+        });
+    </script>
+</body>
+</html>
