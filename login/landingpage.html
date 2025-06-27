@@ -3,617 +3,374 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GameFlow Manager - Sistem Top Up Game</title>
+    <title>ReliVaultStore</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* CSS Reset Modern */
-        :root {
-            --primary: #6c5ce7;
-            --primary-dark: #5649c0;
-            --secondary: #00cec9;
-            --dark: #2d3436;
-            --light: #f5f6fa;
-            --gray: #636e72;
-            --light-gray: #dfe6e9;
-            --white: #ffffff;
-            --black: #000000;
-            
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
-            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-            --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
-            --shadow-xl: 0 20px 50px rgba(0,0,0,0.2);
-            
-            --radius-sm: 4px;
-            --radius-md: 8px;
-            --radius-lg: 16px;
-            --radius-full: 9999px;
-            
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
-
+        /* Reset and Base Styles */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
         }
-
+        
         html, body {
             width: 100%;
             height: 100%;
             overflow: hidden;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            line-height: 1.6;
-            color: var(--dark);
-            background: var(--white);
         }
-
+        
+        body {
+            color: #2d3436;
+            background-color: #f9f9f9;
+        }
+        
         /* Horizontal Scroll Container */
         .horizontal-scroll-wrapper {
             display: flex;
             flex-direction: row;
             height: 100vh;
-            width: 500vw; /* 5 sections × 100vw */
-            transform: rotate(-90deg) translateY(-100vh);
-            transform-origin: right top;
-            overflow-x: hidden;
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory;
-            scrollbar-width: none;
+            width: 100vw;
+            overflow-y: hidden;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
             -webkit-overflow-scrolling: touch;
         }
-
-        .horizontal-scroll-wrapper::-webkit-scrollbar {
-            display: none;
-        }
-
+        
         /* Sections */
         .section {
-            width: 100vw;
+            min-width: 100vw;
             height: 100vh;
-            transform: rotate(90deg);
-            transform-origin: right top;
             scroll-snap-align: start;
             position: relative;
-            overflow: hidden;
-        }
-
-        .section-container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-            height: 100%;
+            padding: 0 5%;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
         }
-
-        /* Header/Navigation */
-        header {
-            background: linear-gradient(135deg, var(--light) 0%, #f0f2f5 100%);
-        }
-
-        nav {
+        
+        /* Navigation */
+        .nav-section {
             position: fixed;
             top: 0;
             left: 0;
+            width: 100vw;
+            height: 80px;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-container {
             width: 100%;
-            padding: 1.5rem 2rem;
+            max-width: 1200px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 1000;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: var(--shadow-sm);
+            padding: 0 2rem;
         }
-
+        
         .logo {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: 700;
-            color: var(--dark);
+            color: #6c5ce7;
         }
-
-        .logo span {
-            color: var(--primary);
-        }
-
+        
         .nav-links {
             display: flex;
             gap: 2rem;
         }
-
+        
         .nav-links a {
+            color: #2d3436;
+            text-decoration: none;
             font-weight: 500;
             position: relative;
-            padding: 0.5rem 0;
+            transition: color 0.3s;
         }
-
-        .nav-links a::after {
+        
+        .nav-links a.active,
+        .nav-links a:hover {
+            color: #6c5ce7;
+        }
+        
+        .nav-links a.active:after {
             content: '';
             position: absolute;
-            bottom: 0;
+            bottom: -5px;
             left: 0;
-            width: 0;
-            height: 2px;
-            background: var(--primary);
-            transition: var(--transition);
-        }
-
-        .nav-links a.active::after,
-        .nav-links a:hover::after {
             width: 100%;
+            height: 2px;
+            background-color: #6c5ce7;
         }
-
-        .auth-buttons {
-            display: flex;
-            gap: 1rem;
-            margin-left: 2rem;
-        }
-
-        .mobile-menu {
-            display: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            z-index: 1100;
-        }
-
-        /* Button Styles */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.75rem 1.5rem;
-            border-radius: var(--radius-full);
+        
+        .cta-button {
+            background: #6c5ce7;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.8rem;
+            border-radius: 30px;
             font-weight: 600;
-            transition: var(--transition);
-            border: 2px solid transparent;
-            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.3s;
         }
-
-        .btn-primary {
-            background: var(--primary);
-            color: var(--white);
+        
+        .cta-button:hover {
+            background: #5649c0;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(108, 92, 231, 0.3);
         }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .btn-secondary {
-            background: var(--secondary);
-            color: var(--white);
-        }
-
-        .btn-secondary:hover {
-            background: #00b5b2;
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .btn-outline {
-            background: transparent;
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-
-        .btn-outline:hover {
-            background: var(--primary);
-            color: var(--white);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
+        
         /* Hero Section */
-        .hero-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+        .hero-section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding-top: 80px;
+        }
+        
+        .hero-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
             align-items: center;
             gap: 3rem;
-            height: 100%;
-            padding-top: 5rem;
         }
-
-        .hero-text h1 {
+        
+        .hero-content {
+            flex: 1;
+        }
+        
+        .hero-content h1 {
             font-size: 3.5rem;
-            font-weight: 800;
             line-height: 1.2;
             margin-bottom: 1.5rem;
-            background: linear-gradient(to right, var(--dark), var(--primary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
         }
-
-        .hero-text p {
-            font-size: 1.25rem;
-            color: var(--gray);
-            margin-bottom: 2rem;
-            max-width: 90%;
+        
+        .hero-content h1 span {
+            color: #6c5ce7;
         }
-
-        .hero-buttons {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 3rem;
+        
+        .hero-content p {
+            font-size: 1.2rem;
+            color: #636e72;
+            margin-bottom: 2.5rem;
+            max-width: 80%;
         }
-
+        
         .hero-image {
+            flex: 1;
             position: relative;
         }
-
+        
         .hero-image img {
             width: 100%;
-            height: auto;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-xl);
-            transform: perspective(1000px) rotateY(-10deg);
-            transition: var(--transition);
+            border-radius: 10px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
         }
-
-        .hero-image:hover img {
-            transform: perspective(1000px) rotateY(0deg);
-        }
-
+        
         /* Features Section */
+        .features-section {
+            background: white;
+        }
+        
+        .section-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        
+        .section-title span {
+            color: #6c5ce7;
+        }
+        
+        .section-subtitle {
+            color: #636e72;
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 3rem;
+            font-size: 1.1rem;
+        }
+        
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 2rem;
             margin-top: 3rem;
         }
-
+        
         .feature-card {
-            background: var(--white);
-            border-radius: var(--radius-md);
+            background: white;
+            border-radius: 15px;
             padding: 2rem;
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition);
-            border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
-
+        
         .feature-card:hover {
-            transform: translateY(-0.5rem);
-            box-shadow: var(--shadow-lg);
-            border-color: rgba(108, 92, 231, 0.2);
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(108, 92, 231, 0.1);
         }
-
+        
         .feature-icon {
-            width: 3.5rem;
-            height: 3.5rem;
+            width: 60px;
+            height: 60px;
             background: rgba(108, 92, 231, 0.1);
-            border-radius: var(--radius-full);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 1.5rem;
-            color: var(--primary);
-            font-size: 1.5rem;
         }
-
+        
+        .feature-icon i {
+            font-size: 1.5rem;
+            color: #6c5ce7;
+        }
+        
         .feature-card h3 {
-            font-size: 1.25rem;
-            margin-bottom: 1rem;
-        }
-
-        /* Pricing Section */
-        .pricing-cards {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin-top: 3rem;
-            flex-wrap: wrap;
-        }
-
-        .pricing-card {
-            flex: 1;
-            min-width: 300px;
-            max-width: 350px;
-            background: var(--white);
-            border-radius: var(--radius-md);
-            padding: 2.5rem 2rem;
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-
-        .pricing-card.popular {
-            border: 2px solid var(--primary);
-            transform: translateY(-1rem);
-        }
-
-        .popular-badge {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: var(--primary);
-            color: var(--white);
-            padding: 0.25rem 1rem;
-            border-radius: var(--radius-full);
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .pricing-card h3 {
             font-size: 1.5rem;
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .price {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .price .currency {
-            font-size: 1.25rem;
-            vertical-align: top;
-        }
-
-        .price .amount {
-            font-size: 3rem;
-            font-weight: 700;
-            color: var(--primary);
-            line-height: 1;
-        }
-
-        .price .period {
-            font-size: 1rem;
-            color: var(--gray);
-        }
-
-        .features-list {
-            margin-bottom: 2rem;
-        }
-
-        .features-list li {
             margin-bottom: 1rem;
+        }
+        
+        .feature-card p {
+            color: #636e72;
+            line-height: 1.6;
+        }
+        
+        /* Testimonials Section */
+        .testimonials-section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        
+        .testimonials-container {
             display: flex;
-            align-items: center;
+            width: 100%;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            padding: 2rem 0;
         }
-
-        .features-list i {
-            margin-right: 0.75rem;
-            color: var(--primary);
-        }
-
-        /* Testimonials */
-        .testimonials-slider {
-            position: relative;
-            max-width: 800px;
-            margin: 3rem auto 0;
-        }
-
+        
         .testimonial {
-            display: none;
-            background: var(--white);
-            border-radius: var(--radius-md);
-            padding: 2.5rem;
-            box-shadow: var(--shadow-sm);
+            min-width: 100%;
+            scroll-snap-align: start;
+            flex-shrink: 0;
+            padding: 0 1rem;
         }
-
-        .testimonial.active {
-            display: block;
-            animation: fadeIn 0.5s ease;
+        
+        .testimonial-content {
+            background: white;
+            border-radius: 15px;
+            padding: 3rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            text-align: center;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .rating {
-            color: #ffc107;
-            margin-bottom: 1.5rem;
-            font-size: 1.25rem;
-        }
-
-        .testimonial p {
-            font-size: 1.125rem;
+        
+        .testimonial-text {
+            font-size: 1.2rem;
             font-style: italic;
+            color: #636e72;
             margin-bottom: 2rem;
-            color: var(--gray);
-            line-height: 1.7;
+            position: relative;
         }
-
-        .author {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        
+        .testimonial-text:before,
+        .testimonial-text:after {
+            content: '"';
+            font-size: 2rem;
+            color: #6c5ce7;
+            opacity: 0.3;
         }
-
-        .author img {
-            width: 3.5rem;
-            height: 3.5rem;
-            border-radius: var(--radius-full);
-            object-fit: cover;
-            margin-right: 1rem;
+        
+        .testimonial-author {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
         }
-
-        .author-info h4 {
-            margin-bottom: 0.25rem;
+        
+        .testimonial-role {
+            color: #636e72;
+            font-size: 0.9rem;
         }
-
-        .author-info span {
-            color: var(--gray);
-            font-size: 0.875rem;
-        }
-
-        .slider-controls {
+        
+        .testimonial-nav {
             display: flex;
             justify-content: center;
-            align-items: center;
             margin-top: 2rem;
             gap: 1rem;
         }
-
-        .slider-btn {
-            background: none;
-            border: none;
-            font-size: 1.25rem;
-            color: var(--gray);
+        
+        .testimonial-dot {
+            width: 12px;
+            height: 12px;
+            background: rgba(108, 92, 231, 0.3);
+            border-radius: 50%;
             cursor: pointer;
-            transition: var(--transition);
-            width: 2.5rem;
-            height: 2.5rem;
-            border-radius: var(--radius-full);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            transition: all 0.3s;
         }
-
-        .slider-btn:hover {
-            background: rgba(0,0,0,0.05);
-            color: var(--primary);
-        }
-
-        .slider-dots {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .dot {
-            width: 0.75rem;
-            height: 0.75rem;
-            background: var(--light-gray);
-            border-radius: var(--radius-full);
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .dot.active {
-            background: var(--primary);
+        
+        .testimonial-dot.active {
+            background: #6c5ce7;
             transform: scale(1.2);
         }
-
-        /* Contact Section */
-        .contact-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
-            margin-top: 3rem;
-        }
-
-        .contact-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 1rem;
-            border: 1px solid var(--light-gray);
-            border-radius: var(--radius-sm);
-            font-family: inherit;
-            font-size: 1rem;
-            transition: var(--transition);
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
-            border-color: var(--primary);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
-        }
-
-        .form-group textarea {
-            min-height: 150px;
-            resize: vertical;
-        }
-
-        .contact-info {
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
-
-        .info-item {
-            display: flex;
-            gap: 1rem;
-            align-items: flex-start;
-        }
-
-        .info-icon {
-            width: 3rem;
-            height: 3rem;
-            background: rgba(108, 92, 231, 0.1);
-            border-radius: var(--radius-full);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary);
-            font-size: 1.25rem;
-            flex-shrink: 0;
-        }
-
-        .info-content h3 {
-            margin-bottom: 0.5rem;
-        }
-
-        /* Section Titles */
-        .section-title {
-            font-size: 2.5rem;
+        
+        /* CTA Section */
+        .cta-section {
+            background: #6c5ce7;
+            color: white;
             text-align: center;
-            margin-bottom: 1rem;
-            color: var(--dark);
         }
-
-        .section-subtitle {
-            font-size: 1.125rem;
-            text-align: center;
-            color: var(--gray);
-            margin-bottom: 3rem;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
+        
+        .cta-section .section-title {
+            color: white;
         }
-
+        
+        .cta-section .section-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .cta-section .cta-button {
+            background: white;
+            color: #6c5ce7;
+        }
+        
+        .cta-section .cta-button:hover {
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
         /* Responsive Styles */
-        @media (max-width: 1024px) {
-            .hero-content {
-                grid-template-columns: 1fr;
+        @media (max-width: 992px) {
+            .hero-container {
+                flex-direction: column;
                 text-align: center;
-                padding-top: 7rem;
             }
             
-            .hero-text p {
+            .hero-content p {
                 max-width: 100%;
-                margin-left: auto;
-                margin-right: auto;
             }
             
-            .hero-buttons {
-                justify-content: center;
-            }
-            
-            .hero-image {
-                margin-top: 2rem;
-                max-width: 600px;
-                margin-left: auto;
-                margin-right: auto;
-            }
-            
-            .contact-grid {
-                grid-template-columns: 1fr;
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
-
+        
         @media (max-width: 768px) {
-            .nav-links, .auth-buttons {
+            .nav-links {
                 display: none;
             }
             
-            .mobile-menu {
-                display: block;
-            }
-            
-            .hero-text h1 {
+            .hero-content h1 {
                 font-size: 2.5rem;
             }
             
@@ -621,443 +378,289 @@
                 font-size: 2rem;
             }
             
-            .pricing-cards {
-                flex-direction: column;
-                align-items: center;
+            .features-grid {
+                grid-template-columns: 1fr;
             }
             
-            .pricing-card {
-                max-width: 100%;
-            }
-            
-            .pricing-card.popular {
-                transform: none;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .hero-buttons {
-                flex-direction: column;
-            }
-            
-            .hero-text h1 {
-                font-size: 2rem;
-            }
-            
-            .section-title {
-                font-size: 1.75rem;
-            }
-            
-            .section-subtitle {
-                font-size: 1rem;
+            .testimonial-content {
+                padding: 2rem;
             }
         }
     </style>
 </head>
 <body>
-    <div class="horizontal-scroll-wrapper">
-        <!-- Header/Navigation -->
-        <header class="section" id="home">
-            <nav>
+    <div class="horizontal-scroll-wrapper" id="main-scroller">
+        <!-- Navigation -->
+        <nav class="nav-section">
+            <div class="nav-container">
                 <div class="logo">
-                    <h1>Game<span>Flow</span>Manager</h1>
+                    <img src="RVS_LOGO.png" alt="logo">
                 </div>
-                <ul class="nav-links">
-                    <li><a href="#home" class="active">Home</a></li>
-                    <li><a href="#features">Fitur</a></li>
-                    <li><a href="#pricing">Harga</a></li>
-                    <li><a href="#testimonials">Testimoni</a></li>
-                    <li><a href="#contact">Kontak</a></li>
-                </ul>
-                <div class="auth-buttons">
-                    <a href="#" class="btn login">Masuk</a>
-                    <a href="#" class="btn register">Daftar</a>
+                <div class="nav-links">
+                    <a href="#home" class="active">Home</a>
+                    <a href="#features">Features</a>
+                    <a href="#testimonials">Riviews</a>
                 </div>
-                <div class="mobile-menu">
-                    <i class="fas fa-bars"></i>
-                </div>
-            </nav>
-            
-            <div class="hero-content">
-                <div class="hero-text">
-                    <h1>Kelola Bisnis Top Up Game Dengan Satu Sistem</h1>
-                    <p>Platform manajemen terintegrasi untuk bisnis top up game yang lebih efisien dan menguntungkan</p>
-                    <div class="hero-buttons">
-                        <a href="#" class="btn primary">Mulai Sekarang</a>
-                        <a href="#" class="btn secondary">Lihat Demo</a>
-                    </div>
-                </div>
-                <div class="hero-image">
-                    <img src="https://images.unsplash.com/photo-1633613286848-e6f43bbafb8d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" alt="Dashboard GameFlow Manager">
-                </div>
+                <button class="cta-button">Register</button>
             </div>
-        </header>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="section hero-section" id="home">
+            <div class="hero-container">
+                <div class="hero-content">
+                    <h1>Website Managemen Layanan Top Up Game</h1>
+                    <p>Website ini dikembangkan sebagai platform manajemen layanan top up game online yang ditujukan untuk memudahkan untuk mengelola laporan penjualan, melacak histori transaksi, mengatur data pengguna serta adanya chatbot yang bisa membantu manager dalam mengambil keputusan.</p>
+                    <button class="cta-button">Get Started</button>
+                </div>
+                
+            </div>
+        </section>
 
         <!-- Features Section -->
-        <section class="section" id="features">
+        <section class="section features-section" id="features">
             <div class="section-container">
-                <h2 class="section-title">Fitur Unggulan</h2>
-                <p class="section-subtitle">Semua yang Anda butuhkan untuk mengembangkan bisnis top up game</p>
-                
+                <h2 class="section-title">Powerful <span>Features</span></h2>
+                <p class="section-subtitle">Everything you need to build your next great idea</p>
                 <div class="features-grid">
                     <div class="feature-card">
                         <div class="feature-icon">
                             <i class="fas fa-bolt"></i>
                         </div>
-                        <h3>Proses Instan</h3>
-                        <p>Top up game selesai dalam hitungan detik dengan sistem otomatis kami.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-chart-pie"></i>
-                        </div>
-                        <h3>Analisis Bisnis</h3>
-                        <p>Dashboard analitik lengkap untuk memantau perkembangan bisnis Anda.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-robot"></i>
-                        </div>
-                        <h3>Auto Responder</h3>
-                        <p>Chatbot otomatis untuk menangani pertanyaan pelanggan 24/7.</p>
-                    </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">
-                            <i class="fas fa-wallet"></i>
-                        </div>
-                        <h3>Multi Pembayaran</h3>
-                        <p>Dukung berbagai metode pembayaran populer di Indonesia.</p>
+                        <h3>Lightning Fast</h3>
+                        <p>Optimized for performance with instant loading times and smooth animations.</p>
                     </div>
                     <div class="feature-card">
                         <div class="feature-icon">
                             <i class="fas fa-mobile-alt"></i>
                         </div>
-                        <h3>Aplikasi Mobile</h3>
-                        <p>Kelola bisnis dari mana saja dengan aplikasi kami.</p>
+                        <h3>Responsive Design</h3>
+                        <p>Looks perfect on any device from desktop to mobile.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                        <h3>Easy Customization</h3>
+                        <p>Change colors, fonts, and layouts with just a few clicks.</p>
                     </div>
                     <div class="feature-card">
                         <div class="feature-icon">
                             <i class="fas fa-shield-alt"></i>
                         </div>
-                        <h3>Keamanan Data</h3>
-                        <p>Proteksi tingkat tinggi untuk data bisnis Anda.</p>
+                        <h3>Secure</h3>
+                        <p>Enterprise-grade security to protect your data.</p>
                     </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Pricing Section -->
-        <section class="section" id="pricing">
-            <div class="section-container">
-                <h2 class="section-title">Paket Harga</h2>
-                <p class="section-subtitle">Pilih paket yang sesuai dengan skala bisnis Anda</p>
-                
-                <div class="pricing-cards">
-                    <div class="pricing-card">
-                        <h3>Starter</h3>
-                        <div class="price">
-                            <span class="currency">Rp</span>
-                            <span class="amount">99,000</span>
-                            <span class="period">/bulan</span>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
                         </div>
-                        <ul class="features-list">
-                            <li><i class="fas fa-check"></i> 100 Transaksi/bulan</li>
-                            <li><i class="fas fa-check"></i> 5 Game Tersedia</li>
-                            <li><i class="fas fa-check"></i> Dukungan Email</li>
-                        </ul>
-                        <a href="#" class="btn outline">Pilih Paket</a>
+                        <h3>Analytics</h3>
+                        <p>Track your visitors and understand your audience.</p>
                     </div>
-                    <div class="pricing-card popular">
-                        <div class="popular-badge">POPULER</div>
-                        <h3>Professional</h3>
-                        <div class="price">
-                            <span class="currency">Rp</span>
-                            <span class="amount">249,000</span>
-                            <span class="period">/bulan</span>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-headset"></i>
                         </div>
-                        <ul class="features-list">
-                            <li><i class="fas fa-check"></i> 500 Transaksi/bulan</li>
-                            <li><i class="fas fa-check"></i> 20 Game Tersedia</li>
-                            <li><i class="fas fa-check"></i> Dukungan Prioritas</li>
-                            <li><i class="fas fa-check"></i> Analitik Lengkap</li>
-                        </ul>
-                        <a href="#" class="btn primary">Pilih Paket</a>
-                    </div>
-                    <div class="pricing-card">
-                        <h3>Enterprise</h3>
-                        <div class="price">
-                            <span class="currency">Rp</span>
-                            <span class="amount">499,000</span>
-                            <span class="period">/bulan</span>
-                        </div>
-                        <ul class="features-list">
-                            <li><i class="fas fa-check"></i> Transaksi Unlimited</li>
-                            <li><i class="fas fa-check"></i> Semua Game Tersedia</li>
-                            <li><i class="fas fa-check"></i> Dukungan 24/7</li>
-                            <li><i class="fas fa-check"></i> API Integrasi</li>
-                        </ul>
-                        <a href="#" class="btn outline">Pilih Paket</a>
+                        <h3>24/7 Support</h3>
+                        <p>Our team is always ready to help you succeed.</p>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- Testimonials Section -->
-        <section class="section" id="testimonials">
+        <section class="section testimonials-section" id="testimonials">
             <div class="section-container">
-                <h2 class="section-title">Testimoni Pengguna</h2>
-                <p class="section-subtitle">Apa kata mereka tentang GameFlow Manager</p>
+                <h2 class="section-title">What Our <span>Clients Say</span></h2>
+                <p class="section-subtitle">Don't just take our word for it - hear from our customers</p>
                 
-                <div class="testimonials-slider">
-                    <div class="testimonial active">
+                <div class="testimonials-container" id="testimonialsSlider">
+                    <div class="testimonial">
                         <div class="testimonial-content">
-                            <div class="rating">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                            </div>
-                            <p>"GameFlow Manager telah mengubah cara saya menjalankan bisnis top up. Sekarang semuanya otomatis dan mudah dikelola!"</p>
-                            <div class="author">
-                                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Andi Wijaya">
-                                <div class="author-info">
-                                    <h4>Andi Wijaya</h4>
-                                    <span>Pemilik TopUpGamesID</span>
-                                </div>
-                            </div>
+                            <p class="testimonial-text">This platform has transformed our business. We've been able to launch new products faster than ever before.</p>
+                            <h4 class="testimonial-author">Sarah Johnson</h4>
+                            <p class="testimonial-role">CEO, TechCorp</p>
                         </div>
                     </div>
                     <div class="testimonial">
                         <div class="testimonial-content">
-                            <div class="rating">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star-half-alt"></i>
-                            </div>
-                            <p>"Dengan sistem ini, saya bisa mengelola bisnis dari mana saja. Aplikasi mobile-nya sangat membantu!"</p>
-                            <div class="author">
-                                <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Siti Rahma">
-                                <div class="author-info">
-                                    <h4>Siti Rahma</h4>
-                                    <span>Pemilik DiamondShop</span>
-                                </div>
-                            </div>
+                            <p class="testimonial-text">The customer support is outstanding. They helped us customize the platform exactly to our needs.</p>
+                            <h4 class="testimonial-author">Michael Chen</h4>
+                            <p class="testimonial-role">CTO, StartupX</p>
                         </div>
                     </div>
-                    <div class="slider-controls">
-                        <button class="slider-prev"><i class="fas fa-chevron-left"></i></button>
-                        <div class="slider-dots">
-                            <span class="dot active"></span>
-                            <span class="dot"></span>
+                    <div class="testimonial">
+                        <div class="testimonial-content">
+                            <p class="testimonial-text">We've reduced our development costs by 40% since switching to this platform. Highly recommended!</p>
+                            <h4 class="testimonial-author">David Wilson</h4>
+                            <p class="testimonial-role">Product Manager, InnovateCo</p>
                         </div>
-                        <button class="slider-next"><i class="fas fa-chevron-right"></i></button>
                     </div>
+                </div>
+                
+                <div class="testimonial-nav">
+                    <div class="testimonial-dot active" data-index="0"></div>
+                    <div class="testimonial-dot" data-index="1"></div>
+                    <div class="testimonial-dot" data-index="2"></div>
                 </div>
             </div>
         </section>
 
-        <!-- Contact Section -->
-        <section class="section" id="contact">
-            <div class="section-container">
-                <div class="contact-content">
-                    <h2 class="section-title">Hubungi Kami</h2>
-                    <p class="section-subtitle">Punya pertanyaan? Tim kami siap membantu Anda</p>
-                    
-                    <form class="contact-form">
-                        <div class="form-group">
-                            <input type="text" placeholder="Nama Anda" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="email" placeholder="Email Anda" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="text" placeholder="Subjek">
-                        </div>
-                        <div class="form-group">
-                            <textarea placeholder="Pesan Anda" rows="5" required></textarea>
-                        </div>
-                        <button type="submit" class="btn primary">Kirim Pesan</button>
-                    </form>
-                </div>
-                <div class="contact-info">
-                    <div class="info-item">
-                        <div class="info-icon">
-                            <i class="fas fa-map-marker-alt"></i>
-                        </div>
-                        <div class="info-content">
-                            <h3>Alamat</h3>
-                            <p>Jl. Teknologi No. 123, Jakarta Selatan</p>
-                        </div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-icon">
-                            <i class="fas fa-phone-alt"></i>
-                        </div>
-                        <div class="info-content">
-                            <h3>Telepon</h3>
-                            <p>+62 21 1234 5678</p>
-                        </div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-icon">
-                            <i class="fas fa-envelope"></i>
-                        </div>
-                        <div class="info-content">
-                            <h3>Email</h3>
-                            <p>support@gameflowmanager.com</p>
-                        </div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-icon">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="info-content">
-                            <h3>Jam Operasional</h3>
-                            <p>Senin - Minggu, 24 Jam</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+        
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize horizontal scroll
-            const wrapper = document.querySelector('.horizontal-scroll-wrapper');
+            const horizontalWrapper = document.getElementById('main-scroller');
             const sections = document.querySelectorAll('.section');
             const navLinks = document.querySelectorAll('.nav-links a');
             
-            // Mobile menu toggle
-            const mobileMenuBtn = document.querySelector('.mobile-menu');
-            const nav = document.querySelector('nav');
+            // Initialize scroll position
+            let isScrolling = false;
+            let currentSection = 0;
             
-            mobileMenuBtn.addEventListener('click', function() {
-                nav.classList.toggle('active');
-                mobileMenuBtn.classList.toggle('active');
+            // Function to scroll to section
+            function scrollToSection(index) {
+                if (index < 0) index = 0;
+                if (index >= sections.length) index = sections.length - 1;
+                
+                currentSection = index;
+                isScrolling = true;
+                
+                horizontalWrapper.scrollTo({
+                    left: sections[index].offsetLeft,
+                    behavior: 'smooth'
+                });
+                
+                // Update active nav link
+                navLinks.forEach(link => link.classList.remove('active'));
+                navLinks[index].classList.add('active');
+                
+                // Reset scrolling flag after animation completes
+                setTimeout(() => {
+                    isScrolling = false;
+                }, 1000);
+            }
+            
+            // Handle navigation clicks
+            navLinks.forEach((link, index) => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    scrollToSection(index);
+                });
             });
             
-            // Update active nav link based on scroll position
-            wrapper.addEventListener('scroll', function() {
-                const scrollPosition = wrapper.scrollTop;
-                const windowHeight = window.innerHeight;
+            // Handle scroll events
+            horizontalWrapper.addEventListener('scroll', function() {
+                if (isScrolling) return;
+                
+                // Find which section is currently in view
+                const scrollPosition = horizontalWrapper.scrollLeft + (window.innerWidth / 2);
                 
                 sections.forEach((section, index) => {
-                    const sectionTop = index * windowHeight;
-                    const sectionBottom = (index + 1) * windowHeight;
+                    const sectionStart = section.offsetLeft;
+                    const sectionEnd = sectionStart + section.offsetWidth;
                     
-                    if (scrollPosition >= sectionTop && scrollPosition < sectionBottom) {
-                        navLinks.forEach(link => link.classList.remove('active'));
-                        navLinks[index].classList.add('active');
+                    if (scrollPosition >= sectionStart && scrollPosition < sectionEnd) {
+                        if (currentSection !== index) {
+                            currentSection = index;
+                            navLinks.forEach(link => link.classList.remove('active'));
+                            navLinks[index].classList.add('active');
+                        }
                     }
                 });
             });
             
-            // Smooth scroll to section when nav link is clicked
-            navLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    const targetId = this.getAttribute('href');
-                    const targetSection = document.querySelector(targetId);
-                    const sectionIndex = Array.from(sections).indexOf(targetSection);
-                    
-                    // Scroll to the section
-                    wrapper.scrollTo({
-                        top: sectionIndex * window.innerHeight,
-                        behavior: 'smooth'
-                    });
-                    
-                    // Update active nav link
-                    navLinks.forEach(link => link.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    // Close mobile menu if open
-                    nav.classList.remove('active');
-                    mobileMenuBtn.classList.remove('active');
-                });
+            // Handle keyboard arrow keys
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowLeft') {
+                    scrollToSection(currentSection - 1);
+                } else if (e.key === 'ArrowRight') {
+                    scrollToSection(currentSection + 1);
+                }
             });
             
-            // Testimonial slider
-            const testimonials = document.querySelectorAll('.testimonial');
-            const dots = document.querySelectorAll('.dot');
-            const prevBtn = document.querySelector('.slider-prev');
-            const nextBtn = document.querySelector('.slider-next');
-            let currentIndex = 0;
+            // Handle touch events for mobile swipe
+            let touchStartX = 0;
+            let touchEndX = 0;
             
-            function showTestimonial(index) {
-                testimonials.forEach(testimonial => testimonial.classList.remove('active'));
-                dots.forEach(dot => dot.classList.remove('active'));
-                
-                testimonials[index].classList.add('active');
-                dots[index].classList.add('active');
-                currentIndex = index;
+            horizontalWrapper.addEventListener('touchstart', function(e) {
+                touchStartX = e.changedTouches[0].screenX;
+            }, {passive: true});
+            
+            horizontalWrapper.addEventListener('touchend', function(e) {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, {passive: true});
+            
+            function handleSwipe() {
+                const threshold = 50;
+                if (touchEndX < touchStartX - threshold) {
+                    // Swipe left - next section
+                    scrollToSection(currentSection + 1);
+                } else if (touchEndX > touchStartX + threshold) {
+                    // Swipe right - previous section
+                    scrollToSection(currentSection - 1);
+                }
             }
             
-            dots.forEach((dot, index) => {
-                dot.addEventListener('click', () => showTestimonial(index));
-            });
+            // Testimonials slider
+            const testimonialsSlider = document.getElementById('testimonialsSlider');
+            const testimonialDots = document.querySelectorAll('.testimonial-dot');
+            const testimonials = document.querySelectorAll('.testimonial');
+            let currentTestimonial = 0;
+            let isTestimonialScrolling = false;
             
-            prevBtn.addEventListener('click', () => {
-                let newIndex = currentIndex - 1;
-                if (newIndex < 0) newIndex = testimonials.length - 1;
-                showTestimonial(newIndex);
-            });
+            // Set initial testimonial widths
+            function setTestimonialWidths() {
+                const containerWidth = testimonialsSlider.parentElement.offsetWidth;
+                testimonials.forEach(testimonial => {
+                    testimonial.style.minWidth = `${containerWidth}px`;
+                });
+            }
             
-            nextBtn.addEventListener('click', () => {
-                let newIndex = currentIndex + 1;
-                if (newIndex >= testimonials.length) newIndex = 0;
-                showTestimonial(newIndex);
+            setTestimonialWidths();
+            window.addEventListener('resize', setTestimonialWidths);
+            
+            function goToTestimonial(index) {
+                if (isTestimonialScrolling) return;
+                
+                if (index < 0) index = testimonials.length - 1;
+                if (index >= testimonials.length) index = 0;
+                
+                currentTestimonial = index;
+                isTestimonialScrolling = true;
+                
+                testimonialsSlider.scrollTo({
+                    left: index * testimonialsSlider.offsetWidth,
+                    behavior: 'smooth'
+                });
+                
+                testimonialDots.forEach(dot => dot.classList.remove('active'));
+                testimonialDots[index].classList.add('active');
+                
+                setTimeout(() => {
+                    isTestimonialScrolling = false;
+                }, 500);
+            }
+            
+            testimonialDots.forEach(dot => {
+                dot.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    goToTestimonial(index);
+                });
             });
             
             // Auto-rotate testimonials
-            let testimonialInterval = setInterval(() => {
-                let newIndex = currentIndex + 1;
-                if (newIndex >= testimonials.length) newIndex = 0;
-                showTestimonial(newIndex);
+            setInterval(() => {
+                if (!isTestimonialScrolling) {
+                    goToTestimonial(currentTestimonial + 1);
+                }
             }, 5000);
             
-            // Pause auto-rotation on hover
-            const testimonialSlider = document.querySelector('.testimonials-slider');
-            testimonialSlider.addEventListener('mouseenter', () => {
-                clearInterval(testimonialInterval);
-            });
-            
-            testimonialSlider.addEventListener('mouseleave', () => {
-                testimonialInterval = setInterval(() => {
-                    let newIndex = currentIndex + 1;
-                    if (newIndex >= testimonials.length) newIndex = 0;
-                    showTestimonial(newIndex);
-                }, 5000);
-            });
-            
-            // Form submission handling
-            const contactForm = document.querySelector('.contact-form');
-            if (contactForm) {
-                contactForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    // Get form values
-                    const formData = new FormData(contactForm);
-                    const data = {};
-                    formData.forEach((value, key) => {
-                        data[key] = value;
-                    });
-                    
-                    // Here you would typically send the data to a server
-                    console.log('Form submitted:', data);
-                    
-                    // Show success message
-                    alert('Terima kasih! Pesan Anda telah terkirim. Kami akan segera menghubungi Anda.');
-                    contactForm.reset();
-                });
-            }
-            
             // Initialize first section as active
-            navLinks[0].classList.add('active');
+            scrollToSection(0);
         });
     </script>
 </body>
