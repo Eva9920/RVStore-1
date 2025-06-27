@@ -695,8 +695,8 @@ while ($current_date <= $end_date) {
         }
 
         .chatbot-window {
-            width: 400px;
-            height: 550px;
+            width: 1350px;
+            height: 600px;
             background: var(--card-gradient);
             backdrop-filter: blur(20px);
             border-radius: var(--border-radius);
@@ -712,6 +712,112 @@ while ($current_date <= $end_date) {
             animation: fadeInUp 0.3s ease;
         }
 
+        .chatbot-header {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .chatbot-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .chatbot-header i {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 20px;
+            transition: var(--transition);
+        }
+
+        .chatbot-header i:hover {
+            transform: translateY(-50%) scale(1.2);
+        }
+
+        .chatbot-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 18px;
+            margin-bottom: 15px;
+            border-radius: 20px;
+            position: relative;
+            word-wrap: break-word;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .bot-message {
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--text-primary);
+            border-bottom-left-radius: 8px;
+            align-self: flex-start;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-right: auto;
+        }
+
+        .user-message {
+            background: var(--accent-gradient);
+            color: white;
+            border-bottom-right-radius: 8px;
+            align-self: flex-end;
+            margin-left: auto;
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
+        }
+
+        .chatbot-input {
+            display: flex;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-top: 1px solid rgba(255, 20, 147, 0.2);
+        }
+
+        .chatbot-input input {
+            flex: 1;
+            padding: 12px 18px;
+            border: 2px solid rgba(255, 20, 147, 0.2);
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .chatbot-input input:focus {
+            border-color: #ff1493;
+            box-shadow: 0 0 15px rgba(255, 20, 147, 0.2);
+        }
+
+        .chatbot-input button {
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.3);
+        }
+
+        .chatbot-input button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
+        }
+
         @keyframes fadeInUp {
             from {
                 opacity: 0;
@@ -720,6 +826,45 @@ while ($current_date <= $end_date) {
             to {
                 opacity: 1;
                 transform: translateY(0);
+            }
+        }
+
+        .typing-indicator {
+            display: flex;
+            padding: 12px 18px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            border-bottom-left-radius: 8px;
+            align-self: flex-start;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+            margin-right: auto;
+        }
+
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background: #ff1493;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            animation: bounce 1.5s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-8px);
             }
         }
 
@@ -739,11 +884,6 @@ while ($current_date <= $end_date) {
             
             .topbar h2 {
                 font-size: 22px;
-            }
-            
-            .filter-section {
-                flex-direction: column;
-                align-items: stretch;
             }
         }
 
@@ -776,6 +916,15 @@ while ($current_date <= $end_date) {
         .bottom-icon:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(255, 20, 147, 0.5);
+        }
+
+        .footer {
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            color: #fff;
+            padding: 5px;
+            text-align: center;
         }
     </style>
 </head>
@@ -993,6 +1142,33 @@ while ($current_date <= $end_date) {
         </div>
     </div>
 
+    <!-- Chatbot -->
+    <div class="chatbot-container">
+        <div class="chatbot-window" id="chatbotWindow">
+            <div class="chatbot-header">
+                <h3>RVStore AI Assistant</h3>
+                <i class="fas fa-times" onclick="toggleChatbot()"></i>
+            </div>
+            <div class="chatbot-messages" id="chatbotMessages">
+                <div class="message bot-message">
+                    Hello! How can I help you today?
+                </div>
+            </div>
+            <div class="chatbot-input">
+                <input type="text" id="chatbotInput" placeholder="Type your message..." onkeypress="if(event.keyCode==13) sendMessage()">
+                <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+        <div class="chatbot-toggle" onclick="toggleChatbot()">
+            <i class="fas fa-robot"></i>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>&copy; 2025 RVStore. All rights reserved.</p>
+    </div>
+
     <script>
         // Sales Chart
         const salesCtx = document.getElementById('salesChart').getContext('2d');
@@ -1098,30 +1274,10 @@ while ($current_date <= $end_date) {
                 }
             });
         });
-    </>
-
-    <div class="chatbot-container">
-        <div class="chatbot-window" id="chatbotWindow">
-            <div class="chatbot-header">
-                <h3>RVStore AI Assistant</h3>
-                <i class="fas fa-times" onclick="toggleChatbot()"></i>
-            </div>
-            <div class="chatbot-messages" id="chatbotMessages">
-                <div class="message bot-message">
-                    Hello! How can I help you today?
-                </div>
-            </div>
-            <div class="chatbot-input">
-                <input type="text" id="chatbotInput" placeholder="Type your message..." onkeypress="if(event.keyCode==13) sendMessage()">
-                <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
-            </div>
-        </div>
-        <div class="chatbot-toggle" onclick="toggleChatbot()">
-            <i class="fas fa-robot"></i>
-        </div>
-    </div>
+    </script>
 
     <script>
+        // Chatbot functionality
         function toggleChatbot() {
             const chatbotWindow = document.getElementById('chatbotWindow');
             chatbotWindow.classList.toggle('active');
@@ -1133,53 +1289,70 @@ while ($current_date <= $end_date) {
             
             if (message === '') return;
             
-            // Add user message (right aligned)
+            // Add user message
             addMessage(message, 'user-message');
             input.value = '';
             
-            // Show typing indicator (left aligned)
-            const typingIndicator = document.createElement('div');
-            typingIndicator.className = 'message typing-indicator';
-            typingIndicator.innerHTML = '<span></span><span></span><span></span>';
-            document.getElementById('chatbotMessages').appendChild(typingIndicator);
+            // Show typing indicator
+            showTypingIndicator();
             
-            // Scroll to bottom
-            scrollToBottom();
-            
-            // Simulate bot response (left aligned)
+            // Simulate bot response after delay
             setTimeout(() => {
-                // Remove typing indicator
-                const indicator = document.querySelector('.typing-indicator');
-                if (indicator) indicator.remove();
-                
-                // Add bot response
-                const responses = [
-                    "I can help you with your questions about our products and services.",
-                    "For order inquiries, please check the Transaction History page.",
-                    "Our support team is available 24/7 to assist you.",
-                    "You can find more information in our FAQ section.",
-                    "Is there anything else I can help you with?"
-                ];
-                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-                addMessage(randomResponse, 'bot-message');
-                
-                // Scroll to bottom again after response
+                removeTypingIndicator();
+                const response = getBotResponse();
+                addMessage(response, 'bot-message');
                 scrollToBottom();
             }, 1500);
         }
         
+        // Helper Functions
         function addMessage(text, className) {
             const messagesContainer = document.getElementById('chatbotMessages');
             const messageElement = document.createElement('div');
             messageElement.className = `message ${className}`;
             messageElement.textContent = text;
             messagesContainer.appendChild(messageElement);
+            scrollToBottom();
+        }
+        
+        function showTypingIndicator() {
+            const messagesContainer = document.getElementById('chatbotMessages');
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'message typing-indicator';
+            typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+            typingIndicator.id = 'typingIndicator';
+            messagesContainer.appendChild(typingIndicator);
+            scrollToBottom();
+        }
+        
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
+        
+        function getBotResponse() {
+            const responses = [
+                "I can help you with your questions about our products and services.",
+                "For order inquiries, please check the Transaction History page.",
+                "Our support team is available 24/7 to assist you.",
+                "You can find more information in our FAQ section.",
+                "Is there anything else I can help you with?"
+            ];
+            return responses[Math.floor(Math.random() * responses.length)];
         }
         
         function scrollToBottom() {
             const messagesContainer = document.getElementById('chatbotMessages');
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
+        
+        // Handle Enter key press
+        document.getElementById('chatbotInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
     </script>
+
 </body>
 </html>

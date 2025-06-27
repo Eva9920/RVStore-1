@@ -812,8 +812,8 @@ if ($params) {
         }
 
         .chatbot-window {
-            width: 400px;
-            height: 550px;
+            width: 1350px;
+            height: 600px;
             background: var(--card-gradient);
             backdrop-filter: blur(20px);
             border-radius: var(--border-radius);
@@ -1034,6 +1034,15 @@ if ($params) {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(255, 20, 147, 0.5);
         }
+
+        .footer {
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            color: #fff;
+            padding: 5px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -1168,26 +1177,26 @@ if ($params) {
                                     </div>
                                 </td>
                                 <td>IDR <?php 
-    $price = $game['base_price'] ?? 0; // Default to 0 if missing
-    echo number_format($price, 0, ',', '.'); 
-?></td>
-<td><?php echo $game['stock'] ?? 0; ?></td>
-<td>
-    <span class="status-badge <?php 
-        $stock = $game['stock'] ?? 0;
-        echo ($stock > 0) ? 'status-active' : 'status-inactive'; 
-    ?>">
-        <?php echo ($stock > 0) ? 'Active' : 'Inactive'; ?>
-    </span>
-</td>
+                                    $price = $game['base_price'] ?? 0; // Default to 0 if missing
+                                    echo number_format($price, 0, ',', '.'); 
+                                ?></td>
+                                <td><?php echo $game['stock'] ?? 0; ?></td>
                                 <td>
-                                    <button class="action-btn edit" onclick="editProduct(
-    <?php echo $game['id']; ?>,
-    '<?php echo addslashes($game['name']); ?>',
-    '<?php echo addslashes($game['description']); ?>',
-    <?php echo $game['base_price'] ?? 0; ?>,
-    <?php echo $game['stock'] ?? 0; ?>
-)" title="Edit">
+                                    <span class="status-badge <?php 
+                                        $stock = $game['stock'] ?? 0;
+                                        echo ($stock > 0) ? 'status-active' : 'status-inactive'; 
+                                    ?>">
+                                        <?php echo ($stock > 0) ? 'Active' : 'Inactive'; ?>
+                                    </span>
+                                </td>
+                                                                <td>
+                                                                    <button class="action-btn edit" onclick="editProduct(
+                                    <?php echo $game['id']; ?>,
+                                    '<?php echo addslashes($game['name']); ?>',
+                                    '<?php echo addslashes($game['description']); ?>',
+                                    <?php echo $game['base_price'] ?? 0; ?>,
+                                    <?php echo $game['stock'] ?? 0; ?>
+                                )" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     <button class="action-btn delete" onclick="confirmDelete(<?php echo $game['id']; ?>)" title="Delete">
@@ -1257,6 +1266,11 @@ if ($params) {
         <input type="hidden" name="id" id="deleteId">
         <input type="hidden" name="delete_game" value="1">
     </form>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>&copy; 2025 RVStore. All rights reserved.</p>
+    </div>
 
     <script>
         // Modal logic
@@ -1350,6 +1364,7 @@ if ($params) {
     </div>
 
     <script>
+        // Chatbot functionality
         function toggleChatbot() {
             const chatbotWindow = document.getElementById('chatbotWindow');
             chatbotWindow.classList.toggle('active');
@@ -1361,53 +1376,69 @@ if ($params) {
             
             if (message === '') return;
             
-            // Add user message (right aligned)
+            // Add user message
             addMessage(message, 'user-message');
             input.value = '';
             
-            // Show typing indicator (left aligned)
-            const typingIndicator = document.createElement('div');
-            typingIndicator.className = 'message typing-indicator';
-            typingIndicator.innerHTML = '<span></span><span></span><span></span>';
-            document.getElementById('chatbotMessages').appendChild(typingIndicator);
+            // Show typing indicator
+            showTypingIndicator();
             
-            // Scroll to bottom
-            scrollToBottom();
-            
-            // Simulate bot response (left aligned)
+            // Simulate bot response after delay
             setTimeout(() => {
-                // Remove typing indicator
-                const indicator = document.querySelector('.typing-indicator');
-                if (indicator) indicator.remove();
-                
-                // Add bot response
-                const responses = [
-                    "I can help you with your questions about our products and services.",
-                    "For order inquiries, please check the Transaction History page.",
-                    "Our support team is available 24/7 to assist you.",
-                    "You can find more information in our FAQ section.",
-                    "Is there anything else I can help you with?"
-                ];
-                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-                addMessage(randomResponse, 'bot-message');
-                
-                // Scroll to bottom again after response
+                removeTypingIndicator();
+                const response = getBotResponse();
+                addMessage(response, 'bot-message');
                 scrollToBottom();
             }, 1500);
         }
         
+        // Helper Functions
         function addMessage(text, className) {
             const messagesContainer = document.getElementById('chatbotMessages');
             const messageElement = document.createElement('div');
             messageElement.className = `message ${className}`;
             messageElement.textContent = text;
             messagesContainer.appendChild(messageElement);
+            scrollToBottom();
+        }
+        
+        function showTypingIndicator() {
+            const messagesContainer = document.getElementById('chatbotMessages');
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'message typing-indicator';
+            typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+            typingIndicator.id = 'typingIndicator';
+            messagesContainer.appendChild(typingIndicator);
+            scrollToBottom();
+        }
+        
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
+        
+        function getBotResponse() {
+            const responses = [
+                "I can help you with your questions about our products and services.",
+                "For order inquiries, please check the Transaction History page.",
+                "Our support team is available 24/7 to assist you.",
+                "You can find more information in our FAQ section.",
+                "Is there anything else I can help you with?"
+            ];
+            return responses[Math.floor(Math.random() * responses.length)];
         }
         
         function scrollToBottom() {
             const messagesContainer = document.getElementById('chatbotMessages');
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
+        
+        // Handle Enter key press
+        document.getElementById('chatbotInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
     </script>
 </body>
 </html>

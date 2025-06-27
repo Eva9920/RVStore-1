@@ -582,6 +582,15 @@ $flash_message = getFlashMessage();
             font-size: 12px;
             font-weight: bold;
         }
+
+        .footer {
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            color: #fff;
+            padding: 5px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -652,7 +661,7 @@ $flash_message = getFlashMessage();
             <div class="topbar">
                 <h2>Account Settings</h2>
                 <form method="GET" class="search-container">
-                    <input type="text" name="search" placeholder="Search users..." value="<?php echo htmlspecialchars($search); ?>">
+                    <input type="text" name="search" placeholder="Search users...">
                     <i class="fas fa-search"></i>
                 </form>
             </div>

@@ -70,8 +70,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['mark_read'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notifications - RVStore Admin</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         :root {
             --primary-gradient: linear-gradient(135deg, #2a0845 0%, #6441a5 100%);
@@ -491,6 +495,37 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['mark_read'])) {
                 font-size: 22px;
             }
         }
+
+        /* Bottom Icons */
+        .bottom-icons {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 100;
+        }
+
+        .bottom-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(255, 20, 147, 0.4);
+            transition: var(--transition);
+        }
+
+        .bottom-icon:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -550,20 +585,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['mark_read'])) {
                     </li>
                 </ul>
             </nav>
-            <div class="list">
-                <div class="list-item active">
-                    <a href="notification.php">
-                        <i class='bx bx-bell'></i>
-                        <span class="link-name" style="--i:7;">Notifications</span>
-                    </a>
-                </div>
-                <div class="list-item">
-                    <a href="settings.php">
-                        <i class='bx bx-cog'></i>
-                        <span class="link-name" style="--i:8;">Settings</span>
-                    </a>
-                </div>
-            </div>
         </div>
 
         <!-- Main Content Area -->
@@ -579,6 +600,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['mark_read'])) {
                     <i class="fas fa-cog"></i>
                     <i class="fas fa-bell"></i>
                     <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+
+            <!-- Bottom Icons -->
+            <div class="bottom-icons">
+                <div class="bottom-icon" onclick="window.location.href='profile.php'">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="bottom-icon" onclick="window.location.href='notifications.php'">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="bottom-icon" onclick="window.location.href='settings.php'">
+                    <i class="fas fa-cog"></i>
                 </div>
             </div>
 

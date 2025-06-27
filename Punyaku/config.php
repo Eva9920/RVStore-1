@@ -7,8 +7,8 @@ if (session_status() === PHP_SESSION_NONE) {
 // Database configuration
 $servername = "localhost";
 $username = "root";
-$password = "root";
-$dbname = "game_game_topup_management";
+$password = "";
+$dbname = "game_topup_management";
 
 // Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
@@ -495,25 +495,22 @@ function handleImageUpload($file) {
     return null;
 }
 
-// function getUnreadNotificationsCount($user_id) {
-//     global $conn;
-//     $sql = "SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0";
-//     $stmt = $conn->prepare($sql);
-//     $stmt->bind_param("i", $user_id);
-//     $stmt->execute();
-//     $result = $stmt->get_result();
-//     $row = $result->fetch_assoc();
-//     return $row['count'];
-// }
+function getUnreadNotificationsCount($user_id) {
+    global $conn;
+    $sql = "SELECT COUNT(*) as count FROM notifications WHERE user_id = ? AND is_read = 0";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    return $row['count'];
+}
 
-// function createNotification($user_id, $title, $message) {
-//     global $conn;
-//     $sql = "INSERT INTO notifications (user_id, title, message, is_read, created_at) 
-//             VALUES (?, ?, ?, 0, NOW())";
-//     $stmt = $conn->prepare($sql);
-//     $stmt->bind_param("iss", $user_id, $title, $message);
-//     return $stmt->execute();
-// }
+function createNotification($user_id, $title, $message, $type = 'system', $related_id = null) {
+    $sql = "INSERT INTO notifications (user_id, title, message, notification_type, related_id) 
+            VALUES (?, ?, ?, ?, ?)";
+    return insertQuery($sql, [$user_id, $title, $message, $type, $related_id], 'isssi');
+}
 ?>
 
 

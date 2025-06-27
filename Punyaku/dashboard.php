@@ -842,8 +842,8 @@ while($row = $result->fetch_assoc()) {
         }
 
         .chatbot-window {
-            width: 400px;
-            height: 550px;
+            width: 1350px;
+            height: 600px;
             background: var(--card-gradient);
             backdrop-filter: blur(20px);
             border-radius: var(--border-radius);
@@ -1034,6 +1034,14 @@ while($row = $result->fetch_assoc()) {
             }
         }
 
+        .footer {
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            color: #fff;
+            padding: 5px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -1235,6 +1243,33 @@ while($row = $result->fetch_assoc()) {
         </div>
     </div>
 
+    <!-- Chatbot -->
+    <div class="chatbot-container">
+        <div class="chatbot-window" id="chatbotWindow">
+            <div class="chatbot-header">
+                <h3>RVStore AI Assistant</h3>
+                <i class="fas fa-times" onclick="toggleChatbot()"></i>
+            </div>
+            <div class="chatbot-messages" id="chatbotMessages">
+                <div class="message bot-message">
+                    Hello! How can I help you today?
+                </div>
+            </div>
+            <div class="chatbot-input">
+                <input type="text" id="chatbotInput" placeholder="Type your message..." onkeypress="if(event.keyCode==13) sendMessage()">
+                <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+        <div class="chatbot-toggle" onclick="toggleChatbot()">
+            <i class="fas fa-robot"></i>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>&copy; 2025 RVStore. All rights reserved.</p>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Toggle sidebar
@@ -1415,6 +1450,82 @@ while($row = $result->fetch_assoc()) {
                         }
                     }
                 }
+            }
+        });
+
+        // Chatbot functionality
+        function toggleChatbot() {
+            const chatbotWindow = document.getElementById('chatbotWindow');
+            chatbotWindow.classList.toggle('active');
+        }
+        
+        function sendMessage() {
+            const input = document.getElementById('chatbotInput');
+            const message = input.value.trim();
+            
+            if (message === '') return;
+            
+            // Add user message
+            addMessage(message, 'user-message');
+            input.value = '';
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            // Simulate bot response after delay
+            setTimeout(() => {
+                removeTypingIndicator();
+                const response = getBotResponse();
+                addMessage(response, 'bot-message');
+                scrollToBottom();
+            }, 1500);
+        }
+        
+        // Helper Functions
+        function addMessage(text, className) {
+            const messagesContainer = document.getElementById('chatbotMessages');
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${className}`;
+            messageElement.textContent = text;
+            messagesContainer.appendChild(messageElement);
+            scrollToBottom();
+        }
+        
+        function showTypingIndicator() {
+            const messagesContainer = document.getElementById('chatbotMessages');
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'message typing-indicator';
+            typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+            typingIndicator.id = 'typingIndicator';
+            messagesContainer.appendChild(typingIndicator);
+            scrollToBottom();
+        }
+        
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) indicator.remove();
+        }
+        
+        function getBotResponse() {
+            const responses = [
+                "I can help you with your questions about our products and services.",
+                "For order inquiries, please check the Transaction History page.",
+                "Our support team is available 24/7 to assist you.",
+                "You can find more information in our FAQ section.",
+                "Is there anything else I can help you with?"
+            ];
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+        
+        function scrollToBottom() {
+            const messagesContainer = document.getElementById('chatbotMessages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // Handle Enter key press
+        document.getElementById('chatbotInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
             }
         });
     </script>

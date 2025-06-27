@@ -739,8 +739,8 @@ if ($params) {
         }
 
         .chatbot-window {
-            width: 400px;
-            height: 550px;
+            width: 1350px;
+            height: 600px;
             background: var(--card-gradient);
             backdrop-filter: blur(20px);
             border-radius: var(--border-radius);
@@ -961,6 +961,15 @@ if ($params) {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(255, 20, 147, 0.5);
         }
+
+        .footer {
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            color: #fff;
+            padding: 5px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -1178,7 +1187,7 @@ if ($params) {
         </div>
     </div>
 
-    <!-- Chatbot (same as dashboard) -->
+    <!-- Chatbot -->
     <div class="chatbot-container">
         <div class="chatbot-window" id="chatbotWindow">
             <div class="chatbot-header">
@@ -1200,8 +1209,13 @@ if ($params) {
         </div>
     </div>
 
+    <!-- Footer -->
+    <div class="footer">
+        <p>&copy; 2025 RVStore. All rights reserved.</p>
+    </div>
+
     <script>
-        // Chatbot functionality (same as dashboard)
+        // Chatbot functionality
         function toggleChatbot() {
             const chatbotWindow = document.getElementById('chatbotWindow');
             chatbotWindow.classList.toggle('active');

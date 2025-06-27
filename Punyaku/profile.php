@@ -590,6 +590,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(255, 20, 147, 0.5);
         }
+
+        .footer {
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            color: #fff;
+            padding: 5px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
