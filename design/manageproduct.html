@@ -3,17 +3,447 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Product</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Manage Games</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #2a0845 0%, #6441a5 100%);
+            --accent-gradient: linear-gradient(135deg, #ff1493 0%, #6441a5 100%);
+            --card-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.95) 100%);
+            --background-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --border-radius: 20px;
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: var(--background-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        img {
+            width: 105px;
+            height: 65px;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            margin-left: 55px;
+        }
+        
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .dashboard-container.active {
+            background:white;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 80px;
+            height: 100%;
+            background: var(--primary-gradient);
+            backdrop-filter: blur(40px);
+            border-right: 2px solid rgba(255, 20, 147, 0.3);
+            box-shadow: 0 0 30px rgba(139, 0, 139, 0.5);
+            padding: 6px 14px;
+            transition: var(--transition);
+            z-index: 100;
+        }
+
+        .sidebar.active {
+            width: 260px;
+        }
+
+        .sidebar .logo-menu {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            height: 70px;
+            border-bottom: 1px solid rgba(255, 20, 147, 0.2);
+        }
+
+        .sidebar .logo-menu .logo {
+            font-size: 25px;
+            color: #ff1493;
+            font-weight: 600;
+            pointer-events: none;
+            opacity: 0;
+            transition: var(--transition);
+            text-shadow: 0 0 10px rgba(255, 20, 147, 0.5);
+        }
+
+        .sidebar.active .logo-menu .logo {
+            opacity: 1;
+            transition-delay: 0.2s;
+        }
+
+        .sidebar .logo-menu .toggle-btn {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            font-size: 30px;
+            color: #ff1493;
+            text-align: center;
+            line-height: 40px;
+            cursor: pointer;
+            transition: var(--transition);
+            background: rgba(106, 13, 173, 0.3);
+            border-radius: 50%;
+        }
+
+        .sidebar.active .logo-menu .toggle-btn {
+            left: 90%;
+            background: rgba(255, 20, 147, 0.2);
+        }
+
+        .sidebar .logo-menu .toggle-btn:hover {
+            color: #ff69b4;
+            background: rgba(255, 20, 147, 0.3);
+            transform: translateX(-50%) scale(1.1);
+        }
+
+        .sidebar .list {
+            margin-top: 30px;
+        }
+
+        .list .list-item {
+            list-style: none;
+            width: 100%;
+            height: 50px;
+            margin: 10px 0;
+            line-height: 50px;
+        }
+
+        .list .list-item a {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            font-size: 18px;
+            color: #e2b4ff;
+            border-radius: 12px;
+            white-space: nowrap;
+            transition: var(--transition);
+            padding: 0 10px;
+        }
+
+        .list .list-item.active a,
+        .list .list-item a:hover {
+            background: var(--accent-gradient);
+            color: #fff;
+            box-shadow: 0 8px 25px rgba(255, 20, 147, 0.4);
+            transform: translateX(5px);
+        }
+
+        .list .list-item a i {
+            min-width: 30px;
+            height: 50px;
+            text-align: center;
+            line-height: 50px;
+            color: #ff1493;
+            font-size: 22px;
+        }
+
+        .list .list-item.active a i,
+        .list .list-item a:hover i {
+            color: #fff;
+        }
+
+        .sidebar .link-name {
+            opacity: 0;
+            pointer-events: none;
+            transition: var(--transition);
+            font-weight: 500;
+            margin-left: 8px;
+        }
+
+        .sidebar.active .link-name {
+            opacity: 1;
+            pointer-events: auto;
+            transition-delay: calc(0.1s * var(--i));
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 80px;
+            padding: 20px;
+            transition: var(--transition);
+            width: calc(100% - 80px);
+            min-height: 100vh;
+        }
+
+        .sidebar.active + .main-content {
+            margin-left: 260px;
+            width: calc(100% - 260px);
+        }
+        .main-content-card{
+            background: #ff1493;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+
+       /* Hamburger Toggle Button */
+       .sidebar .hamburger-toggle {
+            position: absolute;
+            top: 15px;
+            right: -70px;
+            width: 50px;
+            height: 50px;
+            background: var(--accent-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1001;
+            transition: var(--transition);
+        }
+
+        .sidebar.active .hamburger-toggle {
+            right: 20px;
+        }
+
+        .sidebar .hamburger-toggle i {
+            color: white;
+            font-size: 20px;
+        }
+
+        /* Sidebar Adjustment */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -260px;
+            width: 260px;
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        /* Topbar */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 30px;
+            background: var(--card-gradient);
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .topbar h2 {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 28px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .search-container {
+            position: relative;
+            width: 350px;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 15px 20px 15px 50px;
+            border: 2px solid rgba(255, 20, 147, 0.2);
+            border-radius: 25px;
+            font-size: 14px;
+            transition: var(--transition);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        .search-container input:focus {
+            border-color: #ff1493;
+            outline: none;
+            box-shadow: 0 0 20px rgba(255, 20, 147, 0.3);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #ff1493;
+            font-size: 18px;
+        }
+
+        .topbar-icons {
+            display: flex;
+            gap: 20px;
+        }
+
+        .topbar-icons i {
+            font-size: 24px;
+            color: #6441a5;
+            cursor: pointer;
+            transition: var(--transition);
+            padding: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .topbar-icons i:hover {
+            color: #ff1493;
+            background: rgba(255, 20, 147, 0.1);
+            transform: scale(1.1);
+        }
+
+      
+        /* Responsive */
+        @media (max-width: 768px) {
+            .search-container {
+                width: 250px;
+            }
+            
+            .topbar h2 {
+                font-size: 22px;
+            }
+            
+            .product-table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .detail-container {
+                flex-direction: column;
+            }
+            
+            .detail-image {
+                max-width: 100%;
+            }
+        }
+          .container {
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .game-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+        padding: 20px;
+    }
+
+   .game-card {
+            background: rgba(250, 250, 250, 0.9);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+        }
+
+    .game-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .game-logo {
+        height: 150px;
+        width: 100%;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .game-logo img {
+        max-height: 100%;
+        max-width: 100%;
+        object-fit: contain;
+    }
+
+    .game-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 10px;
+    }
+
+    .game-category {
+        font-size: 0.9rem;
+        color: #718096;
+        margin-bottom: 20px;
+    }
+
+    .btn {
+        padding: 12px 25px;
+        border-radius: 25px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-block;
+    }
+        
+
+    .btn-primary {
+        background: linear-gradient(135deg, #ff1493 0%, #6441a5 100%);
+        color: white;
+        border: none;
+    }
+
+    .btn-primary:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(255, 20, 147, 0.4);
+    }
+
+    @media (max-width: 768px) {
+        .game-grid {
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            padding: 10px;
+        }
+        
+        .game-card {
+            padding: 20px;
+        }
+        
+        .game-logo {
+            height: 120px;
+        }
+        
+        .game-title {
+            font-size: 1.2rem;
+        }
+    }
+    </style>
 </head>
 <body>
-   
-    
-      </style>
-    </head>
-    <body>
-        <!-- Dashboard Container -->
+    <!-- Dashboard Container -->
     <div class="dashboard-container">
         <!-- Sidebar Navigation -->
         <div class="sidebar">
@@ -21,8 +451,8 @@
             <nav>
                 <ul>
                     <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                    <li><a href="transaction.html"><i class="fas fa-history"></i> Transaction History</a></li>
-                    <li class="active"><a href="manageproduct.html"><i class="fas fa-boxes"></i> Manage Product</a></li>
+                    <li><a href="transactionhistory.html"><i class="fas fa-history"></i> Transaction History</a></li>
+                    <li class="active"><a href="manageproduct.html"><i class="fas fa-boxes"></i> Manage Games</a></li>
                     <li><a href="salesreport.html"><i class="fas fa-chart-bar"></i> Sales Report</a></li>
                     <li><a href="accounts.html"><i class="fas fa-users"></i> Accounts</a></li>
                 </ul>
@@ -33,46 +463,84 @@
         <div class="main-content">
             <!-- Topbar -->
             <div class="topbar">
-                <h2>Manage Product</h2>
-                <div class="search">
-                    <input type="text" placeholder="Search products...">
+                <h2>Manage Games</h2>
+                <div class="search-container">
+                    <input type="text" id="searchInput" placeholder="Search game...">
                     <i class="fas fa-search"></i>
                 </div>
-                <div class="icons">
+                <div class="topbar-icons">
                     <i class="fas fa-cog"></i>
                     <i class="fas fa-bell"></i>
                     <i class="fas fa-user-circle"></i>
                 </div>
             </div>
 
-            <!-- Content -->
-    <div class="content">
-        <div class="grid">
-          <!-- Placeholder for product images -->
-          <div class="product-box">Image</div>
-          <div class="product-box">Image</div>
-          <div class="product-box">Image</div>
-          <div class="product-box">Image</div>
-          <div class="product-box">Image</div>
-          <div class="product-box">Image</div>
-          <div class="product-box">Image</div>
-          <div class="product-box">Image</div>
-          <div class="product-box">Image</div>
-        </div>
-
-                <!-- Bottom Bar -->
-                <div class="bottom-bar">                    
-                    <button class="add-btn">
-                        <i class="fas fa-plus"></i>
-                        Add New Product
-                    </button>
+            <div class="container">
+                <div class="game-grid">
+                    <!-- First Row -->
+                    <!-- Free Fire -->
+                    <div class="game-card free-fire">
+                        <div class="game-logo">
+                            <img src="freefire-1.png" alt="Free Fire Logo">
+                        </div>
+                        <h2 class="game-title">FREE FIRE</h2>
+                        <p class="game-category">Battle Royale Game</p>
+                        <a href="#" class="btn btn-primary">View Details</a>
+                    </div>
+                    
+                    <!-- Mobile Legends -->
+                    <div class="game-card mobile-legends">
+                        <div class="game-logo">
+                            <img src="freefire-1.png".png" alt="Mobile Legends Logo">
+                        </div>
+                        <h2 class="game-title">Mobile Legends: Bang Bang</h2>
+                        <p class="game-category">MOBA Game</p>
+                        <a href="#" class="btn btn-primary">View Details</a>
+                    </div>
+                    
+                    <!-- Call of Duty Mobile -->
+                    <div class="game-card call-duty">
+                        <div class="game-logo">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Call_of_Duty_Mobile_logo.svg/640px-Call_of_Duty_Mobile_logo.svg.png" alt="Call of Duty Logo">
+                        </div>
+                        <h2 class="game-title">CALL DUTY MOBILE®</h2>
+                        <p class="game-category">FPS Game</p>
+                        <a href="#" class="btn btn-primary">View Details</a>
+                    </div>
+                    
+                    <!-- Second Row -->
+                    <!-- PUBG Mobile -->
+                    <div class="game-card pubg">
+                        <div class="game-logo">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/3/3a/PUBG_Mobile_logo.png" alt="PUBG Mobile Logo">
+                        </div>
+                        <h2 class="game-title">PUBG MOBILE</h2>
+                        <p class="game-category">Battle Royale Game</p>
+                        <a href="#" class="btn btn-primary">View Details</a>
+                    </div>
+                    
+                    <!-- Genshin Impact -->
+                    <div class="game-card genshin">
+                        <div class="game-logo">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Genshin_Impact_logo.svg/640px-Genshin_Impact_logo.svg.png" alt="Genshin Impact Logo">
+                        </div>
+                        <h2 class="game-title">Genshin Impact</h2>
+                        <p class="game-category">Open World RPG</p>
+                        <a href="#" class="btn btn-primary">View Details</a>
+                    </div>
+                    
+                    <!-- Clash of Clans -->
+                    <div class="game-card coc">
+                        <div class="game-logo">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/8/8a/Clash_of_Clans_Logo.png" alt="Clash of Clans Logo">
+                        </div>
+                        <h2 class="game-title">Clash of Clans</h2>
+                        <p class="game-category">Strategy Game</p>
+                        <a href="#" class="btn btn-primary">View Details</a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Add your JavaScript file link here if needed -->
-    <script src="script.js"></script>
 </body>
 </html>
-       
